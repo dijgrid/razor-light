@@ -39,4 +39,11 @@ The three failures are newline-sensitive assertions:
 - `TemplateRendererTest.Templates_Supports_Local_Functions_Using_Helper`
 
 Determine whether the new whitespace is an intentional Razor-version behavior change or a RazorLight
-regression before updating assertions.
+regression before updating assertions. CI temporarily filters these three tests on Windows while
+running the other 179 main-suite tests there; Linux and macOS run all 182.
+
+The first cross-platform CI runs on 2026-08-06 also found 16 precompile failures on macOS and Linux.
+The rendered output uses `3:35:49PM` while the inherited expected fixture uses `3:35:49 PM`.
+CI temporarily runs the precompile suite only on Windows while retaining restore, build, and
+main-suite coverage on all three systems. Replace the culture-sensitive expectation and restore the
+macOS and Linux precompile jobs as part of this task.
