@@ -1,8 +1,19 @@
 # RazorLight
 
+> [!IMPORTANT]
+> This repository is an independently maintained continuation of
+> [toddams/RazorLight](https://github.com/toddams/RazorLight). It is no longer maintained as a
+> contribution fork, so compatibility and release policy may diverge. See [UPSTREAM.md](UPSTREAM.md)
+> for provenance and the upstream synchronization policy.
+
+> [!WARNING]
+> The inherited `2.3.1` baseline still targets end-of-life .NET versions and has known dependency
+> advisories. Modernization work is tracked in [`.planfs`](.planfs); do not treat the current default
+> branch as a new independently supported package release yet.
+
 Use Razor to build templates from Files / EmbeddedResources / Strings / Database or your custom source outside of ASP.NET MVC. No redundant dependencies and workarounds in pair with excellent performance and **.NET Standard 2.0** and **.NET Core 3.0** support.
 
-![Build Status](https://github.com/toddams/RazorLight/actions/workflows/dotnet.yml/badge.svg)
+![Build Status](https://github.com/dijgrid/razor-light/actions/workflows/dotnet.yml/badge.svg)
 [![NuGet Pre Release](https://img.shields.io/nuget/vpre/RazorLight.svg?maxAge=2592000?style=flat-square)](https://www.nuget.org/packages/RazorLight/) [![NuGet downloads](https://img.shields.io/nuget/dt/RazorLight.svg)](https://www.nuget.org/packages/RazorLight/) [![Join the chat at https://gitter.im/gitterHQ/gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Razor-Light)
 
 # Solidarity with Ukraine 
@@ -90,7 +101,7 @@ int templateKey = 322;
 string result = await engine.CompileRenderAsync(templateKey.ToString(), new { Name = "John Doe" });
 ````
 
-You can find a full sample [here](https://github.com/toddams/RazorLight/tree/master/samples/RazorLight.Samples)
+You can find a full sample [here](https://github.com/dijgrid/razor-light/tree/master/samples/RazorLight.Samples)
 
 
 # Includes (aka Partial views)
@@ -277,3 +288,12 @@ In addition, Azure Functions has an open pull request outstanding to update `run
 RazorLight is not currently designed to support such integration tests.  If you need to test your RazorLight tests, current recommendation is to simply create a project called `<YourCompanyName>.<YourProjectName>.Templating` and write your template rendering layer as a Domain Service, and write tests against that service.  Then, you can mock in your integration tests any dependencies on RazorLight.
 
 If you happen to get this working, please let us know what you did.
+
+## Project maintenance
+
+- Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing or implementing changes.
+- Report vulnerabilities privately according to [SECURITY.md](SECURITY.md).
+- Use [SUPPORT.md](SUPPORT.md) to choose the appropriate issue type and diagnostic information.
+- Review [CHANGELOG.md](CHANGELOG.md) for independent-maintenance changes.
+- Track accepted roadmap work in [`.planfs`](.planfs), with working conventions documented in
+  [AGENTS.md](AGENTS.md).

@@ -6,7 +6,7 @@
     <EmbedUntrackedSource>true</EmbedUntrackedSource>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
-    <RepositoryUrl>https://github.com/toddams/RazorLight</RepositoryUrl>
+    <RepositoryUrl>https://github.com/dijgrid/razor-light</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 

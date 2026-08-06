@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Denver
+    open-pull-requests-limit: 10
+    groups:
+      microsoft-packages:
+        patterns:
+          - Microsoft.*
+      test-tooling:
+        patterns:
+          - Microsoft.NET.Test.Sdk
+          - Moq
+          - NUnit*
+          - Verify.Xunit
+          - Xunit*
+          - xunit*
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:30"
+      timezone: America/Denver
+    open-pull-requests-limit: 5

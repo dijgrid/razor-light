@@ -1,0 +1,9 @@
+{
+  "id": "open-modernization",
+  "name": "Open RazorLight Modernization Work",
+  "description": "All open tasks in the RazorLight modernization epic.",
+  "criteria": {
+    "query": "RazorLight",
+    "status": "todo"
+  }
+}
