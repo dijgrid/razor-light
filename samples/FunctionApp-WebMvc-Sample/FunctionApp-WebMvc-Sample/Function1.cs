@@ -18,7 +18,7 @@ namespace FunctionApp_WebMvc_Sample
         }
 
         [Function("Function1")]
-        public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req, ExecutionContext context)
+        public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
             
@@ -26,7 +26,7 @@ namespace FunctionApp_WebMvc_Sample
                 .UseEmbeddedResourcesProject(typeof(Function1)).UseMemoryCachingProvider().Build();
 
             var model = new { Name = "John Doe", Time = DateTime.UtcNow };
-            var path = Path.Combine(Environment.GetEnvironmentVariable("HOME") ??"" , @"wwwroot" , "Index.cshtml");
+            var path = Path.Combine(AppContext.BaseDirectory, "wwwroot", "Index.cshtml");
             string template = await File.ReadAllTextAsync(path);
 
             var response = req.CreateResponse(HttpStatusCode.OK);

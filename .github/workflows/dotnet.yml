@@ -58,8 +58,20 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages
 
+      - name: Run Entity Framework sample
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet run --project samples/RazorLight.Samples/Samples.EntityFrameworkProject.csproj --configuration Release --no-build
+
+      - name: Build Azure Functions sample
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet build samples/FunctionApp-WebMvc-Sample/FunctionApp-WebMvc-Sample/FunctionApp-WebMvc-Sample.csproj --configuration Release --warnaserror
+
+      - name: Verify generated README
+        if: matrix.os == 'ubuntu-latest'
+        run: git diff --exit-code -- README.md
+
       - name: Upload coverage
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage-${{ matrix.os }}
           path: artifacts/TestResults/**/coverage.cobertura.xml

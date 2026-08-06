@@ -6,12 +6,15 @@
 > contribution fork, so compatibility and release policy may diverge. See [UPSTREAM.md](UPSTREAM.md)
 > for provenance and the upstream synchronization policy.
 
-> [!WARNING]
-> The inherited `2.3.1` baseline still targets end-of-life .NET versions and has known dependency
-> advisories. Modernization work is tracked in [`.planfs`](.planfs); do not treat the current default
-> branch as a new independently supported package release yet.
+> [!NOTE]
+> The maintained source targets .NET 10. Package ownership and the first independent release are
+> still being established in TASK-008, so the package currently published as `RazorLight 2.3.1`
+> represents the historical upstream build rather than this branch.
 
-Use Razor to build templates from Files / EmbeddedResources / Strings / Database or your custom source outside of ASP.NET MVC. No redundant dependencies and workarounds in pair with excellent performance and **.NET Standard 2.0** and **.NET Core 3.0** support.
+Use Razor to build templates from files, embedded resources, strings, databases, or a custom source
+outside ASP.NET MVC. The maintained source and samples support **.NET 10**. See
+[framework support](docs/framework-support.md), the [dependency policy](docs/dependency-policy.md),
+and [testing guidance](docs/testing.md) for the current maintenance baseline.
 
 ![Build Status](https://github.com/dijgrid/razor-light/actions/workflows/dotnet.yml/badge.svg)
 [![NuGet Pre Release](https://img.shields.io/nuget/vpre/RazorLight.svg?maxAge=2592000?style=flat-square)](https://www.nuget.org/packages/RazorLight/) [![NuGet downloads](https://img.shields.io/nuget/dt/RazorLight.svg)](https://www.nuget.org/packages/RazorLight/) [![Join the chat at https://gitter.im/gitterHQ/gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Razor-Light)
@@ -24,6 +27,7 @@ Dear friends, my name is Ivan, I am the guy who created this library. I live in 
 
 # Table of contents
 - [Quickstart](#quickstart)
+- [Compatibility and support](#compatibility-and-support)
 - [Template sources](#template-sources)
   * [Files](#file-source)
   * [Embedded resources](#embeddedresource-source)
@@ -33,21 +37,37 @@ Dear friends, my name is Ivan, I am the guy who created this library. I live in 
 - [Additional metadata references](#additional-metadata-references)
 - [Enable Intellisense support](#enable-intellisense-support)
 - [FAQ](#faq)
+- [Project maintenance](#project-maintenance)
 
 # Quickstart
-Install the nuget package using following command:
 
-````
-Install-Package RazorLight -Version 2.3.0
-````
+Install the .NET 10 SDK selected by [`global.json`](global.json). Until TASK-008 establishes the
+independent package identity and release process, consume this continuation from source with a
+project reference. Do not use the historical `2.3.1` NuGet package as evidence of the maintained
+branch's framework or dependency baseline.
 
-The simplest scenario is to create a template from string. Each template must have a ````templateKey```` that is associated with it, so you can render the same template next time without recompilation.
+The simplest scenario creates a template from a string. Each template has a `templateKey`, allowing
+RazorLight to cache and reuse its compiled form. String templates do not require a project; layouts,
+includes, and project-based template lookup do.
 
 snippet: simple
 
 To render a compiled template:
 
 snippet: RenderCompiledTemplate
+
+# Compatibility and support
+
+- Maintained source, tools, tests, and samples target .NET 10 only.
+- Moving from the historical `2.3.1` package is a framework-breaking migration; read
+  [`docs/framework-support.md`](docs/framework-support.md) before upgrading.
+- The public API and historical behavior baseline are recorded in
+  [`docs/compatibility-baseline.md`](docs/compatibility-baseline.md).
+- Azure Functions v4 is build-validated by the maintained sample. AWS Lambda and other hosting
+  environments are not part of CI and should be treated as community-supported until a focused
+  integration fixture is added.
+- For support and security reporting, follow [`SUPPORT.md`](SUPPORT.md) and
+  [`SECURITY.md`](SECURITY.md).
 
 # Template sources
 
@@ -168,28 +188,22 @@ ____
 
 ### How to use templates from memory without setting a project?
 
-The short answer is, you have to set a project to use the memory caching provider.  The project doesn't have to do anything.  This is by design, as without a project system, RazorLight cannot locate partial views.
-
-:x:
-You used to be able to write:
+String templates work without configuring a project. The builder supplies `NoRazorProject` by
+default, and the memory cache can store the compiled template:
 
 ```c#
 var razorEngine = new RazorLightEngineBuilder()
-.UseMemoryCachingProvider()
-.Build();
-```
-... but this now throws an exception, saying, "`_razorLightProject cannot be null`".
-
-:heavy_check_mark:
-```c#
-var razorEngine = new RazorLightEngineBuilder()
-                .UseEmbeddedResourcesProject(typeof(AnyTypeInYourSolution)) // exception without this (or another project type)
                 .UseMemoryCachingProvider()
                 .Build();
-```
-Affects: RazorLight-2.0.0-beta1 and later.
 
-Original Issue: https://github.com/toddams/RazorLight/issues/250
+string html = await razorEngine.CompileRenderStringAsync(
+    "welcome",
+    "Hello, @Model.Name!",
+    new { Name = "Ada" });
+```
+
+Configure a file, embedded-resource, or custom project when templates use layouts, includes, or
+project keys. This behavior is covered by the quickstart smoke tests.
 
 ### How to embed an image in an email?
 
@@ -215,29 +229,16 @@ var metadataReference = MetadataReference.CreateFromFile("path-to-your-assembly"
                 .Build();
 ````
 
-### I'm getting errors after upgrading to ASP.NET Core 3.0 when using runtime compilation
-
-Please see: https://docs.microsoft.com/en-us/aspnet/core/razor-pages/sdk?view=aspnetcore-3.1#use-the-razor-sdk
-
-> Starting with ASP.NET Core 3.0, MVC Views or Razor Pages aren't served by default if the `RazorCompileOnBuild` or `RazorCompileOnPublish` MSBuild properties in the project file are disabled. Applications must add an explicit reference to the `Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation` package if the app relies on runtime compilation to process .cshtml files.
-
-
-### I'm getting a Null Reference Exception after upgrading to RazorLight-2.0.0-beta2 or later.
-
-The most common scenario is that some people were using RazorLight's ability to render raw strings as templates.  While this is still somewhat supported (you can't use advanced features like partial views), what is not supported (right now) is using the caching provider with raw strings.  A workaround is to use a dummy class.
-
 ### I'm getting "Cannot find compilation library" when I deploy this library on another server
 
-Add these property groups to your **entry point csproj**.
-It has to be the entry point project.  For example: ASP.NET Core web project, .NET Core Console project, etc.
+RazorLight discovers metadata from the entry-point project's dependency context. Add this property
+to the entry-point project (for example, the web app, worker, or console app), not just a class
+library that wraps RazorLight:
 
 ````XML
-  <PropertyGroup>
-    <!-- This group contains project properties for RazorLight on .NET Core -->
+<PropertyGroup>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <MvcRazorCompileOnPublish>false</MvcRazorCompileOnPublish>
-    <MvcRazorExcludeRefAssembliesFromPublish>false</MvcRazorExcludeRefAssembliesFromPublish>
-  </PropertyGroup>
+</PropertyGroup>
 ````
 
 ### I'm getting "Can't load metadata reference from the entry assembly" exception
@@ -251,43 +252,17 @@ Set PreserveCompilationContext to true in your *.csproj file's PropertyGroup tag
 </PropertyGroup>
 ````
 
-Additionally, RazorLight allows you to specifically locate any `MetadataReference` you can't find, which could happen if you're running in SCD [(Self-Contained Deployment) mode](https://docs.microsoft.com/en-us/dotnet/core/deploying/), as the C# Compiler used by RazorLight [needs to be able to locate `mscorlib.dll`](https://github.com/toddams/RazorLight/issues/188#issuecomment-523418738).  This might be a useful trick if future versions of the .NET SDK tools ship with bad MSBuild targets that somehow don't "preserve compilation context" and you need an immediate fix while waiting for Microsoft support.
+Self-contained, trimmed, and single-file deployments can remove assemblies required by runtime
+compilation. Preserve the dependency context, avoid trimming template dependencies, and use
+`AddMetadataReferences` when the host cannot expose a required reference automatically.
 
-### I'm getting "Cannot find reference assembly 'Microsoft.AspNetCore.Antiforgery.dll'" exception on .NET Core App 3.0 or higher
+### Does RazorLight work in serverless or ASP.NET Core integration-test hosts?
 
-By default, the 3.0 SDK avoids copying references to the build output.
-Set `PreserveCompilationReferences` and `PreserveCompilationContext` to true in your *.csproj file's PropertyGroup tag.
-
-````XML
-<PropertyGroup>
-    <PreserveCompilationReferences>true</PreserveCompilationReferences>
-    <PreserveCompilationContext>true</PreserveCompilationContext>
-</PropertyGroup>
-````
-
-For more information, see https://github.com/aspnet/AspNetCore/issues/14418#issuecomment-535107767 (which discusses the above flags) and https://github.com/microsoft/DockerTools/issues/217#issuecomment-549453362 (which discusses that Runtime Compilation feature was marked obsolete in ASP.NET Core 2.2, and removed from the default template in ASP.NET Core 3.0).
-
-### RazorLight does not work properly on AWS Lambda or Azure Functions
-
-Serverless solutions are not supported yet. However, for Azure Functions, some users have reported success on Azure Functions 3.0.3.  As of 6/3/2020, Azure Functions SDK team has acknowledged a [bug in Azure Functions `RemoveRuntimeDependencies` task](https://github.com/toddams/RazorLight/issues/306#issuecomment-636374491), affecting Azure Functions 3.0.4-3.0.6 releases.
-
-For Azure Functions 3.0.4-3.0.5, the known workaround is to disable "Azure Functions dependency trimming".  To disable dependency trimming, add the following to your root / entrypoint project:
-
-```xml
-<PropertyGroup>
-  <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
-</PropertyGroup>
-```
-
-In addition, Azure Functions has an open pull request outstanding to update `runtimeAssemblies.json`: https://github.com/Azure/azure-functions-vs-build-sdk/issues/422
-
-## Unsupported Scenarios
-
-### RazorLight does not work with ASP.NET Core Integration Testing
-
-RazorLight is not currently designed to support such integration tests.  If you need to test your RazorLight tests, current recommendation is to simply create a project called `<YourCompanyName>.<YourProjectName>.Templating` and write your template rendering layer as a Domain Service, and write tests against that service.  Then, you can mock in your integration tests any dependencies on RazorLight.
-
-If you happen to get this working, please let us know what you did.
+The repository build-validates a .NET 10 Azure Functions v4 isolated-worker sample. AWS Lambda,
+trimmed deployment, and dedicated ASP.NET Core integration-test hosting are not currently exercised
+in CI, so they are community-supported rather than declared broken. Keep template rendering behind
+an application service when you need to substitute it in broader host tests, and open a reproducible
+issue for host-specific failures.
 
 ## Project maintenance
 
@@ -297,3 +272,13 @@ If you happen to get this working, please let us know what you did.
 - Review [CHANGELOG.md](CHANGELOG.md) for independent-maintenance changes.
 - Track accepted roadmap work in [`.planfs`](.planfs), with working conventions documented in
   [AGENTS.md](AGENTS.md).
+
+`README.md` is generated from this file and the compile-checked snippets in
+`tests/RazorLight.Tests/Snippets`. Regenerate it with:
+
+```shell
+dotnet build tests/RazorLight.Tests/RazorLight.Tests.csproj --configuration Release
+```
+
+Commit `README.source.md`, the snippet source, and the resulting `README.md` together. CI rebuilds
+the documentation and fails if the generated file differs.

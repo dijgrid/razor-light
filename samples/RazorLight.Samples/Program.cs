@@ -1,20 +1,21 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RazorLight;
 using System;
+using System.Threading.Tasks;
 using Samples.EntityFrameworkProject.EntityFramework;
 
 namespace Samples.EntityFrameworkProject
 {
 	class Program
 	{
-		static void Main()
+		static async Task Main()
 		{
 			var options = new DbContextOptionsBuilder<AppDbContext>()
 			   .UseInMemoryDatabase(databaseName: "TestDatabase")
 			   .Options;
 
 			// Create and fill database with test data
-			var db = new AppDbContext(options);
+			using var db = new AppDbContext(options);
 			FillDatabase(db);
 
 
@@ -28,11 +29,10 @@ namespace Samples.EntityFrameworkProject
 			string templateKey = "2";
 			var model = new TestViewModel { Name = "Johny", Age = 22 };
 
-			string result = engine.CompileRenderAsync(templateKey, model).Result;
+			string result = await engine.CompileRenderAsync(templateKey, model);
 
 			//Indentation will be a bit fuzzy, as we formatted a string for readability
 			Console.WriteLine(result);
-			db.Dispose();
 		}
 
 		static void FillDatabase(AppDbContext dbContext)

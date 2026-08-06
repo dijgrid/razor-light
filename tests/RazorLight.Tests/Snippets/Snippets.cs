@@ -17,10 +17,6 @@ namespace RazorLight.Tests.Snippets
 		{
 			#region simple
 			var engine = new RazorLightEngineBuilder()
-				// required to have a default RazorLightProject type,
-				// but not required to create a template from string.
-				.UseEmbeddedResourcesProject(typeof(ViewModel))
-				.SetOperatingAssembly(typeof(ViewModel).Assembly)
 				.UseMemoryCachingProvider()
 				.Build();
 
@@ -31,7 +27,7 @@ namespace RazorLight.Tests.Snippets
 
 			#endregion
 
-			Assert.NotNull(result);
+			Assert.Equal("Hello, John Doe. Welcome to RazorLight repository", result);
 		}
 
 		async Task RenderCompiledTemplate(RazorLightEngine engine, object model)
