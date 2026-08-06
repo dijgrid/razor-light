@@ -1,5 +1,4 @@
-﻿using GlobExpressions;
-using ManyConsole;
+using Microsoft.Extensions.FileSystemGlobbing;
 using Mono.Cecil;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -11,20 +10,8 @@ using System.Linq;
 
 namespace RazorLight.Precompile
 {
-	internal class RenderCmd : ConsoleCommand
+	internal class RenderCmd
 	{
-		private enum StrategyName
-		{
-			Simple,
-			FileHash
-		}
-
-		private static readonly Dictionary<StrategyName, IFileSystemCachingStrategy> s_strategyMap = new()
-		{
-			[StrategyName.Simple] = SimpleFileCachingStrategy.Instance,
-			[StrategyName.FileHash] = FileHashCachingStrategy.Instance
-		};
-
 		private string m_path;
 		private string m_modelFilePath;
 		private string m_jsonQuery;
@@ -32,36 +19,28 @@ namespace RazorLight.Precompile
 		private string m_key;
 		private string m_logFilePath;
 
-		public RenderCmd()
+		public int Run(string[] args)
 		{
-			IsCommand("render", "Renders the given precompiled razor template.");
+			var options = CommandLineArguments.Parse(
+				args,
+				new[] { "-p", "--path", "-m", "--model", "-k", "--key", "-q", "--jsonQuery", "-l", "--log" },
+				new[] { "-r", "--recurse" });
+			m_path = options.GetRequiredValue("-p", "--path");
+			m_modelFilePath = options.GetRequiredValue("-m", "--model");
+			m_key = options.GetValue("-k", "--key");
+			m_jsonQuery = options.GetValue("-q", "--jsonQuery");
+			m_logFilePath = options.GetValue("-l", "--log");
+			m_searchOption = options.HasFlag("-r", "--recurse")
+				? SearchOption.AllDirectories
+				: SearchOption.TopDirectoryOnly;
 
-			HasRequiredOption("p|path=", "A comma separated list of folders and/or files. Plain files must be dlls previously produced by the precompile command. " +
-				"The given folders are assumed to contain such dlls. By default the folders are scanned non recursively. Minimatch patterns are supported too.", v => m_path = v);
-			HasRequiredOption("m|model=", "The path to a JSON file representing the model object to be rendered against the given template.", v => m_modelFilePath = v);
-			HasOption("k|key=", "The key of the template to be used to render the given model. Only required when there are more than one precompiled template.", v => m_key = v);
-			HasOption("q|jsonQuery=", "Renders the first item returned by the given JSON query.", v => m_jsonQuery = v);
-			HasOption("r|recurse", "Instructs the tool to scan the given folders recursively.", _ => m_searchOption = SearchOption.AllDirectories);
-			HasOption("l|log=", "An optional log file path", v => m_logFilePath = v);
-		}
-
-		public override int? OverrideAfterHandlingArgumentsBeforeRun(string[] remainingArguments)
-		{
-			if (remainingArguments.Length > 0)
-			{
-				throw new ConsoleHelpAsException("Unrecognized command line arguments - " + string.Join(' ', remainingArguments));
-			}
-			return base.OverrideAfterHandlingArgumentsBeforeRun(remainingArguments);
-		}
-
-		public override int Run(string[] remainingArguments)
-		{
-			var o = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(m_modelFilePath));
+			var modelToken = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(m_modelFilePath));
 			if (m_jsonQuery != null)
 			{
-				o = o.SelectToken(m_jsonQuery);
+				modelToken = modelToken.SelectToken(m_jsonQuery);
 			}
-			var model = JsonModel.New(o);
+
+			var model = JsonModel.New(modelToken);
 
 			using var log = m_logFilePath == null ? null : new StreamWriter(m_logFilePath);
 			var cachingProvider = new PrecompiledCachingProvider(YieldFiles(), log);
@@ -72,6 +51,7 @@ namespace RazorLight.Precompile
 				{
 					throw new RazorLightException($"Found {cachingProvider.Map.Count} precompiled templates and no --key argument was given.");
 				}
+
 				m_key = cachingProvider.Map.First().Key;
 			}
 			else if (m_key[0] != '/')
@@ -101,7 +81,9 @@ namespace RazorLight.Precompile
 			{
 				if (fileOrFolderPath.Contains('*') || fileOrFolderPath.Contains('?') || fileOrFolderPath.Contains('['))
 				{
-					return Glob.Files(Directory.GetCurrentDirectory(), fileOrFolderPath);
+					var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+					matcher.AddInclude(fileOrFolderPath.Replace('\\', '/'));
+					return matcher.GetResultsInFullPath(Directory.GetCurrentDirectory());
 				}
 
 				if (File.Exists(fileOrFolderPath))

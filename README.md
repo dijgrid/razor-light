@@ -72,7 +72,7 @@ string result = await engine.CompileRenderStringAsync("templateKey", template, m
 To render a compiled template:
 
 <!-- snippet: RenderCompiledTemplate -->
-<a id='snippet-rendercompiledtemplate'></a>
+<a id='snippet-RenderCompiledTemplate'></a>
 ```cs
 var cacheResult = engine.Handler.Cache.RetrieveTemplate("templateKey");
 if(cacheResult.Success)
@@ -81,7 +81,7 @@ if(cacheResult.Success)
 	string result = await engine.RenderTemplateAsync(templatePage, model);
 }
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L39-L46' title='Snippet source file'>snippet source</a> | <a href='#snippet-rendercompiledtemplate' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L39-L46' title='Snippet source file'>snippet source</a> | <a href='#snippet-RenderCompiledTemplate' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 # Template sources
@@ -93,7 +93,7 @@ RazorLight can resolve templates from any source, but there are a built-in provi
 When resolving a template from filesystem, templateKey - is a relative path to the root folder, that you pass to RazorLightEngineBuilder.
 
 <!-- snippet: FileSource -->
-<a id='snippet-filesource'></a>
+<a id='snippet-FileSource'></a>
 ```cs
 var engine = new RazorLightEngineBuilder()
 	.UseFileSystemProject("C:/RootFolder/With/YourTemplates")
@@ -103,7 +103,7 @@ var engine = new RazorLightEngineBuilder()
 var model = new {Name = "John Doe"};
 string result = await engine.CompileRenderAsync("Subfolder/View.cshtml", model);
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L51-L60' title='Snippet source file'>snippet source</a> | <a href='#snippet-filesource' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L51-L60' title='Snippet source file'>snippet source</a> | <a href='#snippet-FileSource' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 ## EmbeddedResource source
@@ -124,7 +124,7 @@ Project.Core/
 ````
 
 <!-- snippet: EmbeddedResourceSource -->
-<a id='snippet-embeddedresourcesource'></a>
+<a id='snippet-EmbeddedResourceSource'></a>
 ```cs
 var engine = new RazorLightEngineBuilder()
 	.UseEmbeddedResourcesProject(typeof(SomeService).Assembly)
@@ -134,13 +134,13 @@ var engine = new RazorLightEngineBuilder()
 var model = new Model();
 string html = await engine.CompileRenderAsync("EmailTemplates.Body", model);
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L65-L74' title='Snippet source file'>snippet source</a> | <a href='#snippet-embeddedresourcesource' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L65-L74' title='Snippet source file'>snippet source</a> | <a href='#snippet-EmbeddedResourceSource' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 Setting the root namespace allows you to leave that piece off when providing the template name as the key:
 
 <!-- snippet: EmbeddedResourceSourceWithRootNamespace -->
-<a id='snippet-embeddedresourcesourcewithrootnamespace'></a>
+<a id='snippet-EmbeddedResourceSourceWithRootNamespace'></a>
 ```cs
 var engine = new RazorLightEngineBuilder()
 	.UseEmbeddedResourcesProject(typeof(SomeService).Assembly, "Project.Core.EmailTemplates")
@@ -150,7 +150,7 @@ var engine = new RazorLightEngineBuilder()
 var model = new Model();
 string html = await engine.CompileRenderAsync("Body", model);
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L79-L88' title='Snippet source file'>snippet source</a> | <a href='#snippet-embeddedresourcesourcewithrootnamespace' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L79-L88' title='Snippet source file'>snippet source</a> | <a href='#snippet-EmbeddedResourceSourceWithRootNamespace' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 ## Custom source

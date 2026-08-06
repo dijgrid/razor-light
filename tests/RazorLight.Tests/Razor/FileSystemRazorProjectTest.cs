@@ -50,11 +50,11 @@ namespace RazorLight.Tests.Razor
 		}
 
 		[Fact]
-		public void Null_TemplateKey_ThrowsOn_GetItem()
+		public async Task Null_TemplateKey_ThrowsOn_GetItem()
 		{
 			var project = new FileSystemRazorProject(DirectoryUtils.RootDirectory);
 
-			Assert.ThrowsAsync<ArgumentNullException>(async () => await project.GetItemAsync("not-existing-key"));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => project.GetItemAsync(null));
 		}
 
 		[Fact]

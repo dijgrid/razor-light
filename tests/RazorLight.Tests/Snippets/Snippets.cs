@@ -15,7 +15,7 @@ namespace RazorLight.Tests.Snippets
 		[Fact]
 		public async Task Simple()
 		{
-			#region Simple
+			#region simple
 			var engine = new RazorLightEngineBuilder()
 				// required to have a default RazorLightProject type,
 				// but not required to create a template from string.

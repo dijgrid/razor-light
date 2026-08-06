@@ -14,7 +14,6 @@ namespace RazorLight.Tests.Integration
 		public int NumberOfItems { get; set; }
 	}
 
-	[UsesVerify]
 	public class RendererCommonCasesTests
 	{
 

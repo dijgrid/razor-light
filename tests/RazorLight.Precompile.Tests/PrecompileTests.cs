@@ -11,12 +11,12 @@ namespace RazorLight.Precompile.Tests
 			scenario.Cleanup();
 
 			var expectedPrecompiledFilePath = GetExpectedPrecompiledFilePath(templateFilePath, scenario);
-			FileAssert.DoesNotExist(expectedPrecompiledFilePath);
+			Assert.That(File.Exists(expectedPrecompiledFilePath), Is.False);
 
 			Precompile(templateFilePath, scenario, expectedPrecompiledFilePath);
 
 			scenario.Cleanup();
-			FileAssert.DoesNotExist(expectedPrecompiledFilePath);
+			Assert.That(File.Exists(expectedPrecompiledFilePath), Is.False);
 		}
 
 		[TestCaseSource(typeof(PrecompileTestCases), nameof(PrecompileTestCases.TestCases))]
@@ -25,13 +25,13 @@ namespace RazorLight.Precompile.Tests
 			scenario.Cleanup();
 
 			var expectedPrecompiledFilePath = GetExpectedPrecompiledFilePath(templateFilePath, scenario);
-			FileAssert.DoesNotExist(expectedPrecompiledFilePath);
+			Assert.That(File.Exists(expectedPrecompiledFilePath), Is.False);
 
 			var sw1 = Stopwatch.StartNew();
 			Precompile(templateFilePath, scenario, expectedPrecompiledFilePath);
 			sw1.Stop();
 
-			FileAssert.Exists(expectedPrecompiledFilePath);
+			Assert.That(File.Exists(expectedPrecompiledFilePath), Is.True);
 
 			var sw2 = Stopwatch.StartNew();
 			Precompile(templateFilePath, scenario, expectedPrecompiledFilePath);
@@ -40,7 +40,7 @@ namespace RazorLight.Precompile.Tests
 			TestContext.WriteLine($"TS1 = {sw1.Elapsed}, TS2 = {sw2.Elapsed}");
 
 			scenario.Cleanup();
-			FileAssert.DoesNotExist(expectedPrecompiledFilePath);
+			Assert.That(File.Exists(expectedPrecompiledFilePath), Is.False);
 		}
 
 		public static string GetExpectedPrecompiledFilePath(string templateFilePath, TestScenario scenario)
@@ -61,7 +61,7 @@ namespace RazorLight.Precompile.Tests
 
 			var precompiledFilePath = Helper.RunCommandTrimNewline(commandLineArgs.ToArray());
 			Assert.AreEqual(expectedPrecompiledFilePath, precompiledFilePath);
-			FileAssert.Exists(precompiledFilePath);
+			Assert.That(File.Exists(precompiledFilePath), Is.True);
 		}
 	}
 }
