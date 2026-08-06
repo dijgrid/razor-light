@@ -110,7 +110,7 @@ namespace RazorLight.Tests
 			string expected = $"Layout: {model.Value}_body: {model.Value}";
 
 			string result = await engine.CompileRenderAsync("WithModelAndLayout", model);
-			result = result.Replace(Environment.NewLine, "");
+			result = result.Replace("\r", "").Replace("\n", "");
 
 			Assert.Equal(expected, result);
 		}
@@ -130,7 +130,7 @@ namespace RazorLight.Tests
 			string expected = "<strong>LocalFunction</strong>";
 
 			string result = await engine.CompileRenderAsync("LocalFunction", (object)null);
-			result = result.Replace(Environment.NewLine, "");
+			result = result.Replace("\r", "").Replace("\n", "");
 
 			Assert.Equal(expected, result);
 		}
@@ -150,7 +150,7 @@ namespace RazorLight.Tests
 			string expected = "<strong>LocalFunctionUsingHelper</strong>";
 
 			string result = await engine.CompileRenderAsync("LocalFunctionUsingHelper", (object)null);
-			result = result.Replace(Environment.NewLine, "");
+			result = result.Replace("\r", "").Replace("\n", "");
 
 			Assert.Equal(expected, result);
 		}
