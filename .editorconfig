@@ -1,19 +1,30 @@
-# Top-most EditorConfig file
 root = true
 
-# Tab indentation
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
 [*.{cs,cshtml}]
 indent_style = tab
-[*.cs]
+indent_size = 4
+tab_width = 4
 
-# CS1591: Missing XML comment for publicly visible type or member
+[*.cs]
 dotnet_diagnostic.CS1591.severity = none
 
-[*.{xml,xsd,csproj}]
-max_line_length = off
-end_of_line = crlf
-indent_style = space
-charset = utf-8
-trim_trailing_whitespace = true
-insert_final_newline = true
+[*.{json,yml,yaml}]
 indent_size = 2
+
+[*.{props,targets,csproj,xml,xsd}]
+indent_size = 2
+max_line_length = off
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{cmd,bat,sln}]
+end_of_line = crlf

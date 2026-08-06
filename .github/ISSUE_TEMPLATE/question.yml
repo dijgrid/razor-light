@@ -1,0 +1,29 @@
+name: Usage question
+description: Ask a focused question about using RazorLight
+title: "[Question]: "
+labels:
+  - question
+body:
+  - type: markdown
+    attributes:
+      value: Please include enough project context for another contributor to reproduce your setup.
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+    validations:
+      required: true
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What have you tried?
+      description: Include a minimal code or project example and the observed result.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: RazorLight and .NET versions
+      placeholder: RazorLight 2.3.1, .NET 10
+    validations:
+      required: true

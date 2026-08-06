@@ -1,48 +1,56 @@
-name: .NET
+name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
   pull_request:
-    branches: [ master ]
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+  NUGET_XMLDOC_MODE: skip
 
 jobs:
-  build:
-
-    runs-on: ${{ matrix.os }} 
+  build-and-test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
+      fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
 
     steps:
-    - uses: actions/checkout@v2
-      
-    - name: Setup .NET Core 2.1
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 2.1.803
-  
-    - name: Setup .NET Core 3.1
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 3.1.101
-      
-    - name: Setup .NET 5
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '5.0.100'
-        
-    - name: Setup .NET 6
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '6.0.x'
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          global-json-file: global.json
+          dotnet-version: 6.0.x
 
-    - name: Build
-      run: dotnet build --no-restore
+      - name: Restore
+        run: dotnet restore RazorLight.sln
 
-    - name: Test
-      run: dotnet test --verbosity normal
-      
+      - name: Build
+        run: dotnet build RazorLight.sln --configuration Release --no-restore
+
+      - name: Test RazorLight
+        run: dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net6.0 --configuration Release --no-build --logger "console;verbosity=normal"
+
+      - name: Test precompile tool
+        run: dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj --configuration Release --no-build --logger "console;verbosity=normal"

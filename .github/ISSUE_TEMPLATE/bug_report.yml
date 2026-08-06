@@ -1,0 +1,67 @@
+name: Bug report
+description: Report reproducible incorrect behavior in RazorLight
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Do not disclose vulnerabilities here; use the repository's Security tab instead.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues in this repository and the original upstream repository.
+          required: true
+        - label: I can provide a minimal reproduction that does not contain private data.
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Explain what happened and why it appears to be a RazorLight defect.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include the smallest project, template, or code sample that reproduces the problem.
+      render: csharp
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: input
+    id: razorlight-version
+    attributes:
+      label: RazorLight version
+      placeholder: 2.3.1
+    validations:
+      required: true
+  - type: input
+    id: dotnet-version
+    attributes:
+      label: .NET SDK and target framework
+      placeholder: SDK 10.0.100, target net10.0
+    validations:
+      required: true
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating system
+      placeholder: Windows 11, Ubuntu 24.04, macOS 15
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Exception and logs
+      description: Paste the complete exception and relevant logs after removing secrets and private data.
+      render: text
