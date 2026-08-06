@@ -96,9 +96,6 @@ namespace RazorLight.Tests
 		public async Task Template_Shares_Model_With_Layout()
 		{
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseEmbeddedResourcesProject(typeof(Root).Assembly, "RazorLight.Tests.Assets.Embedded")
 				.Build();
 
@@ -121,9 +118,6 @@ namespace RazorLight.Tests
 			// See https://github.com/aspnet/Razor/issues/715
 
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseEmbeddedResourcesProject(typeof(Root).Assembly, "RazorLight.Tests.Assets.Embedded")
 				.Build();
 
@@ -141,9 +135,6 @@ namespace RazorLight.Tests
 			// See https://github.com/aspnet/Razor/issues/715
 
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseEmbeddedResourcesProject(typeof(Root).Assembly, "RazorLight.Tests.Assets.Embedded")
 				.Build();
 
@@ -160,9 +151,6 @@ namespace RazorLight.Tests
 		{
 			// https://github.com/aspnet/AspNetCore/issues/5076
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseEmbeddedResourcesProject(typeof(Root).Assembly, "RazorLight.Tests.Assets.Embedded")
 				.Build();
 

@@ -1,7 +1,0 @@
-<Project>
-  <!-- This is what currently determines the version number. -->
-  <PropertyGroup>
-    <Version>2.3.1</Version>
-  </PropertyGroup>
-
-</Project>

@@ -38,4 +38,5 @@ introduce an enforced threshold based on that history.
 - The test tree contains no `Thread.Sleep` or `Task.Delay` timing dependencies.
 - `PrecompileTests` records elapsed time for diagnostic output only; it does not assert a performance
   threshold.
-
+- The race-condition fixture remains concurrent internally, but runs in a non-parallel xUnit
+  collection so unrelated tests cannot concurrently mutate the shared Razor compilation engine.

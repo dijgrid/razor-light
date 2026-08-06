@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using RazorLight.Caching;
 
 namespace RazorLight.Precompile.Tests
@@ -101,7 +101,7 @@ First Found Date: 7/10/2020 7:00:28 PM
 		{
 			Precompile(key, key2, s);
 
-			var exc = Assert.Throws<RazorLightException>(() => Run(key, expected, "Samples"));
+			var exc = Assert.Throws<RazorLightException>(() => Run(key, expected, "Samples"))!;
 			Assert.AreEqual("No precompiled template found for the key /folder/MessageItem.cshtml", exc.Message);
 		}
 
@@ -110,7 +110,7 @@ First Found Date: 7/10/2020 7:00:28 PM
 		{
 			Precompile(key, key2, s);
 
-			var exc = Assert.Throws<RazorLightException>(() => Run(key, expected, "Samples/*.dll"));
+			var exc = Assert.Throws<RazorLightException>(() => Run(key, expected, "Samples/*.dll"))!;
 			Assert.AreEqual("No precompiled template found for the key /folder/MessageItem.cshtml", exc.Message);
 		}
 
@@ -134,7 +134,7 @@ First Found Date: 7/10/2020 7:00:28 PM
 			commandLineArgs.AddRange(args);
 
 			var actual = Helper.RunCommand(commandLineArgs.ToArray()).ToString();
-			Assert.AreEqual(expected, actual);
+			Assert.AreEqual(NormalizeLineEndings(expected), NormalizeLineEndings(actual));
 		}
 
 		[TestCaseSource(nameof(s_testCases))]
@@ -154,7 +154,10 @@ First Found Date: 7/10/2020 7:00:28 PM
 			};
 
 			var actual = Helper.RunCommand(commandLineArgs.ToArray()).ToString();
-			Assert.AreEqual(expected, actual);
+			Assert.AreEqual(NormalizeLineEndings(expected), NormalizeLineEndings(actual));
 		}
+
+		private static string NormalizeLineEndings(string value) =>
+			value.Replace("\r\n", "\n").Replace("\r", "\n");
 	}
 }

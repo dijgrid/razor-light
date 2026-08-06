@@ -6,7 +6,6 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefineConstants>$(DefineConstants);SOME_TEST_DEFINE</DefineConstants>
     <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
-    <NoWarn>NU1701;CS0618</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -38,7 +37,6 @@
     <PackageReference Include="coverlet.collector" PrivateAssets="all" />
     <PackageReference Include="MarkdownSnippets.MsBuild" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="Pose" />
     <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="Xunit.SkippableFact" />
     <PackageReference Include="xunit" />

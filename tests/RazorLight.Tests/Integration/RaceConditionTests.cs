@@ -5,6 +5,7 @@ using Xunit;
 
 namespace RazorLight.Tests.Integration
 {
+	[Collection(NonParallelRazorCompilationCollection.Name)]
 	public class RaceConditionTests
 	{
 		[Fact]
@@ -16,9 +17,6 @@ namespace RazorLight.Tests.Integration
 			for (int i = 0; i < 100; i++)
 			{
 				var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-					.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 					.UseFileSystemProject(Path.Combine(path, "Assets", "Files"))
 					.Build();
 

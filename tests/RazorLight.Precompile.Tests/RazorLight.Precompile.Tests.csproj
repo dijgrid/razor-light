@@ -5,7 +5,6 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <NoWarn>CS8600;CS8602;CS8603;CS8604</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

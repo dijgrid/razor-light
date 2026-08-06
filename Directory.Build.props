@@ -1,6 +1,13 @@
 <Project>
   <PropertyGroup>
     <Deterministic>true</Deterministic>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'RazorLight'">
+    <!-- This is what currently determines the package version. -->
+    <Version>2.3.1</Version>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSource>true</EmbedUntrackedSource>
@@ -10,11 +17,11 @@
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'RazorLight'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'RazorLight'">
     <SourceRoot Include="$(NuGetPackageRoot)" Condition="'$(NuGetPackageRoot)' != ''" />
   </ItemGroup>
 </Project>

@@ -46,7 +46,7 @@ jobs:
         run: dotnet restore RazorLight.sln
 
       - name: Build
-        run: dotnet build RazorLight.sln --configuration Release --no-restore
+        run: dotnet build RazorLight.sln --configuration Release --no-restore --warnaserror
 
       - name: Test RazorLight
         run: dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net10.0 --configuration Release --no-build --collect:"XPlat Code Coverage;Format=cobertura" --results-directory artifacts/TestResults/RazorLight --logger "console;verbosity=normal"

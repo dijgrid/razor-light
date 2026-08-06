@@ -14,7 +14,7 @@ namespace RazorLight.Tests.Generation
 		private RazorSourceGenerator NewGenerator()
 		{
 			return new RazorSourceGenerator(
-				RazorEngine.Create(),
+				DefaultRazorEngine.Instance,
 				new EmbeddedRazorProject(typeof(RazorSourceGeneratorTest)));
 		}
 
@@ -41,7 +41,7 @@ namespace RazorLight.Tests.Generation
 		public void Ensure_Engine_And_Project_Not_Null()
 		{
 			var generator = new RazorSourceGenerator(
-				RazorEngine.Create(),
+				DefaultRazorEngine.Instance,
 				new EmbeddedRazorProject(typeof(RazorSourceGeneratorTest)));
 
 			Assert.NotNull(generator.ProjectEngine);
@@ -52,7 +52,7 @@ namespace RazorLight.Tests.Generation
 		public void DefaultImports_Created_On_Constructor()
 		{
 			var generator = new RazorSourceGenerator(
-			   RazorEngine.Create(),
+			   DefaultRazorEngine.Instance,
 			   new EmbeddedRazorProject(typeof(RazorSourceGeneratorTest)));
 
 			var defaultImports = generator.GetDefaultImportLines().ToList();
@@ -75,7 +75,7 @@ namespace RazorLight.Tests.Generation
 				"System.CodeDom"
 			};
 
-			var generator = new RazorSourceGenerator(RazorEngine.Create(), new EmbeddedRazorProject(typeof(Root)), namespaces);
+			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, new EmbeddedRazorProject(typeof(Root)), namespaces);
 
 			Assert.NotNull(generator.Namespaces);
 			Assert.Equal(generator.Namespaces, namespaces);
@@ -93,7 +93,7 @@ namespace RazorLight.Tests.Generation
 		public async Task Return_Empty_Imports_ForTextSource_ProjectItem()
 		{
 			//Assign
-			var generator = new RazorSourceGenerator(RazorEngine.Create(), new EmbeddedRazorProject(typeof(Root)));
+			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, new EmbeddedRazorProject(typeof(Root)));
 
 			//Act
 			var projectItem = new TextSourceRazorProjectItem("key", "some content");
@@ -108,7 +108,7 @@ namespace RazorLight.Tests.Generation
 		public async Task GetImports_Returns_EmptyCollection_On_Empty_Project_WhenResolving_Content_ByKey()
 		{
 			//Assign
-			var generator = new RazorSourceGenerator(RazorEngine.Create(), new EmbeddedRazorProject(typeof(Root)));
+			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, new EmbeddedRazorProject(typeof(Root)));
 
 			//Act
 			var projectItem = new TextSourceRazorProjectItem("key", "some content");

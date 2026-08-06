@@ -28,9 +28,6 @@ namespace Samples.EntityFrameworkProject
 			string templateKey = "2";
 			var model = new TestViewModel { Name = "Johny", Age = 22 };
 
-#if (NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0)
-			model.Age = 40;
-#endif
 			string result = engine.CompileRenderAsync(templateKey, model).Result;
 
 			//Indentation will be a bit fuzzy, as we formatted a string for readability

@@ -23,9 +23,6 @@ namespace RazorLight.Tests.Integration
 			var path = DirectoryUtils.RootDirectory;
 
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-					.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 					.UseFileSystemProject(Path.Combine(path, "Assets", "Files"))
 					.Build();
 
@@ -44,9 +41,6 @@ namespace RazorLight.Tests.Integration
 			var path = DirectoryUtils.RootDirectory;
 
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseFileSystemProject(Path.Combine(path, "Assets", "Files"))
 				.Build();
 
@@ -65,9 +59,6 @@ namespace RazorLight.Tests.Integration
 			var path = DirectoryUtils.RootDirectory;
 
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseFileSystemProject(Path.Combine(path, "Assets", "Files"))
 				.Build();
 
@@ -86,9 +77,6 @@ namespace RazorLight.Tests.Integration
 			var path = DirectoryUtils.RootDirectory;
 
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseFileSystemProject(Path.Combine(path, "Assets", "Files"))
 				.Build();
 
@@ -107,9 +95,6 @@ namespace RazorLight.Tests.Integration
 			var path = DirectoryUtils.RootDirectory;
 
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseFileSystemProject(Path.Combine(path, "Assets", "Files"))
 				.Build();
 
@@ -128,9 +113,6 @@ namespace RazorLight.Tests.Integration
 			var path = DirectoryUtils.RootDirectory;
 
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseFileSystemProject(Path.Combine(path, "Assets", "Files"))
 				.Build();
 

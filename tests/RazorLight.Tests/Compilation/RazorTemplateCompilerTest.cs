@@ -84,9 +84,7 @@ namespace RazorLight.Tests.Compilation
 
 			var compiler = TestRazorTemplateCompiler.Create();
 
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-			compiler.Cache.Set(templateKey, descriptorTask);
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+			_ = compiler.Cache.Set(templateKey, descriptorTask);
 
 			CompiledTemplateDescriptor result = await compiler.CompileAsync(templateKey);
 
@@ -106,9 +104,7 @@ namespace RazorLight.Tests.Compilation
 
 			string normalizedKey = compiler.GetNormalizedKey(templateKey);
 
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-			compiler.Cache.Set(normalizedKey, descriptorTask);
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+			_ = compiler.Cache.Set(normalizedKey, descriptorTask);
 
 			CompiledTemplateDescriptor result = await compiler.CompileAsync(templateKey);
 

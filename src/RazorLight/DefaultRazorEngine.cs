@@ -31,9 +31,6 @@ namespace RazorLight
 				   builder.Features.Add(new ModelExpressionPass());
 				   builder.Features.Add(new RazorLightTemplateDocumentClassifierPass());
 				   builder.Features.Add(new RazorLightAssemblyAttributeInjectionPass());
-#if NETSTANDARD2_0
-				   builder.Features.Add(new InstrumentationPass());
-#endif
 				   //builder.Features.Add(new ViewComponentTagHelperPass());
 
 				   builder.AddTargetExtension(new TemplateTargetExtension
@@ -56,20 +53,15 @@ namespace RazorLight
 			}
 
 
-#if (NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0)
-			[System.Obsolete]
-#endif
 			public override RazorProjectItem GetItem(string path)
 			{
 				throw new System.NotImplementedException();
 			}
 
-#if (NETCOREAPP3_0_OR_GREATER)
 			public override RazorProjectItem GetItem(string path, string fileKind)
 			{
 				throw new System.NotImplementedException();
 			}
-#endif
 		}
 	}
 }
