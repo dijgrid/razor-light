@@ -26,10 +26,15 @@ foundation and a versioned PlanFS backlog.
 - [x] CI uses current official actions with read-only token permissions and concurrency controls.
 - [x] Obsolete PAT-based rebase and direct package-publishing workflows are removed.
 - [x] PlanFS contains the modernization epic, milestone, decisions, filter, and actionable tasks.
-- [ ] Repository files, CI commands, and PlanFS front matter are validated.
-- [ ] The draft pull request describes the expanded repository-foundation scope.
+- [x] Repository files, solution metadata, and PlanFS front matter are validated locally.
+- [ ] CI completes after GitHub registers the workflow on the default branch.
+- [x] The draft pull request describes the expanded repository-foundation scope.
 
 ## Implementation notes
 
 Keep package publishing disabled until TASK-008. The existing test baseline still needs the .NET 6
 runtime even though repository tooling is selected with the .NET 10 SDK.
+
+GitHub did not register the inherited workflow files after the fork detachment, so the new workflow
+cannot be dispatched before it exists on the default branch. Dependabot configuration validation
+does run and passes on the pull request.
