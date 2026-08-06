@@ -24,13 +24,12 @@ dotnet build RazorLight.sln --configuration Release --no-restore
 Run the maintained test baseline:
 
 ```shell
-dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net6.0 --configuration Release
+dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net10.0 --configuration Release
 dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj --configuration Release
 ```
 
-The repository still contains end-of-life target frameworks. CI temporarily installs .NET 6 to run
-the declared legacy test baseline. Do not install or reintroduce the older .NET Core 2.x, .NET Core
-3.1, or .NET 5 runtimes; follow the applicable PlanFS modernization task.
+The maintained projects target .NET 10, the current LTS baseline. Do not reintroduce end-of-life
+target frameworks without an explicit compatibility decision and secure dependency plan.
 
 ## Planning
 
@@ -78,6 +77,4 @@ git diff --check
 
 Mention any validation that could not be run and why.
 
-If the .NET 6 ASP.NET Core runtime is unavailable, a supported-runtime probe can be run with
-`DOTNET_ROLL_FORWARD=Major`. Record the three known newline-sensitive failures from `TASK-005`
-separately from new regressions.
+Use the SDK selected by `global.json`; CI and local validation are expected to run on .NET 10.
