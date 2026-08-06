@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MarkdownSnippets.MsBuild" Version="22.0.3" />
+    <PackageReference Include="MarkdownSnippets.MsBuild" Version="28.4.2" />
     <PackageReference Include="Moq" Version="4.7.99" />
     <PackageReference Include="Pose" Version="1.2.1" />
     <PackageReference Include="Verify.Xunit" Version="17.1.1" />
