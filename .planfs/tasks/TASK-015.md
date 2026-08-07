@@ -14,7 +14,8 @@ tags:
   - metadata
   - documentation
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:01:06.382Z
+refinementState: needs-refinement
 ---
 
 Make it explicit that Razor templates execute .NET code, then reduce accidental exposure of host

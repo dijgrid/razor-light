@@ -14,12 +14,60 @@ tags:
   - release
   - nuget
   - supply-chain
+  - needs-maintainer-decision
 createdAt: 2026-08-06T00:00:00Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:01:01.658Z
+refinementState: needs-refinement
 ---
 
 Decide how the independent continuation is named and versioned, then implement a controlled,
 reproducible release process.
+
+## Implementation readiness
+
+Needs maintainer decisions before implementation. The technical work is bounded, but package names,
+the first independent version, and NuGet ownership cannot be inferred safely from the repository.
+
+## Maintainer decisions required
+
+Please record answers in this task before moving it to `in_progress`:
+
+1. Can the maintainer account or organization publish both `RazorLight` and
+   `RazorLight.Precompile` on NuGet.org? Record the owner names or the outcome of an ownership
+   transfer request; do not record credentials.
+2. If those IDs are unavailable, should the independent packages use
+   `Dijgrid.RazorLight` / `Dijgrid.RazorLight.Precompile`, or another prefix? The recommended
+   fallback is the `Dijgrid.*` pair because it makes ownership unambiguous while allowing the
+   existing CLR namespaces to remain compatible.
+3. Should the independent line begin at `3.0.0`? This is recommended because the maintained package
+   is .NET 10-only and therefore cannot be a compatible patch to upstream `2.3.1`.
+4. Is NuGet.org the public release destination, and should GitHub Releases receive the reviewed
+   package artifacts at the same tag?
+5. Which NuGet.org user or organization should own the trusted-publishing policy, and who should be
+   the required reviewer for a protected GitHub `nuget` environment?
+
+NuGet.org supports GitHub Actions OIDC through
+[trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing). Prefer that
+over a long-lived API key when it is available for the selected owner.
+
+## Implementation plan
+
+1. Capture the approved package names, CLR namespace policy, first version, ownership, and
+   deprecation approach in a PlanFS decision record.
+2. Centralize package metadata and version inputs, including independent-maintainer and upstream
+   provenance links.
+3. Produce deterministic `.nupkg` and `.snupkg` artifacts in CI and retain them for review without
+   publishing.
+4. Add a tag-triggered release workflow with a protected `nuget` environment, least-privilege
+   permissions, and OIDC trusted publishing where available.
+5. Exercise the workflow without publishing, inspect both packages, and document the first-release
+   checklist and rollback/yank procedure.
+
+## Scope boundaries
+
+- This task establishes identity, artifact production, and release controls.
+- API compatibility enforcement against the selected baseline belongs to TASK-016.
+- No package may be pushed as part of implementing or testing this task.
 
 ## Acceptance criteria
 

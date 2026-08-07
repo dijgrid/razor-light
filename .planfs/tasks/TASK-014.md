@@ -14,7 +14,8 @@ tags:
   - precompile
   - correctness
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:01:05.628Z
+refinementState: needs-refinement
 ---
 
 Define one observable cache contract across compiled descriptors, rendered page factories, dynamic

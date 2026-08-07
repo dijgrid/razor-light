@@ -15,7 +15,8 @@ tags:
   - roslyn
   - compatibility
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:01:03.264Z
+refinementState: needs-refinement
 ---
 
 Replace or isolate the final Razor 6 package compatibility layer with a supported integration that

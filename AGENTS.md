@@ -78,3 +78,37 @@ git diff --check
 Mention any validation that could not be run and why.
 
 Use the SDK selected by `global.json`; CI and local validation are expected to run on .NET 10.
+
+<!-- PLANFS-AI-AWARENESS:START -->
+## AI Planning Awareness
+
+Before answering planning-status questions, recommending next work, or proposing planning updates, start with:
+
+```sh
+planfs ai summary
+```
+
+Use the returned IDs and file paths for targeted follow-up reads instead of scanning all of `.planfs`.
+
+Use `planfs ai summary --only ready --compact` when only one low-overhead planning section is needed.
+
+Preview metadata updates before writing. Use `update-task` for one task:
+
+```sh
+planfs ai update-task --id TASK-061 --status in-progress --dry-run
+```
+
+When replaying a JSON preview, pass its `expectedUpdatedAt` value through `--expected-updated-at` so newer human edits are refused. Use `none` when the preview token is `null`.
+
+Use `bulk-update-tasks` when applying the same bounded metadata change to multiple tasks:
+
+```sh
+planfs ai bulk-update-tasks --ids TASK-061,TASK-062 --status review --dry-run
+```
+
+Prefer these preview/apply helpers over editing task frontmatter directly for status, priority, assignee, milestone, estimate, due date, tags, or refinement-state updates. After applying AI-assisted planning updates, run:
+
+```sh
+planfs validate
+```
+<!-- PLANFS-AI-AWARENESS:END -->

@@ -15,7 +15,8 @@ tags:
   - deployment
   - tooling
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:01:10.919Z
+refinementState: needs-refinement
 ---
 
 Turn the precompile tool into a supported build-time path that can render known templates without

@@ -2,7 +2,7 @@
 id: MILESTONE-modernization-foundation
 title: Modernization Foundation
 targetDate: 2026-10-31
-status: done
+status: completed
 owner: justin
 createdAt: 2026-08-06T00:00:00Z
 updatedAt: 2026-08-07T00:23:26Z

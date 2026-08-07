@@ -13,7 +13,8 @@ tags:
   - compatibility
   - ci
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:01:07.109Z
+refinementState: needs-refinement
 ---
 
 Use supported .NET package validation to make public API and package-layout changes reviewable before

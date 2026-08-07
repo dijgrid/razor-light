@@ -13,7 +13,8 @@ tags:
   - trimming
   - aot
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:01:04.058Z
+refinementState: needs-refinement
 ---
 
 Test modern .NET deployment modes and make RazorLight's runtime-code-generation requirements visible

@@ -14,7 +14,8 @@ tags:
   - packaging
   - compatibility
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:01:09.367Z
+refinementState: needs-refinement
 ---
 
 Determine whether a standalone template engine must require the full ASP.NET Core shared framework,

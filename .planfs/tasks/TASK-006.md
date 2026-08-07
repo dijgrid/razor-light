@@ -13,7 +13,7 @@ tags:
   - compiler
   - analyzers
 createdAt: 2026-08-06T00:00:00Z
-updatedAt: 2026-08-07T00:35:00Z
+updatedAt: 2026-08-07T03:54:00Z
 ---
 
 Remove obsolete runtime assumptions and establish a manageable compiler and analyzer baseline.
@@ -40,4 +40,5 @@ Source Link packaging policy actually reaches the library; its version property 
 file with the package-only settings scoped to the RazorLight project. Production and sample
 target-framework branches that can no longer be reached on .NET 10 were removed. See
 [`docs/code-quality.md`](../../docs/code-quality.md) for the warning and nullable adoption policy;
-remaining project-by-project nullable adoption is recorded as TASK-009.
+remaining non-public project adoption is recorded as TASK-009, and public library annotations are
+tracked separately in TASK-024.

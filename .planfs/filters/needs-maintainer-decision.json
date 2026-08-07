@@ -1,0 +1,9 @@
+{
+  "id": "needs-maintainer-decision",
+  "name": "Needs Maintainer Decision",
+  "description": "Open tasks that require an explicit maintainer answer before implementation.",
+  "criteria": {
+    "query": "needs-maintainer-decision",
+    "status": "todo"
+  }
+}

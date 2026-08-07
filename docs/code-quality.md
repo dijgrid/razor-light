@@ -13,12 +13,11 @@ formatting. This establishes an automated baseline without rewriting unrelated h
 
 ## Nullable reference types
 
-Nullable reference types are enabled without suppressions in `RazorLight.Precompile.Tests`. They are
-not yet enabled in the public library, precompile tool, sample, sandbox, or legacy xUnit suite.
-Enabling them for the public library is a
-compatibility-sensitive change because annotations affect consumer diagnostics and the recorded
-public API surface. TASK-009 stages adoption project by project, with the library last and guarded by
-the API baseline.
+Nullable reference types are enabled without suppressions in `RazorLight.Precompile.Tests` and the
+Azure Functions sample. They are not yet enabled in the public library, precompile tool, Entity
+Framework sample, sandbox, or legacy xUnit suite. TASK-009 covers the non-public projects. Public
+library annotations are compatibility-sensitive because they affect consumer diagnostics and the
+recorded API surface, so TASK-024 handles them separately after package/API validation is available.
 
 ## Runtime cleanup
 

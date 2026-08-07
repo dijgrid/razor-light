@@ -15,7 +15,8 @@ tags:
   - performance
   - benchmarks
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:01:07.858Z
+refinementState: needs-refinement
 ---
 
 Turn the initial coverage observation into a regression gate and measure the cost of compilation,

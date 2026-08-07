@@ -14,7 +14,8 @@ tags:
   - viewbag
   - compatibility
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:01:10.142Z
+refinementState: needs-refinement
 ---
 
 Make `@inject`, pre-render callbacks, and ViewBag semantics predictable across every supported project

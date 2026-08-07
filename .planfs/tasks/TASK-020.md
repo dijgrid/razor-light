@@ -12,12 +12,49 @@ tags:
   - dependabot
   - security
   - github
+  - ready-for-implementation
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:00:59.157Z
+refinementState: ready
 ---
 
 Clean up dependency-update state created before central package management reached the default branch
 and ensure future updates modify the authoritative version declarations coherently.
+
+## Implementation readiness
+
+Ready for implementation. Central package management is on the default branch, the stale pull
+requests and alert are already reconciled, and the remaining work is CI and policy configuration.
+No maintainer decision is required unless a dependency family proves incompatible with grouped
+updates.
+
+## Implementation plan
+
+1. Trigger or observe a Dependabot NuGet update against the default branch and confirm that it edits
+   `Directory.Packages.props` rather than individual project files.
+2. Adjust dependency groups only where the observed update graph shows that packages must move
+   together; do not add speculative ignores.
+3. Add a least-privilege scheduled dependency-audit workflow, or a dedicated CI job, that restores
+   the solution and fails on known direct or transitive vulnerabilities at the repository's chosen
+   severity threshold.
+4. Confirm dependency pull requests exercise the existing cross-platform build/test job, package
+   validation, README check, and sample checks.
+5. Document the weekly update cadence, group rationale, audit schedule, alert handling, and the
+   process for time-bounded suppressions.
+
+## Scope boundaries
+
+- Keep package versions authoritative in `Directory.Packages.props`.
+- Do not update unrelated packages merely to test automation.
+- Do not suppress an advisory or permanently ignore a version without a separate documented risk
+  decision, owner, and expiry/review date.
+
+## Verification
+
+- Validate `.github/dependabot.yml` and every changed workflow as YAML.
+- Run the selected direct/transitive NuGet audit locally with the .NET 10 SDK.
+- Run `dotnet build RazorLight.sln --configuration Release` and the two maintained test projects.
+- Confirm the GitHub Actions event filters do not special-case or bypass Dependabot pull requests.
 
 ## Acceptance criteria
 

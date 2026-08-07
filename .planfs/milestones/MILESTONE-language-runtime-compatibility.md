@@ -5,7 +5,7 @@ targetDate: 2027-01-31
 status: active
 owner: justin
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T03:54:00Z
 ---
 
 Bring RazorLight's template compiler, model behavior, caching, and deployment story in line with the
@@ -13,6 +13,7 @@ current .NET and Razor toolchain.
 
 ## Deliverables
 
+- An executable baseline matrix for template source, imports, model typing, and LINQ behavior
 - Predictable LINQ, import, and model-type behavior for every template source
 - A supported current Razor compiler integration and current C# syntax coverage
 - Tested framework-dependent, self-contained, single-file, trimming, and AOT guidance

@@ -1,0 +1,9 @@
+{
+  "id": "ready-for-implementation",
+  "name": "Ready for Implementation",
+  "description": "Open tasks with completed dependencies, bounded scope, and no unresolved maintainer decision.",
+  "criteria": {
+    "query": "ready-for-implementation",
+    "status": "todo"
+  }
+}

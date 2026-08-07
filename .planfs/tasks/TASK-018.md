@@ -6,15 +6,16 @@ priority: medium
 epic: EPIC-modernization
 milestone: MILESTONE-library-quality
 dependsOn:
-  - TASK-009
   - TASK-016
+  - TASK-024
 tags:
   - api
   - cleanup
   - compatibility
   - documentation
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:01:08.620Z
+refinementState: needs-refinement
 ---
 
 Inventory inherited public contracts and design a coherent next-major surface after nullable and

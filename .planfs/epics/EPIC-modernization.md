@@ -6,7 +6,7 @@ owner: justin
 description: Evolve RazorLight into a supported, secure, compatible, and independently releasable .NET template engine.
 targetDate: 2027-03-31
 createdAt: 2026-08-06T00:00:00Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T03:54:00Z
 ---
 
 Modernize the inherited RazorLight repository without losing the compatibility information needed by
@@ -34,6 +34,7 @@ hiding compatibility changes.
 
 ### Language and runtime compatibility
 
+- TASK-023: Capture the template import and model compatibility matrix
 - TASK-010: Make LINQ and imports consistent across template sources
 - TASK-011: Establish a supported current Razor compiler integration
 - TASK-012: Define single-file, trimming, and Native AOT compatibility
@@ -44,11 +45,24 @@ hiding compatibility changes.
 
 ### Library quality
 
-- TASK-009: Adopt nullable reference types incrementally
+- TASK-009: Enable nullable reference types in non-public projects
+- TASK-024: Annotate the public RazorLight API for nullable reference types
 - TASK-013: Add cancellation to asynchronous operations
 - TASK-015: Define and enforce the template trust boundary
 - TASK-017: Ratchet coverage and establish performance baselines
 - TASK-018: Design the next-major public API cleanup
+
+## Next implementation batch
+
+The following tasks are independent, have completed dependencies, and carry the
+`ready-for-implementation` tag:
+
+1. TASK-023: capture the executable template import/model baseline before behavior changes.
+2. TASK-009: enable nullable analysis in non-public projects.
+3. TASK-020: finish dependency-update and vulnerability-audit automation.
+
+They can be implemented in parallel or in the listed order. TASK-008 and TASK-010 are tagged
+`needs-maintainer-decision`; their questions should be answered before implementation begins.
 
 ## Success criteria
 

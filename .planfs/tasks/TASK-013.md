@@ -7,14 +7,15 @@ epic: EPIC-modernization
 milestone: MILESTONE-library-quality
 dependsOn:
   - TASK-005
-  - TASK-009
+  - TASK-024
 tags:
   - async
   - cancellation
   - api
   - reliability
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T00:29:26Z
+updatedAt: 2026-08-07T04:01:04.807Z
+refinementState: needs-refinement
 ---
 
 Add cooperative cancellation to template lookup, compilation, rendering, includes, and precompile
