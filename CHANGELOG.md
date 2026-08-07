@@ -19,6 +19,9 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
   `@model` themselves.
 - Reusing a string-template key with changed content, selected model type, or configured imports
   replaces the active compilation across the compiler and configured template cache.
+- Compiler descriptors and configured page factories now share one invalidation contract. Explicit
+  removal, replacement, project change tokens, and failed-compilation retries cannot return or
+  permanently retain stale compiled templates; precompiled providers support runtime cache mutation.
 - Generated template code now uses an explicit C# 14 parse policy instead of inheriting the host
   dependency context's language version. Modern C# and Razor directive baselines guard the retained,
   version-checked Razor 6 compatibility adapter.

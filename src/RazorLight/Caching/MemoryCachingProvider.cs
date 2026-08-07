@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using System;
@@ -36,6 +36,11 @@ namespace RazorLight.Caching
 
 		public bool Contains(string key)
 		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException(nameof(key));
+			}
+
 			return LookupCache.TryGetValue(key, out _);
 		}
 
@@ -63,6 +68,11 @@ namespace RazorLight.Caching
 
 		public void Remove(string key)
 		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException(nameof(key));
+			}
+
 			LookupCache.Remove(key);
 		}
 	}

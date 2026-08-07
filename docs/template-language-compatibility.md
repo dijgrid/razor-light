@@ -71,8 +71,9 @@ the logical key for layouts and includes. The tests exercise both the internal c
 the optional memory caching provider.
 
 Keys should still identify one logical template. Cross-process invalidation, project import-file
-changes, bounded retention of historical variants, and the complete custom-provider contract remain
-in TASK-014.
+changes, and bounded retention of historical variants remain application concerns. The coordinated
+provider, key, change-token, and concurrency behavior is defined in
+[`caching.md`](caching.md).
 
 ## Migration from the inherited behavior
 

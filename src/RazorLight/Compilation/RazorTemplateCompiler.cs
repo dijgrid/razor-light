@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,7 +19,7 @@ namespace RazorLight.Compilation
 {
 	public class RazorTemplateCompiler : IRazorTemplateCompiler
 	{
-		private readonly SemaphoreSlim  _cacheLock = new SemaphoreSlim(1, 1);
+		private readonly SemaphoreSlim _cacheLock = new SemaphoreSlim(1, 1);
 
 		private RazorSourceGenerator _razorSourceGenerator;
 		private ICompilationService _compiler;
@@ -30,6 +30,7 @@ namespace RazorLight.Compilation
 		private readonly ConcurrentDictionary<string, string> _normalizedKeysCache;
 		private readonly Dictionary<string, CompiledTemplateDescriptor> _precompiledViews;
 		private readonly ConcurrentDictionary<string, string> _stringTemplateCacheKeys;
+		private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _cacheKeysByTemplate;
 
 		public RazorTemplateCompiler(
 			RazorSourceGenerator sourceGenerator,
@@ -49,6 +50,7 @@ namespace RazorLight.Compilation
 
 			_normalizedKeysCache = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 			_stringTemplateCacheKeys = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+			_cacheKeysByTemplate = new ConcurrentDictionary<string, ConcurrentDictionary<string, byte>>(StringComparer.Ordinal);
 
 			// We need to validate that the all of the precompiled views are unique by path (case-insensitive).
 			// We do this because there's no good way to canonicalize paths on windows, and it will create
@@ -130,6 +132,7 @@ namespace RazorLight.Compilation
 			}
 
 			InvalidatePreviousStringTemplate(request);
+			RegisterCacheKey(request);
 
 			// Attempt to lookup the cache entry using the passed in key. This will succeed if the key is already
 			// normalized and a cache entry exists.
@@ -153,7 +156,7 @@ namespace RazorLight.Compilation
 		/// <summary>
 		/// For testing purposes only.
 		/// </summary>
-		internal Type ProjectType =>  _razorProject.GetType();
+		internal Type ProjectType => _razorProject.GetType();
 
 		private async Task<CompiledTemplateDescriptor> OnCacheMissAsync(TemplateCompilationRequest request)
 		{
@@ -250,6 +253,11 @@ namespace RazorLight.Compilation
 				}
 				catch (Exception ex)
 				{
+					_cache.Remove(item.NormalizedKey);
+					if (request.IsStringTemplate)
+					{
+						_cache.Remove(request.TemplateKey);
+					}
 					taskSource.SetException(ex);
 				}
 			}
@@ -352,6 +360,68 @@ namespace RazorLight.Compilation
 				});
 		}
 
+		private void RegisterCacheKey(TemplateCompilationRequest request)
+		{
+			string templateKey = request.IsStringTemplate
+				? request.TemplateKey
+				: GetNormalizedKey(request.TemplateKey);
+			var keys = _cacheKeysByTemplate.GetOrAdd(
+				templateKey,
+				_ => new ConcurrentDictionary<string, byte>(StringComparer.Ordinal));
+			keys.TryAdd(request.CacheKey, 0);
+			keys.TryAdd(templateKey, 0);
+		}
+
+		internal string NormalizeCacheKey(string key)
+		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException(nameof(key));
+			}
+
+			return GetNormalizedKey(key);
+		}
+
+		internal void RemoveCacheKey(string key)
+		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException(nameof(key));
+			}
+
+			string normalizedKey = GetNormalizedKey(key);
+			_cacheLock.Wait();
+			try
+			{
+				RemoveCacheKeys(key);
+				if (!string.Equals(key, normalizedKey, StringComparison.Ordinal))
+				{
+					RemoveCacheKeys(normalizedKey);
+				}
+			}
+			finally
+			{
+				_cacheLock.Release();
+			}
+		}
+
+		private void RemoveCacheKeys(string templateKey)
+		{
+			_cache.Remove(templateKey);
+			if (_cacheKeysByTemplate.TryRemove(templateKey, out ConcurrentDictionary<string, byte>? keys))
+			{
+				foreach (string cacheKey in keys.Keys)
+				{
+					_cache.Remove(cacheKey);
+				}
+			}
+
+			if (_stringTemplateCacheKeys.TryRemove(templateKey, out string? stringCacheKey))
+			{
+				_cache.Remove(stringCacheKey);
+			}
+		}
+
 		#region helpers
 
 		internal string GetNormalizedKey(string templateKey)
@@ -381,7 +451,7 @@ namespace RazorLight.Compilation
 		internal async Task<TemplateNotFoundException> CreateTemplateNotFoundException(RazorLightProjectItem projectItem)
 		{
 			var msg = $"{nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} with key {projectItem.Key} could not be found by the " +
-				$"{ nameof(RazorLightProject)} of type { _razorProject.GetType().FullName} and does not exist in dynamic templates. ";
+				$"{nameof(RazorLightProject)} of type {_razorProject.GetType().FullName} and does not exist in dynamic templates. ";
 
 			var propNames = $"\"{nameof(TemplateNotFoundException.KnownDynamicTemplateKeys)}\" and \"{nameof(TemplateNotFoundException.KnownProjectTemplateKeys)}\"";
 

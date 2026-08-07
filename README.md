@@ -36,6 +36,7 @@ and [testing guidance](docs/testing.md) for the current maintenance baseline.
   - [Embedded resources](#embedded-resource-source)
   - [Custom sources](#custom-source)
 - [Includes and partial templates](#includes-and-partial-templates)
+- [Caching and invalidation](#caching-and-invalidation)
 - [Encoding](#encoding)
 - [Additional metadata references](#additional-metadata-references)
 - [Enable IntelliSense support](#enable-intellisense-support)
@@ -142,8 +143,8 @@ not make a dynamic receiver strongly typed.
 
 String-template cache identity includes the content, explicit model type, and configured imports.
 Reusing a key with changed input replaces the active compiled template instead of silently running
-the first version. Keys should still identify one logical template; TASK-014 tracks the broader
-cache-provider and invalidation contract.
+the first version. Keys should still identify one logical template; the complete two-layer cache
+contract is documented in [caching and invalidation](docs/caching.md).
 
 # Template sources
 
@@ -267,6 +268,17 @@ templates manageable.
 
 The first argument is the template key; the second is the model passed to the included template and
 may be `null`.
+
+# Caching and invalidation
+
+RazorLight maintains an internal compilation cache and a configured page-factory cache. They are
+coordinated through `engine.Handler.Cache`: removing or replacing a logical template key invalidates
+both layers, and project change tokens also expire layouts and includes under their own keys.
+
+File-style keys normalize slash direction but remain case-sensitive on every operating system.
+Custom cache providers must support concurrent retrieval, insertion, replacement, and removal. See
+the [caching and invalidation contract](docs/caching.md) for string-template identity, custom-project
+change tokens, precompiled-provider behavior, and process-local limitations.
 
 # Encoding
 

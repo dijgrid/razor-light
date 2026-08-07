@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
@@ -6,6 +6,7 @@ using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using RazorLight.Caching;
 using RazorLight.Compilation;
 using RazorLight.Internal.Buffering;
@@ -16,6 +17,7 @@ namespace RazorLight
 	{
 		private readonly ConcurrentDictionary<string, string> _stringTemplateCacheKeys =
 			new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+		private readonly ITemplateCompilerCache? _compilerCache;
 
 		public EngineHandler(
 			RazorLightOptions options,
@@ -27,7 +29,13 @@ namespace RazorLight
 			Compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
 			FactoryProvider = factoryProvider ?? throw new ArgumentNullException(nameof(factoryProvider));
 
-			Cache = cache;
+			_compilerCache = compiler is RazorTemplateCompiler razorTemplateCompiler
+				? new RazorTemplateCompilerCache(razorTemplateCompiler)
+				: null;
+			Cache = cache != null && _compilerCache != null
+				? new CoordinatedCachingProvider(cache, _compilerCache)
+				: cache;
+			Options.CachingProvider = Cache;
 		}
 
 		public EngineHandler(
@@ -40,7 +48,7 @@ namespace RazorLight
 				factoryProvider,
 				cache)
 		{
-			
+
 
 		}
 
@@ -62,7 +70,7 @@ namespace RazorLight
 		public async Task<ITemplatePage> CompileTemplateAsync(string key)
 		{
 			return await CompileTemplateAsync(TemplateCompilationRequest.ForProject(
-				key,
+				NormalizeProjectKey(key),
 				modelType: null,
 				Options.Namespaces));
 		}
@@ -72,6 +80,8 @@ namespace RazorLight
 		private async Task<ITemplatePage> CompileTemplateAsync(TemplateCompilationRequest request)
 		{
 			InvalidatePreviousStringTemplate(request);
+			var coordinatedCache = Cache as ICoordinatedCachingProvider;
+			long cacheVersion = coordinatedCache?.GetVersion(request.TemplateKey) ?? 0;
 
 			ITemplatePage? templatePage = null;
 			if (Cache != null)
@@ -83,7 +93,7 @@ namespace RazorLight
 				}
 			}
 
-			if(templatePage == null)
+			if (templatePage == null)
 			{
 				CompiledTemplateDescriptor templateDescriptor;
 				if (request.TemplateContent != null)
@@ -104,18 +114,23 @@ namespace RazorLight
 
 				Func<ITemplatePage> templateFactory = FactoryProvider.CreateFactory(templateDescriptor);
 
-				if(Cache != null) {
-					Cache.CacheTemplate(
-					request.CacheKey,
-					templateFactory,
-					templateDescriptor.ExpirationToken);
+				if (Cache != null)
+				{
+					StoreCompiledTemplate(
+						request.TemplateKey,
+						request.CacheKey,
+						templateFactory,
+						templateDescriptor.ExpirationToken,
+						cacheVersion);
 
 					if (request.IsStringTemplate)
 					{
-						Cache.CacheTemplate(
+						StoreCompiledTemplate(
+							request.TemplateKey,
 							request.TemplateKey,
 							templateFactory,
-							templateDescriptor.ExpirationToken);
+							templateDescriptor.ExpirationToken,
+							cacheVersion);
 					}
 				}
 
@@ -206,7 +221,7 @@ namespace RazorLight
 			}
 
 			ITemplatePage template = await CompileTemplateAsync(TemplateCompilationRequest.ForProject(
-				key,
+				NormalizeProjectKey(key),
 				modelType,
 				Options.Namespaces)).ConfigureAwait(false);
 
@@ -397,6 +412,40 @@ namespace RazorLight
 
 					return request.CacheKey;
 				});
+		}
+
+		private string NormalizeProjectKey(string key)
+		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException(nameof(key));
+			}
+
+			return _compilerCache != null
+				? _compilerCache.NormalizeKey(key)
+				: key;
+		}
+
+		private void StoreCompiledTemplate(
+			string templateKey,
+			string cacheKey,
+			Func<ITemplatePage> templateFactory,
+			IChangeToken? expirationToken,
+			long cacheVersion)
+		{
+			if (Cache is ICoordinatedCachingProvider coordinatedCache)
+			{
+				coordinatedCache.StoreCompiledTemplate(
+					templateKey,
+					cacheKey,
+					templateFactory,
+					expirationToken,
+					cacheVersion);
+			}
+			else
+			{
+				Cache!.CacheTemplate(cacheKey, templateFactory, expirationToken);
+			}
 		}
 
 		private static Type? GetDeclaredModelType(ITemplatePage templatePage)

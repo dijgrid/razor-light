@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Primitives;
 using Mono.Cecil;
 using RazorLight.Caching;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,10 +13,11 @@ namespace RazorLight.Precompile
 	{
 		public readonly IReadOnlyDictionary<string, string> Map;
 		private readonly MemoryCachingProvider m_cache = new();
+		private readonly ConcurrentDictionary<string, string> m_map;
 
 		public PrecompiledCachingProvider(IEnumerable<string> precompiledTemplateFilePaths, StreamWriter? log)
 		{
-			var map = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+			m_map = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 			foreach (var filePath in precompiledTemplateFilePaths)
 			{
 				var templateKey = GetPrecompiledTemplateKey(filePath, log);
@@ -24,17 +26,18 @@ namespace RazorLight.Precompile
 					continue;
 				}
 
-				if (map.TryGetValue(templateKey, out var dupe))
+				templateKey = NormalizeKey(templateKey);
+				if (!m_map.TryAdd(templateKey, filePath))
 				{
+					string dupe = m_map[templateKey];
 					throw new RazorLightException($"The key {templateKey} is associated with at least two precompiled templates - {dupe} and {filePath}");
 				}
-				map.Add(templateKey, filePath);
 			}
-			if (map.Count == 0)
+			if (m_map.Count == 0)
 			{
 				throw new RazorLightException($"Found no precompiled templates.");
 			}
-			Map = map;
+			Map = m_map;
 		}
 
 		private static string? GetPrecompiledTemplateKey(string filePath, StreamWriter? log)
@@ -59,19 +62,27 @@ namespace RazorLight.Precompile
 			return null;
 		}
 
-		public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken? expirationToken) => throw new NotImplementedException();
+		public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken? expirationToken)
+		{
+			m_cache.CacheTemplate(NormalizeKey(key), pageFactory, expirationToken);
+		}
 
-		public bool Contains(string key) => Map.ContainsKey(key);
+		public bool Contains(string key)
+		{
+			key = NormalizeKey(key);
+			return m_cache.Contains(key) || m_map.ContainsKey(key);
+		}
 
-		public void Remove(string key) => throw new NotImplementedException();
+		public void Remove(string key)
+		{
+			key = NormalizeKey(key);
+			m_cache.Remove(key);
+			m_map.TryRemove(key, out _);
+		}
 
 		public TemplateCacheLookupResult RetrieveTemplate(string key)
 		{
-			key = key.Replace('\\', '/');
-			if (key[0] != '/')
-			{
-				key = '/' + key;
-			}
+			key = NormalizeKey(key);
 
 			var res = m_cache.RetrieveTemplate(key);
 			if (res.Success)
@@ -79,7 +90,7 @@ namespace RazorLight.Precompile
 				return res;
 			}
 
-			if (Map.TryGetValue(key, out var filePath))
+			if (m_map.TryGetValue(key, out var filePath))
 			{
 				return new TemplateCacheLookupResult(new TemplateCacheItem(key, CreateTemplatePage));
 
@@ -93,6 +104,17 @@ namespace RazorLight.Precompile
 				}
 			}
 			throw new RazorLightException($"No precompiled template found for the key {key}");
+		}
+
+		private static string NormalizeKey(string key)
+		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException(nameof(key));
+			}
+
+			key = key.Replace('\\', '/');
+			return key[0] == '/' ? key : '/' + key;
 		}
 	}
 }

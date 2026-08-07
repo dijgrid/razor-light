@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Primitives;
 using RazorLight.Compilation;
 using RazorLight.Generation;
 using RazorLight.Razor;
@@ -42,11 +42,13 @@ namespace RazorLight.Caching
 			m_cache.CacheTemplate(key, pageFactory, expirationToken);
 		}
 
-		public bool Contains(string key) => m_fileSystemCachingStrategy.GetCachedFileInfo(key, Path.Combine(m_baseDir, key), m_cacheDir).UpToDate;
+		public bool Contains(string key) => m_cache.Contains(key) ||
+			m_fileSystemCachingStrategy.GetCachedFileInfo(key, GetSourceFilePath(key), m_cacheDir).UpToDate;
 
 		public void Remove(string key)
 		{
-			var srcFilePath = Path.Combine(m_baseDir, key);
+			m_cache.Remove(key);
+			var srcFilePath = GetSourceFilePath(key);
 			var (_, asmFilePath, pdbFilePath) = m_fileSystemCachingStrategy.GetCachedFileInfo(key, srcFilePath, m_cacheDir);
 			File.Delete(asmFilePath);
 			File.Delete(pdbFilePath);
@@ -60,7 +62,7 @@ namespace RazorLight.Caching
 				return res;
 			}
 
-			var srcFilePath = Path.Combine(m_baseDir, key);
+			var srcFilePath = GetSourceFilePath(key);
 			var (upToDate, asmFilePath, pdbFilePath) = m_fileSystemCachingStrategy.GetCachedFileInfo(key, srcFilePath, m_cacheDir);
 			if (upToDate)
 			{
@@ -97,5 +99,8 @@ namespace RazorLight.Caching
 			.GetCustomAttribute<RazorLightTemplateAttribute>()
 			?.TemplateType
 			?? throw new InvalidOperationException("The cached assembly has no RazorLight template attribute.");
+
+		private string GetSourceFilePath(string key) =>
+			Path.Combine(m_baseDir, key.TrimStart('/', '\\').Replace('\\', Path.DirectorySeparatorChar));
 	}
 }
