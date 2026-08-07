@@ -15,9 +15,10 @@ same property is a replacement: it invalidates the old compiler and provider ent
 the supplied factory. A compilation that was already in flight when a key was removed or replaced
 cannot repopulate the page-factory cache with its stale result.
 
-Compilation failures retain their original exception type and diagnostics. A failed task is removed
-from the compilation cache so correcting the source and retrying the same key does not require a
-process restart.
+Compilation failures retain their exception type and diagnostic IDs. Detailed template-derived
+messages and mapped paths are available only when debug mode is enabled, as described in the
+[template security guide](template-security.md). A failed task is removed from the compilation cache
+so correcting the source and retrying the same key does not require a process restart.
 
 ## Cache identity and project changes
 

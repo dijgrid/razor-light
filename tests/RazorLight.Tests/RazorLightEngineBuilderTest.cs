@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using RazorLight.Caching;
+using RazorLight.Compilation;
 using Xunit;
 
 namespace RazorLight.Tests
@@ -55,6 +56,14 @@ namespace RazorLight.Tests
 		public void Throws_On_Null_AddMetadataReferences()
 		{
 			Action action = () => new RazorLightEngineBuilder().AddMetadataReferences(null!);
+
+			Assert.Throws<ArgumentNullException>(action);
+		}
+
+		[Fact]
+		public void Throws_On_Null_IncludeAssemblies()
+		{
+			Action action = () => new RazorLightEngineBuilder().IncludeAssemblies(null!);
 
 			Assert.Throws<ArgumentNullException>(action);
 		}
@@ -200,6 +209,21 @@ namespace RazorLight.Tests
 				.UseOptions(new RazorLightOptions())
 				.Build();
 			Assert.False(engine.Options.EnableDebugMode);
+		}
+
+		[Fact]
+		public void MetadataReferencePolicy_Is_Set_Correctly()
+		{
+			var engine = new RazorLightEngineBuilder()
+				.UseEmbeddedResourcesProject(typeof(Root))
+				.IncludeAssemblies("Application.TemplateContracts")
+				.ExcludeAssemblies("Application.Internal.Data")
+				.UseAllDependencyContextMetadataReferences()
+				.Build();
+
+			Assert.Contains("Application.TemplateContracts", engine.Options.IncludedAssemblies);
+			Assert.Contains("Application.Internal.Data", engine.Options.ExcludedAssemblies);
+			Assert.Equal(MetadataReferenceDiscoveryMode.All, engine.Options.MetadataReferenceDiscovery);
 		}
 
 		[Fact]

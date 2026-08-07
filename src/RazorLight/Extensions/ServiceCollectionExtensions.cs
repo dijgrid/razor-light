@@ -49,7 +49,15 @@ namespace RazorLight.Extensions
 			services.TryAddSingleton<PropertyInjector>();
 			services.TryAddSingleton<ICachingProvider, MemoryCachingProvider>();
 			services.TryAddSingleton<RazorEngine>(Razor6CompilerCompatibility.CreateEngine());
-			services.TryAddSingleton<RazorSourceGenerator>();
+			services.TryAddSingleton<RazorSourceGenerator>(provider =>
+			{
+				var options = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RazorLightOptions>>().Value;
+				return new RazorSourceGenerator(
+					provider.GetRequiredService<RazorEngine>(),
+					provider.GetService<RazorLight.Razor.RazorLightProject>(),
+					options.Namespaces,
+					options.EnableDebugMode ?? false);
+			});
 			services.TryAddSingleton<IRazorTemplateCompiler, RazorTemplateCompiler>();
 			services.TryAddSingleton<ITemplateFactoryProvider, TemplateFactoryProvider>();
 			services.TryAddSingleton<IMetadataReferenceManager, DefaultMetadataReferenceManager>();

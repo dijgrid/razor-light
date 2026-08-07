@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RazorLight.Compilation;
@@ -69,7 +70,11 @@ namespace RazorLight.Tests.Compatibility
 				"@inject RazorLight.Tests.Models.TestViewModel Service\n" +
 				"@functions { private string Format(string value) => value.ToUpperInvariant(); }\n" +
 				"@Format(Model.Items[0])";
-			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), new NoRazorProject());
+			var generator = new RazorSourceGenerator(
+				Razor6CompilerCompatibility.CreateEngine(),
+				new NoRazorProject(),
+				namespaces: null,
+				includeDetailedDiagnostics: true);
 
 			IGeneratedRazorTemplate generated = await generator.GenerateCodeAsync(
 				new TextSourceRazorProjectItem("directive-baseline", template));
@@ -84,7 +89,11 @@ namespace RazorLight.Tests.Compatibility
 		[Fact]
 		public async Task Razor_Diagnostic_Baseline_Reports_Malformed_Model_Directive()
 		{
-			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), new NoRazorProject());
+			var generator = new RazorSourceGenerator(
+				Razor6CompilerCompatibility.CreateEngine(),
+				new NoRazorProject(),
+				namespaces: null,
+				includeDetailedDiagnostics: true);
 			var item = new TextSourceRazorProjectItem("diagnostic-baseline", "@model\ncontent");
 
 			var exception = await Assert.ThrowsAsync<TemplateGenerationException>(
@@ -93,6 +102,22 @@ namespace RazorLight.Tests.Compatibility
 			var diagnostic = Assert.Single(exception.Diagnostics);
 			Assert.Equal("RZ1013", diagnostic.Id);
 			Assert.Equal("The 'model' directive expects a type name.", diagnostic.GetMessage());
+		}
+
+		[Fact]
+		public async Task Razor_Diagnostics_RedactTemplateDetailsByDefault()
+		{
+			const string privatePath = "C:/private/templates/customer.cshtml";
+			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), new NoRazorProject());
+			var item = new TextSourceRazorProjectItem(privatePath, "@model\ncontent");
+
+			var exception = await Assert.ThrowsAsync<TemplateGenerationException>(
+				() => generator.GenerateCodeAsync(item));
+
+			Assert.Empty(exception.Diagnostics);
+			Assert.Contains("RZ1013", exception.Message, StringComparison.Ordinal);
+			Assert.DoesNotContain(privatePath, exception.Message, StringComparison.Ordinal);
+			Assert.DoesNotContain("expects a type name", exception.Message, StringComparison.Ordinal);
 		}
 	}
 }

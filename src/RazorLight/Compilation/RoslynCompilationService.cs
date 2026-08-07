@@ -22,13 +22,24 @@ namespace RazorLight.Compilation
 	{
 		private readonly IMetadataReferenceManager metadataReferenceManager;
 		private readonly bool isDevelopment;
+		private readonly bool includeDetailedDiagnostics;
 		private readonly List<MetadataReference> metadataReferences = new List<MetadataReference>();
 		private readonly IPrecompileCallback? precompileCallback;
 
 		public RoslynCompilationService(IMetadataReferenceManager referenceManager, Assembly operatingAssembly, IPrecompileCallback? precompileCallback = null)
+			: this(referenceManager, operatingAssembly, includeDetailedDiagnostics: false, precompileCallback)
+		{
+		}
+
+		internal RoslynCompilationService(
+			IMetadataReferenceManager referenceManager,
+			Assembly operatingAssembly,
+			bool includeDetailedDiagnostics,
+			IPrecompileCallback? precompileCallback = null)
 		{
 			this.metadataReferenceManager = referenceManager ?? throw new ArgumentNullException(nameof(referenceManager));
 			this.OperatingAssembly = operatingAssembly ?? throw new ArgumentNullException(nameof(operatingAssembly));
+			this.includeDetailedDiagnostics = includeDetailedDiagnostics;
 			this.precompileCallback = precompileCallback;
 
 			isDevelopment = AssemblyDebugModeUtility.IsAssemblyDebugBuild(OperatingAssembly);
@@ -40,6 +51,7 @@ namespace RazorLight.Compilation
 				referenceManager,
 				(options ?? throw new ArgumentNullException(nameof(options))).Value.OperatingAssembly
 					?? throw new InvalidOperationException("RazorLightOptions.OperatingAssembly must be configured."),
+				options.Value.EnableDebugMode ?? false,
 				precompileCallback)
 		{
 			
@@ -134,8 +146,17 @@ namespace RazorLight.Compilation
 					foreach (Diagnostic diagnostic in errorsDiagnostics)
 					{
 						FileLinePositionSpan lineSpan = diagnostic.Location.GetMappedLineSpan();
-						string errorMessage = diagnostic.GetMessage();
+						string errorMessage = includeDetailedDiagnostics
+							? diagnostic.GetMessage()
+							: $"Compiler diagnostic {diagnostic.Id}. Enable RazorLightOptions.EnableDebugMode for detailed compiler diagnostics.";
 						string formattedMessage = $"- ({lineSpan.StartLinePosition.Line}:{lineSpan.StartLinePosition.Character}) {errorMessage}";
+						if (!includeDetailedDiagnostics)
+						{
+							lineSpan = new FileLinePositionSpan(
+								string.Empty,
+								lineSpan.StartLinePosition,
+								lineSpan.EndLinePosition);
+						}
 
 						var compilationDiagnostic = new TemplateCompilationDiagnostic(errorMessage, formattedMessage, lineSpan);
 						compilationDiagnostics.Add(compilationDiagnostic);

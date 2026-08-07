@@ -450,13 +450,12 @@ namespace RazorLight.Compilation
 
 		internal async Task<TemplateNotFoundException> CreateTemplateNotFoundException(RazorLightProjectItem projectItem)
 		{
-			var msg = $"{nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} with key {projectItem.Key} could not be found by the " +
-				$"{nameof(RazorLightProject)} of type {_razorProject.GetType().FullName} and does not exist in dynamic templates. ";
-
 			var propNames = $"\"{nameof(TemplateNotFoundException.KnownDynamicTemplateKeys)}\" and \"{nameof(TemplateNotFoundException.KnownProjectTemplateKeys)}\"";
 
 			if (_razorLightOptions.EnableDebugMode ?? false)
 			{
+				var msg = $"{nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} with key {projectItem.Key} could not be found by the " +
+					$"{nameof(RazorLightProject)} of type {_razorProject.GetType().FullName} and does not exist in dynamic templates. ";
 				msg += $"See the {propNames} properties for known template keys.";
 
 				var dynamicKeys = _razorLightOptions.DynamicTemplates.Keys.ToList();
@@ -468,7 +467,8 @@ namespace RazorLight.Compilation
 			}
 			else
 			{
-				msg += $"Set {nameof(RazorLightOptions)}.{nameof(RazorLightOptions.EnableDebugMode)} to true to allow " +
+				var msg = "The requested template could not be found. " +
+					$"Set {nameof(RazorLightOptions)}.{nameof(RazorLightOptions.EnableDebugMode)} to true to allow " +
 					$"the {propNames} properties on this exception to be set.";
 
 				return new TemplateNotFoundException(msg);
