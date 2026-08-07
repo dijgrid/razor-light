@@ -1,7 +1,7 @@
 ---
 id: TASK-020
 title: Reconcile Dependabot with central package management
-status: review
+status: done
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-release-readiness
@@ -14,7 +14,7 @@ tags:
   - github
   - ready-for-implementation
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T06:35:50.543Z
+updatedAt: 2026-08-07T06:45:34.678Z
 refinementState: ready
 ---
 
@@ -23,9 +23,9 @@ and ensure future updates modify the authoritative version declarations coherent
 
 ## Implementation readiness
 
-Implementation and local validation are complete. Final review requires merging the configuration
-to the default branch and observing or manually triggering the next Dependabot NuGet update so its
-central-file edit can be recorded.
+Implementation, default-branch validation, and a fresh Dependabot NuGet update are complete. The
+update recognized `Directory.Packages.props` for every project and processed each configured package
+family as a single group.
 
 ## Implementation plan
 
@@ -59,7 +59,7 @@ central-file edit can be recorded.
 
 - [x] Dependabot pull requests 2 through 8 are compared with `Directory.Packages.props` and closed or
       superseded without discarding a newer secure version.
-- [ ] Dependabot recognizes the central package file and produces one coherent update per configured
+- [x] Dependabot recognizes the central package file and produces one coherent update per configured
       dependency family rather than project-scoped duplicates.
 - [x] The default branch has no open Dependabot security alert after the merged dependency baseline is
       re-indexed.
@@ -93,6 +93,9 @@ central package declarations and run the complete security and CI policy.
 - The real solution and Azure Functions sample have no known direct or transitive vulnerabilities.
   A temporary `Microsoft.Extensions.Caching.Memory` 6.0.1 probe verified that the audit pipeline
   fails on the repository's previously fixed high-severity advisory (`NU1903`).
-- The latest available Dependabot update-job evidence predates central package management and is
-  project-scoped. The central-file acceptance criterion remains open until the new configuration is
-  on the default branch and a NuGet update job is observed.
+- Default-branch [Dependabot run 31154789591](https://github.com/dijgrid/razor-light/actions/runs/31154789591)
+  succeeded against commit `b082639`, recognized `Directory.Packages.props` as the package-management
+  special file throughout the solution, and processed all seven configured groups. It opened no
+  pull request because the central versions were already current.
+- The same commit passed [Dependency Audit run 31154787276](https://github.com/dijgrid/razor-light/actions/runs/31154787276)
+  and the complete three-platform [CI run 31154787277](https://github.com/dijgrid/razor-light/actions/runs/31154787277).
