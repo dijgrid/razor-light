@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -96,11 +97,20 @@ namespace RazorLight.Compilation
 		}
 
 
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Assembly CompileAndEmit(IGeneratedRazorTemplate razorTemplate)
 		{
 			if (razorTemplate == null)
 			{
 				throw new ArgumentNullException(nameof(razorTemplate));
+			}
+
+			if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+			{
+				throw new PlatformNotSupportedException(
+					"RazorLight runtime template compilation is not supported when dynamic code generation is unavailable. " +
+					"See " + DeploymentCompatibility.DocumentationUrl + ".");
 			}
 
 			string assemblyName = Path.GetRandomFileName();

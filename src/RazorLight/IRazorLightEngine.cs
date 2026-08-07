@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.IO;
 using System.Threading.Tasks;
@@ -25,12 +26,16 @@ namespace RazorLight
 		/// <param name="model">Template model</param>
 		/// <param name="viewBag">Dynamic viewBag of the template</param>
 		/// <returns>Rendered template as a string result</returns>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		Task<string> CompileRenderAsync<T>(string key, T model, ExpandoObject? viewBag = null);
 
 		/// <summary>
 		/// Compiles and renders a project template using <paramref name="modelType"/> when the template
 		/// does not declare an explicit <c>@model</c> directive.
 		/// </summary>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		Task<string> CompileRenderAsync(string key, object? model, Type modelType, ExpandoObject? viewBag = null);
 
 		/// <summary>
@@ -41,12 +46,16 @@ namespace RazorLight
 		/// <param name="content">Content of the template</param>
 		/// <param name="model">Template model</param>
 		/// <param name="viewBag">Dynamic ViewBag</param>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		Task<string> CompileRenderStringAsync<T>(string key, string content, T model, ExpandoObject? viewBag = null);
 
 		/// <summary>
 		/// Compiles and renders string content using <paramref name="modelType"/> when the template does
 		/// not declare an explicit <c>@model</c> directive.
 		/// </summary>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		Task<string> CompileRenderStringAsync(
 			string key,
 			string content,
@@ -59,6 +68,8 @@ namespace RazorLight
 		/// </summary>
 		/// <param name="key">Unique key of the template</param>
 		/// <returns>An instance of a template</returns>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		Task<ITemplatePage> CompileTemplateAsync(string key);
 
 		[Obsolete("Please, use generic version of RenderTemplateAsync", true)]

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -75,6 +76,8 @@ namespace RazorLight.Compilation
 
 		internal IMemoryCache Cache => _cache;
 
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<CompiledTemplateDescriptor> CompileAsync(string templateKey)
 		{
 			return CompileAsync(TemplateCompilationRequest.ForProject(
@@ -83,6 +86,8 @@ namespace RazorLight.Compilation
 				_razorLightOptions.Namespaces));
 		}
 
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<CompiledTemplateDescriptor> CompileAsync(string templateKey, Type modelType)
 		{
 			if (modelType == null)
@@ -96,6 +101,8 @@ namespace RazorLight.Compilation
 				_razorLightOptions.Namespaces));
 		}
 
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<CompiledTemplateDescriptor> CompileAsync(
 			string templateKey,
 			string templateContent,
@@ -113,6 +120,8 @@ namespace RazorLight.Compilation
 				_razorLightOptions.Namespaces));
 		}
 
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		private Task<CompiledTemplateDescriptor> CompileAsync(TemplateCompilationRequest request)
 		{
 			if (request.TemplateKey == null)

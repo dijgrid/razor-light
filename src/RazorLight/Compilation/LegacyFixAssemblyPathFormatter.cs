@@ -7,7 +7,7 @@ namespace RazorLight.Compilation
 	{
 		public string GetAssemblyPath(Assembly assembly)
 		{
-			return assembly.Location;
+			return assembly.IsDynamic ? string.Empty : assembly.Location;
 		}
 	}
 }

@@ -60,18 +60,18 @@ namespace RazorLight.Compilation
 			{
 				references = dependencyContext.CompileLibraries.Where(x => !ExcludedAssemblies.Contains(x.Name)).SelectMany(library => library.ResolveReferencePaths()).ToList();
 
-				if (!references.Any())
-				{
-					throw new RazorLightException("Can't load metadata reference from the entry assembly. " +
-												  "Make sure PreserveCompilationContext is set to true in *.csproj file");
-				}
 			}
 
 			var metadataReferences = new List<MetadataReference>();
 
 			foreach (var reference in references)
 			{
-				if (!libraryPaths.Add(reference)) continue;
+				if (string.IsNullOrWhiteSpace(reference) ||
+					!File.Exists(reference) ||
+					!libraryPaths.Add(reference))
+				{
+					continue;
+				}
 
 				using (var stream = File.OpenRead(reference))
 				{
@@ -85,6 +85,14 @@ namespace RazorLight.Compilation
 			if (AdditionalMetadataReferences.Any())
 			{
 				metadataReferences.AddRange(AdditionalMetadataReferences);
+			}
+
+			if (metadataReferences.Count == 0)
+			{
+				throw new RazorLightException(
+					"No usable metadata references were found for runtime template compilation. " +
+					"Make sure PreserveCompilationContext is set to true in the application's project file, " +
+					"or provide explicit references with AddMetadataReferences.");
 			}
 
 			return metadataReferences;

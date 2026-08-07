@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.IO;
 using System.Threading.Tasks;
@@ -18,12 +19,16 @@ namespace RazorLight
 
 		public IEngineHandler Handler => _handler;
 
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<string> CompileRenderAsync(string key, object? model, Type modelType, ExpandoObject? viewBag = null)
 		{
 			return _handler.CompileRenderAsync(key, model, modelType, viewBag);
 		}
 
 		[Obsolete("Please, use CompileRenderStringAsync", true)]
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<string> CompileRenderAsync(
 			string key,
 			string content,
@@ -47,12 +52,16 @@ namespace RazorLight
 		}
 
 		/// <inheritdoc cref="IRazorLightEngine"/>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<string> CompileRenderAsync<T>(string key, T model, ExpandoObject? viewBag = null)
 		{
 			return _handler.CompileRenderAsync(key, model, viewBag);
 		}
 
 		/// <inheritdoc cref="IRazorLightEngine"/>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<string> CompileRenderStringAsync<T>(
 			string key,
 			string content,
@@ -63,6 +72,8 @@ namespace RazorLight
 		}
 
 		/// <inheritdoc cref="IRazorLightEngine"/>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<string> CompileRenderStringAsync(
 			string key,
 			string content,
@@ -74,6 +85,8 @@ namespace RazorLight
 		}
 
 		/// <inheritdoc cref="IRazorLightEngine"/>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<ITemplatePage> CompileTemplateAsync(string key)
 		{
 			return _handler.CompileTemplateAsync(key);

@@ -22,6 +22,12 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 - Generated template code now uses an explicit C# 14 parse policy instead of inheriting the host
   dependency context's language version. Modern C# and Razor directive baselines guard the retained,
   version-checked Razor 6 compatibility adapter.
+- Runtime compilation now declares trimming and dynamic-code requirements so consumers receive
+  `IL2026` and `IL3050` diagnostics for unsupported trimmed and Native AOT deployments.
+- Metadata discovery skips dynamic assemblies, empty assembly locations, and missing reference
+  files, with actionable configuration guidance when no usable compilation references remain.
+- Windows and Linux CI now executes framework-dependent, self-contained, and extraction-based
+  single-file deployment probes and guards the documented trim-warning inventory.
 
 ## 3.0.0 - 2026-08-07
 

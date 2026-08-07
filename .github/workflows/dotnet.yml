@@ -54,6 +54,16 @@ jobs:
       - name: Test precompile tool
         run: dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage;Format=cobertura" --results-directory artifacts/TestResults/Precompile --logger "console;verbosity=normal"
 
+      - name: Test deployment modes
+        if: matrix.os != 'macos-latest'
+        shell: pwsh
+        run: ./scripts/Test-DeploymentModes.ps1
+
+      - name: Verify trimming and Native AOT diagnostics
+        if: matrix.os == 'ubuntu-latest'
+        shell: pwsh
+        run: ./scripts/Test-DeploymentDiagnostics.ps1
+
       - name: Restore repository tools
         if: matrix.os == 'ubuntu-latest'
         run: dotnet tool restore

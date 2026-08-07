@@ -57,6 +57,8 @@ namespace RazorLight
 		/// </summary>
 		/// <param name="key">Unique key of the template</param>
 		/// <returns>An instance of a template</returns>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public async Task<ITemplatePage> CompileTemplateAsync(string key)
 		{
 			return await CompileTemplateAsync(TemplateCompilationRequest.ForProject(
@@ -65,6 +67,8 @@ namespace RazorLight
 				Options.Namespaces));
 		}
 
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		private async Task<ITemplatePage> CompileTemplateAsync(TemplateCompilationRequest request)
 		{
 			InvalidatePreviousStringTemplate(request);
@@ -179,6 +183,8 @@ namespace RazorLight
 		/// <param name="model">Template model</param>
 		/// <param name="viewBag">Dynamic ViewBag (can be null)</param>
 		/// <returns></returns>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public async Task<string> CompileRenderAsync<T>(string key, T model, ExpandoObject? viewBag = null)
 		{
 			ITemplatePage template = await CompileTemplateAsync(key).ConfigureAwait(false);
@@ -186,6 +192,8 @@ namespace RazorLight
 			return await RenderTemplateAsync(template, model, viewBag).ConfigureAwait(false);
 		}
 
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public async Task<string> CompileRenderAsync(
 			string key,
 			object? model,
@@ -212,6 +220,8 @@ namespace RazorLight
 		/// <param name="content">Content of the template</param>
 		/// <param name="model">Template model</param>
 		/// <param name="viewBag">Dynamic ViewBag</param>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<string> CompileRenderStringAsync<T>(
 			string key,
 			string content,
@@ -232,6 +242,8 @@ namespace RazorLight
 			return CompileRenderStringCoreAsync(key, content, model, modelType: null, viewBag);
 		}
 
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<string> CompileRenderStringAsync(
 			string key,
 			string content,
@@ -258,6 +270,8 @@ namespace RazorLight
 			return CompileRenderStringCoreAsync(key, content, model, modelType, viewBag);
 		}
 
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		private async Task<string> CompileRenderStringCoreAsync(
 			string key,
 			string content,

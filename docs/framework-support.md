@@ -32,6 +32,14 @@ This framework change belongs to the next major RazorLight release.
 The repository's `global.json` is the authoritative SDK selection. CI installs only that supported
 SDK and runs restore, build, and tests on Windows, Linux, and macOS.
 
+## Deployment modes
+
+Runtime compilation is tested in framework-dependent, self-contained, and extraction-based
+single-file applications on Windows and Linux. Trimming and Native AOT are explicitly unsupported
+for runtime compilation and produce analyzer diagnostics at consumer call sites. See the
+[deployment compatibility matrix](deployment.md) for the required project properties, analyzer
+contract, and precompiled alternatives.
+
 ## Compiler lifecycle
 
 The .NET target and generated-C# language version move together. The `net10.0` line intentionally

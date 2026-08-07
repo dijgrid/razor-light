@@ -103,6 +103,9 @@ if(cacheResult.Success)
 - Generated template code uses the .NET 10 C# 14 language baseline. The
   [Razor compiler integration decision](docs/razor-compiler-integration.md) documents the retained
   runtime parser boundary, supported alternatives, and replacement criteria.
+- Runtime compilation is tested in framework-dependent, self-contained, and extraction-based
+  single-file deployments on Windows and Linux. Trimming and Native AOT are rejected with analyzer
+  diagnostics; see the [deployment compatibility matrix](docs/deployment.md).
 - Azure Functions v4 is build-validated by the maintained sample. AWS Lambda and other hosting
   environments are not part of CI and should be treated as community-supported until a focused
   integration fixture is added.
@@ -396,17 +399,21 @@ Set `PreserveCompilationContext` to `true` in the entry-point project's `.csproj
 </PropertyGroup>
 ```
 
-Self-contained, trimmed, and single-file deployments can remove assemblies required by runtime
-compilation. Preserve the dependency context, avoid trimming template dependencies, and use
-`AddMetadataReferences` when the host cannot expose a required reference automatically.
+Self-contained deployment is supported with `PreserveCompilationContext`. Single-file deployment
+also requires `IncludeAllContentForSelfExtract`; a non-extracting bundle hides the dependency files
+needed for runtime compilation. Trimmed and Native AOT applications cannot use the runtime compiler
+and receive `IL2026` or `IL3050` at the call site. See the
+[deployment compatibility matrix](docs/deployment.md) for the complete configuration and supported
+alternatives.
 
 ### Does RazorLight work in serverless or ASP.NET Core integration-test hosts?
 
-The repository build-validates a .NET 10 Azure Functions v4 isolated-worker sample. AWS Lambda,
-trimmed deployment, and dedicated ASP.NET Core integration-test hosting are not currently exercised
-in CI, so they are community-supported rather than declared broken. Keep template rendering behind
-an application service when you need to substitute it in broader host tests, and open a reproducible
-issue for host-specific failures.
+The repository build-validates a .NET 10 Azure Functions v4 isolated-worker sample. AWS Lambda and
+dedicated ASP.NET Core integration-test hosting are not currently exercised in CI, so they are
+community-supported rather than declared broken. Windows and Linux deployment probes cover the
+runtime-compilation modes listed in the [deployment matrix](docs/deployment.md). Keep template
+rendering behind an application service when you need to substitute it in broader host tests, and
+open a reproducible issue for host-specific failures.
 
 # Project maintenance
 
