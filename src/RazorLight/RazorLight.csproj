@@ -1,10 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <PackageId>Dijgrid.RazorLight</PackageId>
     <Title>Dijgrid RazorLight</Title>
     <Description>Use Razor to build templates from strings, files, embedded resources, and custom sources outside ASP.NET MVC on .NET 10.</Description>
