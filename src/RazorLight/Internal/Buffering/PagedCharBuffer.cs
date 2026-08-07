@@ -32,7 +32,7 @@ namespace RazorLight.Internal.Buffering
 			}
 		}
 
-		private char[] CurrentPage { get; set; }
+		private char[]? CurrentPage { get; set; }
 
 		public void Append(char value)
 		{
@@ -128,7 +128,7 @@ namespace RazorLight.Internal.Buffering
 
 		private char[] NewPage()
 		{
-			char[] page = null;
+			char[]? page = null;
 			try
 			{
 				page = BufferSource.Rent(PageSize);
@@ -140,7 +140,7 @@ namespace RazorLight.Internal.Buffering
 				throw;
 			}
 
-			return page;
+			return page!;
 		}
 
 		public void Dispose()

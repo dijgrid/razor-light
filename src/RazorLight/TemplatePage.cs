@@ -12,9 +12,9 @@ namespace RazorLight
 		private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 		private bool _renderedBody;
 		private bool _ignoreBody;
-		private HashSet<string> _ignoredSections;
+		private HashSet<string>? _ignoredSections;
 
-		public async Task IncludeAsync(string key, object model = null)
+		public async Task IncludeAsync(string key, object? model = null)
 		{
 			if (string.IsNullOrEmpty(key))
 			{
@@ -92,7 +92,7 @@ namespace RazorLight
 			}
 
 			EnsureMethodCanBeInvoked(nameof(IsSectionDefined));
-			return PreviousSectionWriters.ContainsKey(name);
+			return GetPreviousSectionWriters(nameof(IsSectionDefined)).ContainsKey(name);
 		}
 
 		/// <summary>
@@ -110,7 +110,7 @@ namespace RazorLight
 				throw new ArgumentNullException(nameof(name));
 			}
 
-			return RenderSection(name, required: true);
+			return RenderSection(name, required: true)!;
 		}
 
 		/// <summary>
@@ -122,7 +122,7 @@ namespace RazorLight
 		/// <remarks>The method writes to the <see cref="TemplatePageBase.Output"/> and the value returned is a token
 		/// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
 		/// value does not represent the rendered content.</remarks>
-		public HtmlString RenderSection(string name, bool required)
+		public HtmlString? RenderSection(string name, bool required)
 		{
 			if (name == null)
 			{
@@ -145,14 +145,14 @@ namespace RazorLight
 		/// <remarks>The method writes to the <see cref="TemplatePageBase.Output"/> and the value returned is a token
 		/// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
 		/// value does not represent the rendered content.</remarks>
-		public Task<HtmlString> RenderSectionAsync(string name)
+		public async Task<HtmlString> RenderSectionAsync(string name)
 		{
 			if (name == null)
 			{
 				throw new ArgumentNullException(nameof(name));
 			}
 
-			return RenderSectionAsync(name, required: true);
+			return (await RenderSectionAsync(name, required: true).ConfigureAwait(false))!;
 		}
 
 		/// <summary>
@@ -169,7 +169,7 @@ namespace RazorLight
 		/// value does not represent the rendered content.</remarks>
 		/// <exception cref="InvalidOperationException">if <paramref name="required"/> is <c>true</c> and the section
 		/// was not registered using the <c>@section</c> in the Razor page.</exception>
-		public Task<HtmlString> RenderSectionAsync(string name, bool required)
+		public Task<HtmlString?> RenderSectionAsync(string name, bool required)
 		{
 			if (name == null)
 			{
@@ -180,14 +180,15 @@ namespace RazorLight
 			return RenderSectionAsyncCore(name, required);
 		}
 
-		private async Task<HtmlString> RenderSectionAsyncCore(string sectionName, bool required)
+		private async Task<HtmlString?> RenderSectionAsyncCore(string sectionName, bool required)
 		{
 			if (_renderedSections.Contains(sectionName))
 			{
 				throw new InvalidOperationException($"Section {sectionName} is already rendered");
 			}
 
-			if (PreviousSectionWriters.TryGetValue(sectionName, out var renderDelegate))
+			var sectionWriters = GetPreviousSectionWriters(nameof(RenderSectionAsync));
+			if (sectionWriters.TryGetValue(sectionName, out var renderDelegate))
 			{
 				_renderedSections.Add(sectionName);
 
@@ -219,7 +220,7 @@ namespace RazorLight
 				throw new ArgumentNullException(nameof(sectionName));
 			}
 
-			if (!PreviousSectionWriters.ContainsKey(sectionName))
+			if (!GetPreviousSectionWriters(nameof(IgnoreSection)).ContainsKey(sectionName))
 			{
 				throw new InvalidOperationException($"Section {sectionName} is not defined");
 			}
@@ -281,6 +282,12 @@ namespace RazorLight
 			{
 				throw new InvalidOperationException($"Method {methodName} can not be called");
 			}
+		}
+
+		private IDictionary<string, RenderAsyncDelegate> GetPreviousSectionWriters(string methodName)
+		{
+			EnsureMethodCanBeInvoked(methodName);
+			return PreviousSectionWriters!;
 		}
 
 		#endregion

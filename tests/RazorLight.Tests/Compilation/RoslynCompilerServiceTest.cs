@@ -28,7 +28,7 @@ namespace RazorLight.Tests.Compilation
 		public void Constructor_SetsCompilationOptionsFromDependencyContext()
 		{
 			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(),
-				Assembly.GetEntryAssembly());
+				Assembly.GetEntryAssembly()!);
 
 			// Act & Assert
 			var parseOptions = compiler.ParseOptions;
@@ -39,7 +39,7 @@ namespace RazorLight.Tests.Compilation
 		public void EnsureOptions_ConfiguresCompilationOptions()
 		{
 			// Arrange
-			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly());
+			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly()!);
 
 			// Act & Assert
 			var compilationOptions = compiler.CSharpCompilationOptions;
@@ -228,7 +228,7 @@ namespace RazorLight.Tests.Compilation
 		[Fact]
 		public void Throw_With_CompilationErrors_On_Failed_BuildAsync()
 		{
-			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly());
+			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly()!);
 
 			var template = new TestGeneratedRazorTemplate("key", "public class Test { error }");
 
@@ -242,9 +242,9 @@ namespace RazorLight.Tests.Compilation
 		[Fact]
 		public void Throw_OnNullRazorTemplate_OnCompile()
 		{
-			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly());
+			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly()!);
 
-			Func<Assembly> action = () => compiler.CompileAndEmit(null);
+			Func<Assembly> action = () => compiler.CompileAndEmit(null!);
 
 			Assert.Throws<ArgumentNullException>(action);
 		}

@@ -45,7 +45,9 @@ namespace RazorLight.Precompile.Tests
 
 		public static string GetExpectedPrecompiledFilePath(string templateFilePath, TestScenario scenario)
 		{
-			var cacheFileInfo = scenario.ExpectedCachingStrategy.GetCachedFileInfo(scenario.GetTemplateKey(templateFilePath), templateFilePath, scenario.GetExpectedCacheDirectory(templateFilePath));
+			var cacheDirectory = scenario.GetExpectedCacheDirectory(templateFilePath)
+				?? throw new InvalidOperationException("The scenario has no expected cache directory.");
+			var cacheFileInfo = scenario.ExpectedCachingStrategy.GetCachedFileInfo(scenario.GetTemplateKey(templateFilePath), templateFilePath, cacheDirectory);
 			return scenario.GetExpectedPrecompiledFilePath(cacheFileInfo.AssemblyFilePath);
 		}
 

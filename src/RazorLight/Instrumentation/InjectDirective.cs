@@ -71,7 +71,8 @@ namespace RazorLight.Instrumentation
 						MemberName = memberName,
 					};
 
-					visitor.Class.Children.Add(injectNode);
+					(visitor.Class ?? throw new RazorLightException("The generated document has no class declaration."))
+						.Children.Add(injectNode);
 				}
 			}
 		}
@@ -114,7 +115,7 @@ namespace RazorLight.Instrumentation
 
 		private class Visitor : IntermediateNodeWalker
 		{
-			public ClassDeclarationIntermediateNode Class { get; private set; }
+			public ClassDeclarationIntermediateNode? Class { get; private set; }
 
 			public IList<DirectiveIntermediateNode> Directives { get; } = new List<DirectiveIntermediateNode>();
 

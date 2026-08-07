@@ -19,8 +19,8 @@ namespace RazorLight.Internal.Buffering
 	/// </summary>
 	public class ViewBufferTextWriter : TextWriter
 	{
-		private readonly TextWriter _inner;
-		private readonly HtmlEncoder _htmlEncoder;
+		private readonly TextWriter? _inner;
+		private readonly HtmlEncoder? _htmlEncoder;
 
 		/// <summary>
 		/// Creates a new instance of <see cref="ViewBufferTextWriter"/>.
@@ -100,7 +100,7 @@ namespace RazorLight.Internal.Buffering
 			}
 			else
 			{
-				_inner.Write(value);
+				_inner!.Write(value);
 			}
 		}
 
@@ -128,12 +128,12 @@ namespace RazorLight.Internal.Buffering
 			}
 			else
 			{
-				_inner.Write(buffer, index, count);
+				_inner!.Write(buffer, index, count);
 			}
 		}
 
 		/// <inheritdoc />
-		public override void Write(string value)
+		public override void Write(string? value)
 		{
 			if (string.IsNullOrEmpty(value))
 			{
@@ -146,20 +146,20 @@ namespace RazorLight.Internal.Buffering
 			}
 			else
 			{
-				_inner.Write(value);
+				_inner!.Write(value);
 			}
 		}
 
 		/// <inheritdoc />
-		public override void Write(object value)
+		public override void Write(object? value)
 		{
 			if (value == null)
 			{
 				return;
 			}
 
-			IHtmlContentContainer container;
-			IHtmlContent content;
+			IHtmlContentContainer? container;
+			IHtmlContent? content;
 			if ((container = value as IHtmlContentContainer) != null)
 			{
 				Write(container);
@@ -178,7 +178,7 @@ namespace RazorLight.Internal.Buffering
 		/// Writes an <see cref="IHtmlContent"/> value.
 		/// </summary>
 		/// <param name="value">The <see cref="IHtmlContent"/> value.</param>
-		public void Write(IHtmlContent value)
+		public void Write(IHtmlContent? value)
 		{
 			if (value == null)
 			{
@@ -191,7 +191,7 @@ namespace RazorLight.Internal.Buffering
 			}
 			else
 			{
-				value.WriteTo(_inner, _htmlEncoder);
+				value.WriteTo(_inner!, _htmlEncoder!);
 			}
 		}
 
@@ -199,7 +199,7 @@ namespace RazorLight.Internal.Buffering
 		/// Writes an <see cref="IHtmlContentContainer"/> value.
 		/// </summary>
 		/// <param name="value">The <see cref="IHtmlContentContainer"/> value.</param>
-		public void Write(IHtmlContentContainer value)
+		public void Write(IHtmlContentContainer? value)
 		{
 			if (value == null)
 			{
@@ -212,20 +212,20 @@ namespace RazorLight.Internal.Buffering
 			}
 			else
 			{
-				value.WriteTo(_inner, _htmlEncoder);
+				value.WriteTo(_inner!, _htmlEncoder!);
 			}
 		}
 
 		/// <inheritdoc />
-		public override void WriteLine(object value)
+		public override void WriteLine(object? value)
 		{
 			if (value == null)
 			{
 				return;
 			}
 
-			IHtmlContentContainer container;
-			IHtmlContent content;
+			IHtmlContentContainer? container;
+			IHtmlContent? content;
 			if ((container = value as IHtmlContentContainer) != null)
 			{
 				Write(container);
@@ -253,7 +253,7 @@ namespace RazorLight.Internal.Buffering
 			}
 			else
 			{
-				return _inner.WriteAsync(value);
+				return _inner!.WriteAsync(value);
 			}
 		}
 
@@ -281,21 +281,24 @@ namespace RazorLight.Internal.Buffering
 			}
 			else
 			{
-				return _inner.WriteAsync(buffer, index, count);
+				return _inner!.WriteAsync(buffer, index, count);
 			}
 		}
 
 		/// <inheritdoc />
-		public override Task WriteAsync(string value)
+		public override Task WriteAsync(string? value)
 		{
 			if (IsBuffering)
 			{
-				Buffer.AppendHtml(value);
+				if (value != null)
+				{
+					Buffer.AppendHtml(value);
+				}
 				return Task.CompletedTask;
 			}
 			else
 			{
-				return _inner.WriteAsync(value);
+				return _inner!.WriteAsync(value);
 			}
 		}
 
@@ -308,21 +311,24 @@ namespace RazorLight.Internal.Buffering
 			}
 			else
 			{
-				_inner.WriteLine();
+				_inner!.WriteLine();
 			}
 		}
 
 		/// <inheritdoc />
-		public override void WriteLine(string value)
+		public override void WriteLine(string? value)
 		{
 			if (IsBuffering)
 			{
-				Buffer.AppendHtml(value);
+				if (value != null)
+				{
+					Buffer.AppendHtml(value);
+				}
 				Buffer.AppendHtml(NewLine);
 			}
 			else
 			{
-				_inner.WriteLine(value);
+				_inner!.WriteLine(value);
 			}
 		}
 
@@ -337,13 +343,17 @@ namespace RazorLight.Internal.Buffering
 			}
 			else
 			{
-				return _inner.WriteLineAsync(value);
+				return _inner!.WriteLineAsync(value);
 			}
 		}
 
 		/// <inheritdoc />
-		public override Task WriteLineAsync(char[] value, int start, int offset)
+		public override Task WriteLineAsync(char[]? value, int start, int offset)
 		{
+			if (value == null)
+			{
+				return WriteLineAsync();
+			}
 			if (IsBuffering)
 			{
 				Buffer.AppendHtml(new string(value, start, offset));
@@ -352,22 +362,25 @@ namespace RazorLight.Internal.Buffering
 			}
 			else
 			{
-				return _inner.WriteLineAsync(value, start, offset);
+				return _inner!.WriteLineAsync(value, start, offset);
 			}
 		}
 
 		/// <inheritdoc />
-		public override Task WriteLineAsync(string value)
+		public override Task WriteLineAsync(string? value)
 		{
 			if (IsBuffering)
 			{
-				Buffer.AppendHtml(value);
+				if (value != null)
+				{
+					Buffer.AppendHtml(value);
+				}
 				Buffer.AppendHtml(NewLine);
 				return Task.CompletedTask;
 			}
 			else
 			{
-				return _inner.WriteLineAsync(value);
+				return _inner!.WriteLineAsync(value);
 			}
 		}
 
@@ -381,7 +394,7 @@ namespace RazorLight.Internal.Buffering
 			}
 			else
 			{
-				return _inner.WriteLineAsync();
+				return _inner!.WriteLineAsync();
 			}
 		}
 
@@ -400,7 +413,7 @@ namespace RazorLight.Internal.Buffering
 			if (IsBuffering)
 			{
 				IsBuffering = false;
-				Buffer.WriteTo(_inner, _htmlEncoder);
+				Buffer.WriteTo(_inner, _htmlEncoder!);
 				Buffer.Clear();
 			}
 
@@ -423,7 +436,7 @@ namespace RazorLight.Internal.Buffering
 			if (IsBuffering)
 			{
 				IsBuffering = false;
-				await Buffer.WriteToAsync(_inner, _htmlEncoder);
+				await Buffer.WriteToAsync(_inner, _htmlEncoder!);
 				Buffer.Clear();
 			}
 

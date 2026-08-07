@@ -22,11 +22,11 @@ namespace RazorLight.Tests.Compilation
 			var compilerService = new RoslynCompilationService(metadataManager, assembly);
 			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, project);
 
-			Action p1 = new Action(() => { new RazorTemplateCompiler(null, compilerService, project, options); });
-			Action p2 = new Action(() => { new RazorTemplateCompiler(generator, null, project, options); });
-			Action p3 = new Action(() => { new RazorTemplateCompiler(generator, compilerService, null, options); });
+			Action p1 = new Action(() => { new RazorTemplateCompiler(null!, compilerService, project, options); });
+			Action p2 = new Action(() => { new RazorTemplateCompiler(generator, null!, project, options); });
+			Action p3 = new Action(() => { new RazorTemplateCompiler(generator, compilerService, null!, options); });
 			
-			Action p4 = new Action(() => { new RazorTemplateCompiler(generator, compilerService, project, null as RazorLightOptions); });
+			Action p4 = new Action(() => { new RazorTemplateCompiler(generator, compilerService, project, (RazorLightOptions)null!); });
 
 			Assert.Throws<ArgumentNullException>(p1);
 			Assert.Throws<ArgumentNullException>(p2);
@@ -178,7 +178,7 @@ namespace RazorLight.Tests.Compilation
 			var result = await compiler.CompileAsync(templateKey);
 
 			Assert.NotNull(result);
-			Assert.NotNull(result.TemplateAttribute.TemplateType);
+			Assert.NotNull(result.TemplateAttribute?.TemplateType);
 			Assert.Equal(result.TemplateKey, templateKey);
 			Assert.False(result.IsPrecompiled);
 		}

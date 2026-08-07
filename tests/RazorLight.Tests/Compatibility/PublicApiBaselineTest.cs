@@ -11,6 +11,8 @@ namespace RazorLight.Tests.Compatibility
 {
 	public class PublicApiBaselineTest
 	{
+		private static readonly NullabilityInfoContext NullabilityContext = new NullabilityInfoContext();
+
 		[Fact]
 		public void Public_API_matches_baseline()
 		{
@@ -28,7 +30,7 @@ namespace RazorLight.Tests.Compatibility
 			}
 
 			Assert.True(
-				actualHash == "befad7ae69df31243712a02c0f81c2c4c59a4e2c5e2ae45c8a24a52020a8546e",
+				actualHash == "b676bbb48e68b0e0ef5a3e612f8af550bb943b1cfe8a45d0d63bfb82a5d55e7c",
 				"Actual public API hash: " + actualHash);
 		}
 
@@ -43,7 +45,7 @@ namespace RazorLight.Tests.Compatibility
 			if (inheritedTypes.Length > 0)
 			{
 				builder.Append(" : ");
-				builder.Append(string.Join(", ", inheritedTypes.Select(FormatType)));
+				builder.Append(string.Join(", ", inheritedTypes.Select(type => FormatType(type))));
 			}
 
 			var members = GetApiMembers(type).OrderBy(member => member, StringComparer.Ordinal).ToArray();
@@ -98,7 +100,7 @@ namespace RazorLight.Tests.Compatibility
 			{
 				var modifiers = field.IsLiteral ? " const" : field.IsStatic ? " static" : string.Empty;
 				var value = field.IsLiteral ? " = " + FormatValue(field.GetRawConstantValue()) : string.Empty;
-				yield return FormatVisibility(field) + modifiers + " " + FormatType(field.FieldType) +
+				yield return FormatVisibility(field) + modifiers + " " + FormatType(field.FieldType, NullabilityContext.Create(field)) +
 					" " + field.Name + value + ";";
 			}
 
@@ -113,7 +115,7 @@ namespace RazorLight.Tests.Compatibility
 				var accessors = new List<string>();
 				if (property.GetMethod != null && IsVisible(property.GetMethod)) accessors.Add("get;");
 				if (property.SetMethod != null && IsVisible(property.SetMethod)) accessors.Add("set;");
-				yield return FormatVisibility(accessor) + modifiers + " " + FormatType(property.PropertyType) +
+				yield return FormatVisibility(accessor) + modifiers + " " + FormatType(property.PropertyType, NullabilityContext.Create(property)) +
 					" " + name + " { " + string.Join(" ", accessors) + " }";
 			}
 
@@ -122,7 +124,7 @@ namespace RazorLight.Tests.Compatibility
 				var accessor = eventInfo.AddMethod ?? eventInfo.RemoveMethod;
 				var modifiers = accessor != null && accessor.IsStatic ? " static" : string.Empty;
 				yield return FormatVisibility(accessor) + modifiers + " event " +
-					FormatType(eventInfo.EventHandlerType) + " " + eventInfo.Name + ";";
+					FormatType(eventInfo.EventHandlerType, NullabilityContext.Create(eventInfo)) + " " + eventInfo.Name + ";";
 			}
 
 			foreach (var method in type.GetMethods(flags).Where(method => !method.IsSpecialName && IsVisible(method)))
@@ -132,7 +134,8 @@ namespace RazorLight.Tests.Compatibility
 				var genericArguments = method.IsGenericMethodDefinition
 					? "<" + string.Join(", ", method.GetGenericArguments().Select(argument => argument.Name)) + ">"
 					: string.Empty;
-				yield return FormatVisibility(method) + modifiers + " " + FormatType(method.ReturnType) +
+				yield return FormatVisibility(method) + modifiers + " " +
+					FormatType(method.ReturnType, NullabilityContext.Create(method.ReturnParameter)) +
 					" " + method.Name + genericArguments + "(" + FormatParameters(method.GetParameters()) + ");";
 			}
 		}
@@ -147,15 +150,16 @@ namespace RazorLight.Tests.Compatibility
 					: parameterType.IsByRef ? parameter.IsOut ? "out " : "ref " : string.Empty;
 				if (parameterType.IsByRef) parameterType = parameterType.GetElementType();
 				var defaultValue = parameter.HasDefaultValue ? " = " + FormatValue(parameter.DefaultValue) : string.Empty;
-				return modifier + FormatType(parameterType) + " " + parameter.Name + defaultValue;
+				return modifier + FormatType(parameterType, NullabilityContext.Create(parameter)) + " " + parameter.Name + defaultValue;
 			}));
 		}
 
-		private static string FormatType(Type? type)
+		private static string FormatType(Type? type, NullabilityInfo? nullability = null)
 		{
 			if (type == null) return "null";
-			if (type.IsArray) return FormatType(type.GetElementType()) + "[]";
-			if (type.IsGenericParameter) return type.Name;
+			var suffix = IsNullable(type, nullability) ? "?" : string.Empty;
+			if (type.IsArray) return FormatType(type.GetElementType(), nullability?.ElementType) + "[]" + suffix;
+			if (type.IsGenericParameter) return type.Name + suffix;
 
 			var nullableType = Nullable.GetUnderlyingType(type);
 			if (nullableType != null) return FormatType(nullableType) + "?";
@@ -165,8 +169,20 @@ namespace RazorLight.Tests.Compatibility
 			if (tickIndex >= 0) name = name.Substring(0, tickIndex);
 			name = name.Replace('+', '.');
 
-			if (!type.IsGenericType) return name;
-			return name + "<" + string.Join(", ", type.GetGenericArguments().Select(FormatType)) + ">";
+			if (!type.IsGenericType) return name + suffix;
+			var genericNullability = nullability?.GenericTypeArguments ?? Array.Empty<NullabilityInfo>();
+			var genericArguments = type.GetGenericArguments();
+			var formattedArguments = genericArguments.Select((argument, index) =>
+				FormatType(argument, index < genericNullability.Length ? genericNullability[index] : null));
+			return name + "<" + string.Join(", ", formattedArguments) + ">" + suffix;
+		}
+
+		private static bool IsNullable(Type type, NullabilityInfo? nullability)
+		{
+			return Nullable.GetUnderlyingType(type) == null &&
+				!type.IsValueType &&
+				(nullability?.ReadState == NullabilityState.Nullable ||
+				 nullability?.WriteState == NullabilityState.Nullable);
 		}
 
 		private static string GetTypeKind(Type type)

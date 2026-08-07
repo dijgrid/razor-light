@@ -16,14 +16,14 @@ namespace RazorLight.Razor
 			}
 
 			Assembly = rootType.Assembly;
-			RootNamespace = rootType.Namespace;
+			RootNamespace = rootType.Namespace ?? string.Empty;
 		}
 
-		public EmbeddedRazorProject(Assembly assembly, string rootNamespace = "")
+		public EmbeddedRazorProject(Assembly assembly, string? rootNamespace = "")
 		{
 			Assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
 
-			RootNamespace = rootNamespace;
+			RootNamespace = rootNamespace ?? string.Empty;
 		}
 
 		public Assembly Assembly { get; set; }
@@ -56,7 +56,7 @@ namespace RazorLight.Razor
 
 		public override Task<IEnumerable<string>> GetKnownKeysAsync()
 		{
-			var ignoredPrefix = string.IsNullOrEmpty(RootNamespace) ? Assembly.GetName().FullName : RootNamespace;
+			var ignoredPrefix = string.IsNullOrEmpty(RootNamespace) ? Assembly.GetName().FullName ?? string.Empty : RootNamespace;
 			if (!ignoredPrefix.EndsWith(".")) ignoredPrefix += ".";
 
 			var fullResourceNames = this.Assembly.GetManifestResourceNames()

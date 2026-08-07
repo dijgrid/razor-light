@@ -32,7 +32,7 @@ namespace RazorLight.Internal.Buffering
 		/// <summary>
 		/// Gets the value.
 		/// </summary>
-		public object Value { get; }
+		public object? Value { get; }
 
 		private string DebuggerToString()
 		{

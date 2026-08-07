@@ -28,9 +28,9 @@ namespace RazorLight
 
 		public virtual IList<Action<ITemplatePage>> PreRenderCallbacks { get; set; }
 
-		public ICachingProvider CachingProvider { get; set; }
+		public ICachingProvider? CachingProvider { get; set; }
 
-		public Assembly OperatingAssembly { get; set; }
+		public Assembly? OperatingAssembly { get; set; }
 
 		/// <summary>
 		/// Settings this to <c>true</c> will disable HTML encoding in all templates.

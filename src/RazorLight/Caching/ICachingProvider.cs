@@ -7,7 +7,7 @@ namespace RazorLight.Caching
 	{
 		TemplateCacheLookupResult RetrieveTemplate(string key);
 
-		void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken expirationToken);
+		void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken? expirationToken);
 
 		bool Contains(string key);
 

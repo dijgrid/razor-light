@@ -21,7 +21,7 @@ namespace RazorLight.Tests.Generation
 		[Fact]
 		public void Throws_On_Null_Project()
 		{
-			Action action = () => new RazorSourceGenerator(null);
+			Action action = () => new RazorSourceGenerator(null!);
 
 			Assert.Throws<ArgumentNullException>(action);
 		}
@@ -162,7 +162,7 @@ namespace RazorLight.Tests.Generation
 		{
 			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, project: null);
 
-			Func<Task> action = () => generator.CreateCodeDocumentAsync(null);
+			Func<Task> action = () => generator.CreateCodeDocumentAsync(null!);
 
 			var exception = await Assert.ThrowsAsync<ArgumentNullException>(action);
 			Assert.Equal("projectItem", exception.ParamName);

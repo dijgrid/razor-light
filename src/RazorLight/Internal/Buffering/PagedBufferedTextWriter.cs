@@ -55,7 +55,7 @@ namespace RazorLight.Internal.Buffering
 			_charBuffer.Append(value);
 		}
 
-		public override void Write(char[] buffer)
+		public override void Write(char[]? buffer)
 		{
 			if (buffer == null)
 			{
@@ -75,7 +75,7 @@ namespace RazorLight.Internal.Buffering
 			_charBuffer.Append(buffer, index, count);
 		}
 
-		public override void Write(string value)
+		public override void Write(string? value)
 		{
 			if (value == null)
 			{
@@ -97,7 +97,7 @@ namespace RazorLight.Internal.Buffering
 			await _inner.WriteAsync(buffer, index, count);
 		}
 
-		public override async Task WriteAsync(string value)
+		public override async Task WriteAsync(string? value)
 		{
 			await FlushAsync();
 			await _inner.WriteAsync(value);

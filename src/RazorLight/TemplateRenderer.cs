@@ -31,7 +31,7 @@ namespace RazorLight
 
 		public virtual async Task RenderAsync(ITemplatePage page)
 		{
-			var context = page.PageContext;
+			var context = page.PageContext ?? throw new InvalidOperationException("The template page has no PageContext.");
 
 			var bodyWriter = await RenderPageAsync(page, context, invokeViewStarts: false).ConfigureAwait(false);
 			await RenderLayoutAsync(page, context, bodyWriter).ConfigureAwait(false);

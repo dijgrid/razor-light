@@ -10,8 +10,8 @@ namespace RazorLight.Tests.Razor
 		[Fact]
 		public void Throws_OnNullConstructorParams()
 		{
-			Assert.Throws<ArgumentNullException>(() => new TextSourceRazorProjectItem(null, "some"));
-			Assert.Throws<ArgumentNullException>(() => new TextSourceRazorProjectItem("some", null));
+			Assert.Throws<ArgumentNullException>(() => new TextSourceRazorProjectItem(null!, "some"));
+			Assert.Throws<ArgumentNullException>(() => new TextSourceRazorProjectItem("some", null!));
 		}
 
 		[Fact]

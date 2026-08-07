@@ -9,7 +9,7 @@ namespace RazorLight.Razor
 	{
 		private readonly string fullTemplateKey;
 
-		public EmbeddedRazorProjectItem(Assembly assembly, string rootNamespace, string key)
+		public EmbeddedRazorProjectItem(Assembly assembly, string? rootNamespace, string key)
 		{
 			Assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
 			Key = key ?? throw new ArgumentNullException(nameof(key));
@@ -57,7 +57,8 @@ namespace RazorLight.Razor
 
 		public override Stream Read()
 		{
-			return Assembly.GetManifestResourceStream(this.fullTemplateKey);
+			return Assembly.GetManifestResourceStream(this.fullTemplateKey)
+				?? throw new InvalidOperationException($"Embedded resource '{fullTemplateKey}' was not found.");
 		}
 	}
 }

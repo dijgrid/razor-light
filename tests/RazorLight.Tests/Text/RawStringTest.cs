@@ -10,7 +10,7 @@ namespace RazorLight.Tests.Text
 		[Fact]
 		public void String_Can_Be_Null()
 		{
-			var raw = new RawString(null);
+			var raw = new RawString(null!);
 
 			Assert.NotNull(raw);
 			Assert.Equal(raw.Value, string.Empty);

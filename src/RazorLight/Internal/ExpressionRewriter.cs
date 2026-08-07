@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System;
 using System.Linq.Expressions;
 
 namespace RazorLight.Internal
@@ -56,7 +57,8 @@ namespace RazorLight.Internal
 			IsInsideClass = true;
 
 			// Call base first to visit all the children and populate Expressions.
-			var classDeclaration = (ClassDeclarationSyntax)base.VisitClassDeclaration(node);
+			var classDeclaration = base.VisitClassDeclaration(node) as ClassDeclarationSyntax
+				?? throw new InvalidOperationException("The class declaration rewriter returned no class.");
 
 			IsInsideClass = false;
 
@@ -66,7 +68,8 @@ namespace RazorLight.Internal
 				var expression = kvp.Key;
 				var memberName = kvp.Value.GetFirstToken();
 
-				var expressionType = SemanticModel.GetTypeInfo(expression).ConvertedType;
+				var expressionType = SemanticModel.GetTypeInfo(expression).ConvertedType
+					?? throw new InvalidOperationException("The expression has no converted type.");
 				var declaration = SyntaxFactory.FieldDeclaration(
 					SyntaxFactory.List<AttributeListSyntax>(),
 					SyntaxFactory.TokenList(
@@ -124,7 +127,7 @@ namespace RazorLight.Internal
 				return node;
 			}
 
-			if (!node.Parent.IsKind(SyntaxKind.Argument))
+			if (node.Parent?.IsKind(SyntaxKind.Argument) != true)
 			{
 				return node;
 			}

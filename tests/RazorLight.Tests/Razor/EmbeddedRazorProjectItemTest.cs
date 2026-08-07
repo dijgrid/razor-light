@@ -10,13 +10,13 @@ namespace RazorLight.Tests.Razor
 		[Fact]
 		public void Throws_On_Null_Assembly()
 		{
-			Assert.Throws<ArgumentNullException>(() => new EmbeddedRazorProjectItem(null, "namespace", "key"));
+			Assert.Throws<ArgumentNullException>(() => new EmbeddedRazorProjectItem(null!, "namespace", "key"));
 		}
 
 		[Fact]
 		public void Throws_On_Null_Key()
 		{
-			Assert.Throws<ArgumentNullException>(() => new EmbeddedRazorProjectItem(typeof(Root).Assembly, "namespace", null));
+			Assert.Throws<ArgumentNullException>(() => new EmbeddedRazorProjectItem(typeof(Root).Assembly, "namespace", null!));
 		}
 
 		//[Fact]

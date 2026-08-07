@@ -1,7 +1,7 @@
 ---
 id: TASK-024
 title: Annotate the public RazorLight API for nullable reference types
-status: todo
+status: done
 priority: medium
 epic: EPIC-modernization
 milestone: MILESTONE-library-quality
@@ -14,7 +14,7 @@ tags:
   - compatibility
   - dependency-gated
 createdAt: 2026-08-07T03:54:00Z
-updatedAt: 2026-08-07T04:01:00.801Z
+updatedAt: 2026-08-07T14:35:15.726Z
 refinementState: ready
 ---
 
@@ -29,18 +29,18 @@ until that evidence exposes an ambiguous public contract.
 
 ## Acceptance criteria
 
-- [ ] Nullable reference types are enabled in `src/RazorLight` without broad warning suppression.
-- [ ] Public parameters, return values, properties, delegates, and generic constraints reflect
+- [x] Nullable reference types are enabled in `src/RazorLight` without broad warning suppression.
+- [x] Public parameters, return values, properties, delegates, and generic constraints reflect
       documented runtime behavior rather than compiler-warning convenience.
-- [ ] Optional values and null-state transitions use appropriate attributes where C# annotations
+- [x] Optional values and null-state transitions use appropriate attributes where C# annotations
       alone cannot express the contract.
-- [ ] Existing public API fingerprint tests and package validation identify every externally visible
+- [x] Existing public API fingerprint tests and package validation identify every externally visible
       annotation change.
-- [ ] Intentional source-compatibility changes are recorded in shipped/unshipped API evidence and
+- [x] Intentional source-compatibility changes are recorded in shipped/unshipped API evidence and
       next-major migration notes.
-- [ ] Rendering, compilation, project lookup, caching, layouts, includes, and generated-template
+- [x] Rendering, compilation, project lookup, caching, layouts, includes, and generated-template
       baselines pass after annotation changes.
-- [ ] Consumers have a short nullable migration guide with examples for any newly diagnosed call
+- [x] Consumers have a short nullable migration guide with examples for any newly diagnosed call
       sites.
 
 ## Implementation plan
@@ -59,3 +59,17 @@ until that evidence exposes an ambiguous public contract.
 - Do not redesign APIs solely to make annotations cleaner; TASK-018 owns next-major API redesign.
 - Do not change generated template semantics unless a separate compatibility task requires it.
 - Nullable warnings must not be hidden with assembly-wide `NoWarn` or `#nullable disable`.
+
+## Implementation notes
+
+- Enabled nullable reference types for `src/RazorLight` and annotated rendering, page lifecycle,
+  compilation, project, caching, configuration, and obsolete compatibility contracts. The
+  `IsCachingEnabled` contract uses `MemberNotNullWhen` to relate the state flag to `Cache`.
+- Regenerated `PublicAPI.Unshipped.txt` in nullable mode so each reference type is recorded with an
+  explicit `!` or `?`. The reflection fingerprint now includes nullable metadata, with focused
+  contract assertions in `NullableContractTest`.
+- Added `docs/nullability.md`, linked it from the README, and recorded the source-compatibility
+  impact in the changelog and compatibility baseline.
+- Updated repository consumers and test doubles to honor the published contracts. Full library and
+  precompile suites, warning-as-error solution build, SDK package compatibility checks, and package
+  content validation pass on .NET 10.

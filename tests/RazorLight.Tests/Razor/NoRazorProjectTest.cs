@@ -11,7 +11,7 @@ namespace RazorLight.Tests.Razor
 		{
 			var project = new NoRazorProject();
 
-			var actual = await project.GetImportsAsync(null);
+			var actual = await project.GetImportsAsync(null!);
 
 			Assert.Empty(actual);
 		}
@@ -21,7 +21,7 @@ namespace RazorLight.Tests.Razor
 		{
 			var project = new NoRazorProject();
 
-			var actual = await project.GetItemAsync(null);
+			var actual = await project.GetItemAsync(null!);
 
 			Assert.Equal(NoRazorProjectItem.Empty, actual);
 		}

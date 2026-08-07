@@ -33,7 +33,8 @@ namespace RazorLight.Tests.Snippets
 		async Task RenderCompiledTemplate(RazorLightEngine engine, object model)
 		{
 			#region RenderCompiledTemplate
-			var cacheResult = engine.Handler.Cache.RetrieveTemplate("templateKey");
+			var cacheResult = engine.Handler.Cache?.RetrieveTemplate("templateKey")
+				?? throw new System.InvalidOperationException("Caching is not configured.");
 			if(cacheResult.Success)
 			{
 				var templatePage = cacheResult.Template.TemplatePageFactory();

@@ -14,7 +14,7 @@ namespace RazorLight.Instrumentation
 				// Additionally, we can't use Type.GetType("Microsoft.AspNetCore.Razor.Language.DefaultRazorCSharpLoweringPhase, Microsoft.AspNetCore.Razor.Language")
 				// because apparently it can fail during Azure Functions rolling upgrades? Per user report: https://github.com/toddams/RazorLight/issues/322
 				var assemblyQualifiedNameOfTypeWeCareAbout = "Microsoft.AspNetCore.Razor.Language.DefaultRazorCSharpLoweringPhase, Microsoft.AspNetCore.Razor.Language, ";
-				return type.AssemblyQualifiedName.Substring(0, assemblyQualifiedNameOfTypeWeCareAbout.Length) == assemblyQualifiedNameOfTypeWeCareAbout;
+				return type.AssemblyQualifiedName?.StartsWith(assemblyQualifiedNameOfTypeWeCareAbout) == true;
 			});
 
 			if (defaultRazorCSharpLoweringPhase == null)

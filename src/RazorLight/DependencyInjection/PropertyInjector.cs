@@ -36,7 +36,7 @@ namespace RazorLight.DependencyInjection
 				   return
 					   p.IsDefined(typeof(RazorInjectAttribute)) &&
 					   p.GetIndexParameters().Length == 0 &&
-					   !p.SetMethod.IsStatic;
+					   p.SetMethod?.IsStatic == false;
 			   }).ToArray();
 
 			var scopeFactory = services.GetRequiredService<IServiceScopeFactory>();

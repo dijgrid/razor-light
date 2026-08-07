@@ -60,7 +60,11 @@ namespace RazorLight.Compilation
 			RazorSourceGenerator sourceGenerator,
 			ICompilationService compilationService,
 			RazorLightProject razorLightProject,
-			IOptions<RazorLightOptions> options) : this(sourceGenerator, compilationService, razorLightProject, options.Value)
+			IOptions<RazorLightOptions> options) : this(
+				sourceGenerator,
+				compilationService,
+				razorLightProject,
+				(options ?? throw new ArgumentNullException(nameof(options))).Value)
 		{
 
 		}
@@ -78,20 +82,19 @@ namespace RazorLight.Compilation
 
 			// Attempt to lookup the cache entry using the passed in key. This will succeed if the key is already
 			// normalized and a cache entry exists.
-			if (_cache.TryGetValue(templateKey, out Task<CompiledTemplateDescriptor> cachedResult))
+			if (_cache.TryGetValue(templateKey, out object? cachedValue) && cachedValue is Task<CompiledTemplateDescriptor> cachedResult)
 			{
 				return cachedResult;
 			}
 
 			string normalizedPath = GetNormalizedKey(templateKey);
-			if (_cache.TryGetValue(normalizedPath, out cachedResult))
+			if (_cache.TryGetValue(normalizedPath, out cachedValue) && cachedValue is Task<CompiledTemplateDescriptor> normalizedResult)
 			{
-				return cachedResult;
+				return normalizedResult;
 			}
 
 			// Entry does not exist. Attempt to create one.
-			cachedResult = OnCacheMissAsync(templateKey);
-			return cachedResult;
+			return OnCacheMissAsync(templateKey);
 		}
 
 		/// <summary>
@@ -114,16 +117,19 @@ namespace RazorLight.Compilation
 				string normalizedKey = GetNormalizedKey(templateKey);
 
 				// Double-checked locking to handle a possible race.
-				if (_cache.TryGetValue(normalizedKey, out Task<CompiledTemplateDescriptor> result))
+				if (_cache.TryGetValue(normalizedKey, out object? cachedValue) && cachedValue is Task<CompiledTemplateDescriptor> result)
 				{
 					return await result;
 				}
 
 				if (_precompiledViews.TryGetValue(normalizedKey, out var precompiledView))
 				{
-					item = null;
-					// TODO: PrecompiledViews should be generated from RazorLight.Precompile.csproj but it's a work in progress.
-					//item = CreatePrecompiledWorkItem(normalizedKey, precompiledView);
+					item = new ViewCompilerWorkItem
+					{
+						NormalizedKey = normalizedKey,
+						ExpirationToken = precompiledView.ExpirationToken,
+						Descriptor = precompiledView,
+					};
 				}
 				else
 				{
@@ -147,7 +153,7 @@ namespace RazorLight.Compilation
 				{
 					// If we can't compile, we should have already created the descriptor
 					Debug.Assert(item.Descriptor != null);
-					taskSource.SetResult(item.Descriptor);
+					taskSource.SetResult(item.Descriptor!);
 				}
 
 				_ = _cache.Set(item.NormalizedKey, taskSource.Task, cacheEntryOptions);
@@ -174,7 +180,8 @@ namespace RazorLight.Compilation
 
 				try
 				{
-					CompiledTemplateDescriptor descriptor = await CompileAndEmitAsync(item.ProjectItem);
+					CompiledTemplateDescriptor descriptor = await CompileAndEmitAsync(
+						item.ProjectItem ?? throw new InvalidOperationException("The compilation work item has no project item."));
 					descriptor.ExpirationToken = cacheEntryOptions.ExpirationTokens.FirstOrDefault();
 					taskSource.SetResult(descriptor);
 				}
@@ -191,7 +198,7 @@ namespace RazorLight.Compilation
 		{
 			RazorLightProjectItem projectItem;
 
-			if (_razorLightOptions.DynamicTemplates.TryGetValue(templateKey, out string templateContent))
+			if (_razorLightOptions.DynamicTemplates.TryGetValue(templateKey, out string? templateContent) && templateContent != null)
 			{
 				projectItem = new TextSourceRazorProjectItem(templateKey, templateContent);
 			}
@@ -292,14 +299,14 @@ namespace RazorLight.Compilation
 		{
 			public bool SupportsCompilation { get; set; }
 
-			public string NormalizedKey { get; set; }
+			public string NormalizedKey { get; set; } = string.Empty;
 
-			public IChangeToken ExpirationToken { get; set; }
+			public IChangeToken? ExpirationToken { get; set; }
 
 			// ReSharper disable once UnusedAutoPropertyAccessor.Local
-			public CompiledTemplateDescriptor Descriptor { get; set; }
+			public CompiledTemplateDescriptor? Descriptor { get; set; }
 
-			public RazorLightProjectItem ProjectItem { get; set; }
+			public RazorLightProjectItem? ProjectItem { get; set; }
 		}
 
 		#endregion

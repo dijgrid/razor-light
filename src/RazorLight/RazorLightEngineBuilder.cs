@@ -12,27 +12,27 @@ namespace RazorLight
 {
 	public class RazorLightEngineBuilder
 	{
-		protected Assembly operatingAssembly;
+		protected Assembly? operatingAssembly;
 
-		protected HashSet<string> namespaces;
+		protected HashSet<string>? namespaces;
 
-		protected ConcurrentDictionary<string, string> dynamicTemplates;
+		protected ConcurrentDictionary<string, string>? dynamicTemplates;
 
-		protected HashSet<MetadataReference> metadataReferences;
+		protected HashSet<MetadataReference>? metadataReferences;
 
-		protected HashSet<string> excludedAssemblies;
+		protected HashSet<string>? excludedAssemblies;
 
-		protected List<Action<ITemplatePage>> prerenderCallbacks;
+		protected List<Action<ITemplatePage>>? prerenderCallbacks;
 
-		protected RazorLightProject project;
+		protected RazorLightProject? project;
 
-		protected ICachingProvider cachingProvider;
+		protected ICachingProvider? cachingProvider;
 
 		private bool? disableEncoding;
 
 		private bool? enableDebugMode;
 
-		private RazorLightOptions options;
+		private RazorLightOptions? options;
 
 
 		/// <summary>
@@ -105,7 +105,7 @@ namespace RazorLight
 		/// <param name="assembly">Assembly containing embedded resources</param>
 		/// <param name="rootNamespace">The root namespace (prefix) for your assembly manifest resource stream.</param>
 		/// <returns></returns>
-		public RazorLightEngineBuilder UseEmbeddedResourcesProject(Assembly assembly, string rootNamespace = null)
+		public RazorLightEngineBuilder UseEmbeddedResourcesProject(Assembly assembly, string? rootNamespace = null)
 		{
 			project = new EmbeddedRazorProject(assembly, rootNamespace);
 
@@ -349,7 +349,8 @@ namespace RazorLight
 			}
 
 			var metadataReferenceManager = new DefaultMetadataReferenceManager(options.AdditionalMetadataReferences, options.ExcludedAssemblies);
-			var assembly = operatingAssembly ?? Assembly.GetEntryAssembly();
+			var assembly = operatingAssembly ?? Assembly.GetEntryAssembly()
+				?? throw new InvalidOperationException("An operating assembly could not be determined. Configure one with SetOperatingAssembly.");
 			var compiler = new RoslynCompilationService(metadataReferenceManager, assembly, cachingProvider as IPrecompileCallback);
 
 			var sourceGenerator = new RazorSourceGenerator(DefaultRazorEngine.Instance, project, options.Namespaces);

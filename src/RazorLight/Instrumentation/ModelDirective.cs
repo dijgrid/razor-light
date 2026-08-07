@@ -82,16 +82,16 @@ namespace RazorLight.Instrumentation
 					visitor.Namespace?.Children.Insert(0, usingNode);
 				}
 
-				var baseType = visitor.Class?.BaseType?.Replace("<TModel>", "<" + modelType + ">");
-				visitor.Class.BaseType = baseType;
+				var @class = visitor.Class ?? throw new RazorLightException("The generated document has no class declaration.");
+				@class.BaseType = @class.BaseType?.Replace("<TModel>", "<" + modelType + ">");
 			}
 		}
 
 		private class Visitor : IntermediateNodeWalker
 		{
-			public NamespaceDeclarationIntermediateNode Namespace { get; private set; }
+			public NamespaceDeclarationIntermediateNode? Namespace { get; private set; }
 
-			public ClassDeclarationIntermediateNode Class { get; private set; }
+			public ClassDeclarationIntermediateNode? Class { get; private set; }
 
 			public IList<DirectiveIntermediateNode> ModelDirectives { get; } = new List<DirectiveIntermediateNode>();
 

@@ -34,7 +34,7 @@ namespace RazorLight.Tests.Compilation
 				throw new NotImplementedException();
 			}
 
-			public override void SetModel(object model)
+			public override void SetModel(object? model)
 			{
 				throw new NotImplementedException();
 			}

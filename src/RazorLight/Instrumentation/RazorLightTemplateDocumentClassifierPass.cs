@@ -17,8 +17,6 @@ namespace RazorLight.Instrumentation
 			ClassDeclarationIntermediateNode @class,
 			MethodDeclarationIntermediateNode method)
 		{
-			string templateKey = codeDocument.Source.FilePath ?? codeDocument.Source.FilePath;
-
 			base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
 
 			@namespace.Content = "RazorLight.CompiledTemplates";

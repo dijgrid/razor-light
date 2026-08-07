@@ -12,7 +12,7 @@ namespace RazorLight.Razor
 		private static readonly Lazy<NoRazorProjectItem> EmptyImpl = new Lazy<NoRazorProjectItem>(() => new NoRazorProjectItem());
 		public static NoRazorProjectItem Empty => EmptyImpl.Value;
 
-		public override string Key { get; }
+		public override string Key => string.Empty;
 		public override bool Exists { get; }
 
 		public override Stream Read()
@@ -20,13 +20,13 @@ namespace RazorLight.Razor
 			throw new NotImplementedException($"{nameof(NoRazorProjectItem)} is only used by string templates.");
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			var other = obj as NoRazorProjectItem;
 			return string.Equals(Key, other?.Key);
 		}
 
-		private bool Equals(NoRazorProjectItem other)
+		private bool Equals(NoRazorProjectItem? other)
 		{
 			return Key == other?.Key;
 		}

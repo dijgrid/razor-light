@@ -13,8 +13,8 @@ namespace RazorLight.Tests.Caching
 		{
 			var cache = new MemoryCachingProvider();
 
-			Assert.Throws<ArgumentNullException>(() => cache.CacheTemplate("someKey", null));
-			Assert.Throws<ArgumentNullException>(() => cache.CacheTemplate(null, GetTestFactory()));
+			Assert.Throws<ArgumentNullException>(() => cache.CacheTemplate("someKey", null!));
+			Assert.Throws<ArgumentNullException>(() => cache.CacheTemplate(null!, GetTestFactory()));
 		}
 
 		[Fact]
@@ -22,7 +22,7 @@ namespace RazorLight.Tests.Caching
 		{
 			var cache = new MemoryCachingProvider();
 
-			Assert.Throws<ArgumentNullException>(() => cache.RetrieveTemplate(null));
+			Assert.Throws<ArgumentNullException>(() => cache.RetrieveTemplate(null!));
 		}
 
 		[Fact]

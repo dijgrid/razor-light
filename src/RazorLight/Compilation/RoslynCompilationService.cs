@@ -22,9 +22,9 @@ namespace RazorLight.Compilation
 		private readonly IMetadataReferenceManager metadataReferenceManager;
 		private readonly bool isDevelopment;
 		private readonly List<MetadataReference> metadataReferences = new List<MetadataReference>();
-		private readonly IPrecompileCallback precompileCallback;
+		private readonly IPrecompileCallback? precompileCallback;
 
-		public RoslynCompilationService(IMetadataReferenceManager referenceManager, Assembly operatingAssembly, IPrecompileCallback precompileCallback = null)
+		public RoslynCompilationService(IMetadataReferenceManager referenceManager, Assembly operatingAssembly, IPrecompileCallback? precompileCallback = null)
 		{
 			this.metadataReferenceManager = referenceManager ?? throw new ArgumentNullException(nameof(referenceManager));
 			this.OperatingAssembly = operatingAssembly ?? throw new ArgumentNullException(nameof(operatingAssembly));
@@ -38,8 +38,12 @@ namespace RazorLight.Compilation
 			EmitOptions = new EmitOptions(debugInformationFormat: pdbFormat);
 		}
 
-		public RoslynCompilationService(IMetadataReferenceManager referenceManager, IOptions<RazorLightOptions> options, IPrecompileCallback precompileCallback = null) :
-			this(referenceManager, options.Value.OperatingAssembly, precompileCallback)
+		public RoslynCompilationService(IMetadataReferenceManager referenceManager, IOptions<RazorLightOptions> options, IPrecompileCallback? precompileCallback = null) :
+			this(
+				referenceManager,
+				(options ?? throw new ArgumentNullException(nameof(options))).Value.OperatingAssembly
+					?? throw new InvalidOperationException("RazorLightOptions.OperatingAssembly must be configured."),
+				precompileCallback)
 		{
 			
 		}
@@ -54,7 +58,7 @@ namespace RazorLight.Compilation
 			get
 			{
 				EnsureOptions();
-				return _compilationOptions;
+				return _compilationOptions!;
 			}
 		}
 		public virtual CSharpParseOptions ParseOptions
@@ -62,14 +66,14 @@ namespace RazorLight.Compilation
 			get
 			{
 				EnsureOptions();
-				return _parseOptions;
+				return _parseOptions!;
 			}
 		}
 
 		#endregion
 
-		private CSharpParseOptions _parseOptions;
-		private CSharpCompilationOptions _compilationOptions;
+		private CSharpParseOptions? _parseOptions;
+		private CSharpCompilationOptions? _compilationOptions;
 
 		private static readonly object locker = new object();
 
@@ -123,7 +127,7 @@ namespace RazorLight.Compilation
 					
 					foreach (Diagnostic diagnostic in errorsDiagnostics)
 					{
-						FileLinePositionSpan lineSpan = diagnostic.Location.SourceTree.GetMappedLineSpan(diagnostic.Location.SourceSpan);
+						FileLinePositionSpan lineSpan = diagnostic.Location.GetMappedLineSpan();
 						string errorMessage = diagnostic.GetMessage();
 						string formattedMessage = $"- ({lineSpan.StartLinePosition.Line}:{lineSpan.StartLinePosition.Character}) {errorMessage}";
 
@@ -238,7 +242,7 @@ namespace RazorLight.Compilation
 		private CSharpParseOptions GetParseOptions(DependencyContextCompilationOptions dependencyContextOptions)
 		{
 			var configurationSymbol = isDevelopment ? "DEBUG" : "RELEASE";
-			var defines = dependencyContextOptions.Defines.Concat(new[] { configurationSymbol });
+			var defines = dependencyContextOptions.Defines.OfType<string>().Concat(new[] { configurationSymbol });
 
 			var parseOptions = new CSharpParseOptions(preprocessorSymbols: defines);
 

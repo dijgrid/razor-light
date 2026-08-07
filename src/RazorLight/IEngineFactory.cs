@@ -11,7 +11,7 @@ namespace RazorLight
 		/// </summary>
 		/// <param name="root">Root folder where views are stored</param>
 		/// <returns></returns>
-		RazorLightEngine ForFileSystem(string root);
+		RazorLightEngine? ForFileSystem(string root);
 
 		/// <summary>
 		/// Creates RazorLightEngine with a filesystem razor project
@@ -19,14 +19,14 @@ namespace RazorLight
 		/// <param name="root">Root folder where views are stored</param>
 		/// <param name="options">Engine options</param>
 		/// <returns>Instance of RazorLightEngine</returns>
-		RazorLightEngine ForFileSystem(string root, RazorLightOptions options);
+		RazorLightEngine? ForFileSystem(string root, RazorLightOptions options);
 
 		/// <summary>
 		/// Creates RazorLightEngine with a embedded resource razor project
 		/// </summary>
 		/// <param name="rootType">Type of the root.</param>
 		/// <returns>Instance of RazorLightEngine</returns>
-		RazorLightEngine ForEmbeddedResources(Type rootType);
+		RazorLightEngine? ForEmbeddedResources(Type rootType);
 
 		/// <summary>
 		/// Creates RazorLightEngine with a embedded resource razor project
@@ -34,9 +34,9 @@ namespace RazorLight
 		/// <param name="rootType">Type of the root.</param>
 		/// <param name="options">Engine options</param>
 		/// <returns>Instance of RazorLightEngine</returns>
-		RazorLightEngine ForEmbeddedResources(Type rootType, RazorLightOptions options);
+		RazorLightEngine? ForEmbeddedResources(Type rootType, RazorLightOptions options);
 
-		RazorLightEngine Create(RazorLightOptions options = null);
+		RazorLightEngine? Create(RazorLightOptions? options = null);
 
 		/// <summary>
 		/// Creates RazorLightEngine with a custom RazorLightProject
@@ -44,6 +44,6 @@ namespace RazorLight
 		/// <param name="project">The project</param>
 		/// <param name="options">Options for configuring the RazorLightEngine.</param>
 		/// <returns>Instance of RazorLightEngine</returns>
-		RazorLightEngine Create(RazorLightProject project, RazorLightOptions options);
+		RazorLightEngine? Create(RazorLightProject? project, RazorLightOptions? options);
 	}
 }

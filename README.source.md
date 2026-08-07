@@ -63,6 +63,8 @@ snippet: RenderCompiledTemplate
   [`docs/framework-support.md`](docs/framework-support.md) before upgrading.
 - The public API and historical behavior baseline are recorded in
   [`docs/compatibility-baseline.md`](docs/compatibility-baseline.md).
+- Version 3 publishes nullable reference annotations; see the
+  [nullable migration guide](docs/nullability.md) for newly diagnosed call sites.
 - Current model, import, LINQ, and template-cache behavior is recorded in the
   [template language compatibility matrix](docs/template-language-compatibility.md).
 - Azure Functions v4 is build-validated by the maintained sample. AWS Lambda and other hosting

@@ -5,7 +5,7 @@ namespace RazorLight.Razor
 {
 	public abstract class RazorLightProjectItem
 	{
-		public IChangeToken ExpirationToken { get; set; }
+		public IChangeToken? ExpirationToken { get; set; }
 
 		/// <summary>
 		/// Unique key of the template that was searched

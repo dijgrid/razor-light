@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.IO;
 using System.Text.Encodings.Web;
@@ -16,7 +17,7 @@ namespace RazorLight
 			RazorLightOptions options,
 			IRazorTemplateCompiler compiler,
 			ITemplateFactoryProvider factoryProvider,
-			ICachingProvider cache)
+			ICachingProvider? cache)
 		{
 			Options = options ?? throw new ArgumentNullException(nameof(options));
 			Compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
@@ -29,17 +30,22 @@ namespace RazorLight
 			IOptions<RazorLightOptions> options,
 			IRazorTemplateCompiler compiler,
 			ITemplateFactoryProvider factoryProvider,
-			ICachingProvider cache) : this(options.Value, compiler, factoryProvider, cache)
+			ICachingProvider? cache) : this(
+				(options ?? throw new ArgumentNullException(nameof(options))).Value,
+				compiler,
+				factoryProvider,
+				cache)
 		{
 			
 
 		}
 
 		public RazorLightOptions Options { get; }
-		public ICachingProvider Cache { get; }
+		public ICachingProvider? Cache { get; }
 		public IRazorTemplateCompiler Compiler { get; }
 		public ITemplateFactoryProvider FactoryProvider { get; }
 
+		[MemberNotNullWhen(true, nameof(Cache))]
 		public bool IsCachingEnabled => Cache != null;
 
 		/// <summary>
@@ -49,8 +55,8 @@ namespace RazorLight
 		/// <returns>An instance of a template</returns>
 		public async Task<ITemplatePage> CompileTemplateAsync(string key)
 		{
-			ITemplatePage templatePage = null;
-			if (IsCachingEnabled)
+			ITemplatePage? templatePage = null;
+			if (Cache != null)
 			{
 				var cacheLookupResult = Cache.RetrieveTemplate(key);
 				if (cacheLookupResult.Success)
@@ -64,7 +70,7 @@ namespace RazorLight
 				CompiledTemplateDescriptor templateDescriptor = await Compiler.CompileAsync(key);
 				Func<ITemplatePage> templateFactory = FactoryProvider.CreateFactory(templateDescriptor);
 
-				if(IsCachingEnabled) {
+				if(Cache != null) {
 					Cache.CacheTemplate(
 					key,
 					templateFactory,
@@ -85,7 +91,7 @@ namespace RazorLight
 		/// <param name="model">Template model</param>
 		/// <param name="viewBag">Dynamic viewBag of the template</param>
 		/// <returns>Rendered string</returns>
-		public async Task<string> RenderTemplateAsync<T>(ITemplatePage templatePage, T model, ExpandoObject viewBag = null)
+		public async Task<string> RenderTemplateAsync<T>(ITemplatePage templatePage, T model, ExpandoObject? viewBag = null)
 		{
 			using (var writer = new StringWriter())
 			{
@@ -106,7 +112,7 @@ namespace RazorLight
 			ITemplatePage templatePage,
 			T model,
 			TextWriter textWriter,
-			ExpandoObject viewBag = null)
+			ExpandoObject? viewBag = null)
 		{
 			SetModelContext(templatePage, textWriter, model, viewBag);
 
@@ -121,7 +127,7 @@ namespace RazorLight
 			ITemplatePage templatePage,
 			T model,
 			TextWriter textWriter,
-			ExpandoObject viewBag,
+			ExpandoObject? viewBag,
 			TemplateRenderer templateRenderer)
 		{
 			SetModelContext(templatePage, textWriter, model, viewBag);
@@ -135,7 +141,7 @@ namespace RazorLight
 		/// <param name="model">Template model</param>
 		/// <param name="viewBag">Dynamic ViewBag (can be null)</param>
 		/// <returns></returns>
-		public async Task<string> CompileRenderAsync<T>(string key, T model, ExpandoObject viewBag = null)
+		public async Task<string> CompileRenderAsync<T>(string key, T model, ExpandoObject? viewBag = null)
 		{
 			ITemplatePage template = await CompileTemplateAsync(key).ConfigureAwait(false);
 
@@ -153,7 +159,7 @@ namespace RazorLight
 			string key,
 			string content,
 			T model,
-			ExpandoObject viewBag = null)
+			ExpandoObject? viewBag = null)
 		{
 			if (string.IsNullOrEmpty(key))
 			{
@@ -173,7 +179,7 @@ namespace RazorLight
 			ITemplatePage templatePage,
 			TextWriter textWriter,
 			T model,
-			ExpandoObject viewBag)
+			ExpandoObject? viewBag)
 		{
 			if (textWriter == null)
 			{
@@ -190,7 +196,7 @@ namespace RazorLight
 			{
 				pageContext.ModelTypeInfo = new ModelTypeInfo(model.GetType());
 
-				object pageModel = pageContext.ModelTypeInfo.CreateTemplateModel(model);
+				object? pageModel = pageContext.ModelTypeInfo.CreateTemplateModel(model);
 				templatePage.SetModel(pageModel);
 
 				pageContext.Model = pageModel;

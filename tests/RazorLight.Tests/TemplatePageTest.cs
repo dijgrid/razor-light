@@ -446,7 +446,7 @@ namespace RazorLight.Tests
 			page.PushWriter(writer);
 
 			// Assert
-			Assert.Same(writer, page.PageContext.Writer);
+			Assert.Same(writer, page.PageContext!.Writer);
 		}
 
 		[Fact]
@@ -455,7 +455,7 @@ namespace RazorLight.Tests
 			// Arrange
 			var page = CreatePage(p => { });
 			var defaultWriter = new StringWriter();
-			page.PageContext.Writer = defaultWriter;
+			page.PageContext!.Writer = defaultWriter;
 
 			var writer = new StringWriter();
 
@@ -463,14 +463,14 @@ namespace RazorLight.Tests
 			page.PushWriter(writer);
 
 			// Assert 1
-			Assert.Same(writer, page.PageContext.Writer);
+			Assert.Same(writer, page.PageContext!.Writer);
 
 			// Act 2
 			var poppedWriter = page.PopWriter();
 
 			// Assert 2
 			Assert.Same(defaultWriter, poppedWriter);
-			Assert.Same(defaultWriter, page.PageContext.Writer);
+			Assert.Same(defaultWriter, page.PageContext!.Writer);
 		}
 
 		[Fact]
@@ -500,7 +500,7 @@ namespace RazorLight.Tests
 			{
 				p.Write(new HtmlString("Hello world"));
 			});
-			page.PageContext.Writer = writer;
+			page.PageContext!.Writer = writer;
 
 			// Act
 			await page.ExecuteAsync();

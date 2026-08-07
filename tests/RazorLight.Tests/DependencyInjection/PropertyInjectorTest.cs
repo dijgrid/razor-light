@@ -14,7 +14,7 @@ namespace RazorLight.Tests.DependencyInjection
 		[Fact]
 		public void Throws_On_Null_ServiceCollection()
 		{
-			Assert.Throws<ArgumentNullException>(() => new PropertyInjector(null));
+			Assert.Throws<ArgumentNullException>(() => new PropertyInjector(null!));
 		}
 
 		[Fact]

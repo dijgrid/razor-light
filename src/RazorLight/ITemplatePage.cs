@@ -8,17 +8,17 @@ namespace RazorLight
 {
 	public interface ITemplatePage
 	{
-		void SetModel(object model);
+		void SetModel(object? model);
 
 		/// <summary>
 		/// Gets or sets the view context of the rendering template.
 		/// </summary>
-		PageContext PageContext { get; set; }
+		PageContext? PageContext { get; set; }
 
 		/// <summary>
 		/// Gets or sets the body content.
 		/// </summary>
-		IHtmlContent BodyContent { get; set; }
+		IHtmlContent? BodyContent { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether encoding is disabled for the entire template
@@ -28,7 +28,7 @@ namespace RazorLight
 		/// <summary>
 		/// Gets or sets the unique key of the current template
 		/// </summary>
-		string Key { get; set; }
+		string? Key { get; set; }
 
 		/// <summary>
 		/// Gets or sets a flag that determines if the layout of this page is being rendered.
@@ -43,12 +43,12 @@ namespace RazorLight
 		/// <summary>
 		/// Gets or sets the key of a layout page.
 		/// </summary>
-		string Layout { get; set; }
+		string? Layout { get; set; }
 
 		/// <summary>
 		/// Gets or sets the sections that can be rendered by this page.
 		/// </summary>
-		IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
+		IDictionary<string, RenderAsyncDelegate>? PreviousSectionWriters { get; set; }
 
 		/// <summary>
 		/// Gets the sections that are defined by this page.
@@ -61,7 +61,7 @@ namespace RazorLight
 		/// <returns>A task representing the result of executing the page.</returns>
 		Task ExecuteAsync();
 
-		Func<string, object, Task> IncludeFunc { get; set; }
+		Func<string, object?, Task>? IncludeFunc { get; set; }
 
 		void EnsureRenderedBodyOrSections();
 	}

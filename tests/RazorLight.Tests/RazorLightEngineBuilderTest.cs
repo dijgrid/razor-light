@@ -13,7 +13,7 @@ namespace RazorLight.Tests
 		[Fact]
 		public void Throws_On_Null_Project()
 		{
-			Action action = () => new RazorLightEngineBuilder().UseProject(null);
+			Action action = () => new RazorLightEngineBuilder().UseProject(null!);
 
 			Assert.Throws<ArgumentNullException>(action);
 		}
@@ -21,7 +21,7 @@ namespace RazorLight.Tests
 		[Fact]
 		public void Throws_On_Null_RootType_ForEmbeddedProject()
 		{
-			Action action = () => new RazorLightEngineBuilder().UseEmbeddedResourcesProject(null);
+			Action action = () => new RazorLightEngineBuilder().UseEmbeddedResourcesProject((Type)null!);
 
 			Assert.Throws<ArgumentNullException>(action);
 		}
@@ -29,7 +29,7 @@ namespace RazorLight.Tests
 		[Fact]
 		public void Throws_On_Null_RootPath_ForFilesystemProject()
 		{
-			Action action = () => new RazorLightEngineBuilder().UseFileSystemProject(null);
+			Action action = () => new RazorLightEngineBuilder().UseFileSystemProject(null!);
 
 			Assert.Throws<DirectoryNotFoundException>(action);
 		}
@@ -38,7 +38,7 @@ namespace RazorLight.Tests
 		[Fact]
 		public void Throws_On_Null_CachingProvider()
 		{
-			Action action = () => new RazorLightEngineBuilder().UseCachingProvider(null);
+			Action action = () => new RazorLightEngineBuilder().UseCachingProvider(null!);
 
 			Assert.Throws<ArgumentNullException>(action);
 		}
@@ -46,7 +46,7 @@ namespace RazorLight.Tests
 		[Fact]
 		public void Throws_On_Null_Namespaces()
 		{
-			Action action = () => new RazorLightEngineBuilder().AddDefaultNamespaces(null);
+			Action action = () => new RazorLightEngineBuilder().AddDefaultNamespaces(null!);
 
 			Assert.Throws<ArgumentNullException>(action);
 		}
@@ -54,7 +54,7 @@ namespace RazorLight.Tests
 		[Fact]
 		public void Throws_On_Null_AddMetadataReferences()
 		{
-			Action action = () => new RazorLightEngineBuilder().AddMetadataReferences(null);
+			Action action = () => new RazorLightEngineBuilder().AddMetadataReferences(null!);
 
 			Assert.Throws<ArgumentNullException>(action);
 		}
@@ -62,7 +62,7 @@ namespace RazorLight.Tests
 		[Fact]
 		public void Throws_On_Null_DynamicTemplates()
 		{
-			Action action = () => new RazorLightEngineBuilder().AddDynamicTemplates(null);
+			Action action = () => new RazorLightEngineBuilder().AddDynamicTemplates(null!);
 
 			Assert.Throws<ArgumentNullException>(action);
 		}
@@ -70,7 +70,7 @@ namespace RazorLight.Tests
 		[Fact]
 		public void Throws_On_Null_PrerenderCallbacks()
 		{
-			Action action = () => new RazorLightEngineBuilder().AddPrerenderCallbacks(null);
+			Action action = () => new RazorLightEngineBuilder().AddPrerenderCallbacks(null!);
 
 			Assert.Throws<ArgumentNullException>(action);
 		}
@@ -78,7 +78,7 @@ namespace RazorLight.Tests
 		[Fact]
 		public void Throws_On_Null_Assembly()
 		{
-			Action action = () => new RazorLightEngineBuilder().SetOperatingAssembly(null);
+			Action action = () => new RazorLightEngineBuilder().SetOperatingAssembly(null!);
 
 			Assert.Throws<ArgumentNullException>(action);
 		}

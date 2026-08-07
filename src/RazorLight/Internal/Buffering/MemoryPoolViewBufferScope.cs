@@ -13,8 +13,8 @@ namespace RazorLight.Internal.Buffering
 		public static readonly int MinimumSize = 16;
 		private readonly ArrayPool<ViewBufferValue> _viewBufferPool;
 		private readonly ArrayPool<char> _charPool;
-		private List<ViewBufferValue[]> _available;
-		private List<ViewBufferValue[]> _leased;
+		private List<ViewBufferValue[]>? _available;
+		private List<ViewBufferValue[]>? _leased;
 		private bool _disposed;
 
 		/// <summary>
@@ -56,7 +56,7 @@ namespace RazorLight.Internal.Buffering
 				_leased = new List<ViewBufferValue[]>(1);
 			}
 
-			ViewBufferValue[] segment = null;
+			ViewBufferValue[]? segment = null;
 
 			// Reuse pages that have been returned before going back to the memory pool.
 			if (_available != null && _available.Count > 0)
@@ -77,7 +77,7 @@ namespace RazorLight.Internal.Buffering
 				throw;
 			}
 
-			return segment;
+			return segment!;
 		}
 
 		/// <inheritdoc />

@@ -11,7 +11,7 @@ namespace RazorLight
 		/// </summary>
 		/// <param name="root">Root folder where views are stored</param>
 		/// <returns>Instance of RazorLightEngine</returns>
-		public virtual RazorLightEngine ForFileSystem(string root)
+		public virtual RazorLightEngine? ForFileSystem(string root)
 		{
 			var project = new FileSystemRazorProject(root);
 
@@ -24,7 +24,7 @@ namespace RazorLight
 		/// <param name="root">Root folder where views are stored</param>
 		/// <param name="options">Engine options</param>
 		/// <returns>Instance of RazorLightEngine</returns>
-		public virtual RazorLightEngine ForFileSystem(string root, RazorLightOptions options)
+		public virtual RazorLightEngine? ForFileSystem(string root, RazorLightOptions options)
 		{
 			var project = new FileSystemRazorProject(root);
 
@@ -36,7 +36,7 @@ namespace RazorLight
 		/// </summary>
 		/// <param name="rootType">Type of the root.</param>
 		/// <returns>Instance of RazorLightEngine</returns>
-		public virtual RazorLightEngine ForEmbeddedResources(Type rootType)
+		public virtual RazorLightEngine? ForEmbeddedResources(Type rootType)
 		{
 			var project = new EmbeddedRazorProject(rootType);
 
@@ -49,14 +49,14 @@ namespace RazorLight
 		/// <param name="rootType">Type of the root.</param>
 		/// <param name="options">Engine options</param>
 		/// <returns>Instance of RazorLightEngine</returns>
-		public virtual RazorLightEngine ForEmbeddedResources(Type rootType, RazorLightOptions options)
+		public virtual RazorLightEngine? ForEmbeddedResources(Type rootType, RazorLightOptions options)
 		{
 			var project = new EmbeddedRazorProject(rootType);
 
 			return Create(project, options);
 		}
 
-		public RazorLightEngine Create(RazorLightOptions options = null)
+		public RazorLightEngine? Create(RazorLightOptions? options = null)
 		{
 			return Create(null, options);
 		}
@@ -67,7 +67,7 @@ namespace RazorLight
 		/// <param name="project">The project</param>
 		/// <param name="options">Options for configuring the RazorLightEngine.</param>
 		/// <returns>Instance of RazorLightEngine</returns>
-		public virtual RazorLightEngine Create(RazorLightProject project, RazorLightOptions options = null)
+		public virtual RazorLightEngine? Create(RazorLightProject? project, RazorLightOptions? options = null)
 		{
 			return null;
 		}

@@ -12,8 +12,8 @@ namespace RazorLight.Tests.Generation
 		[Fact]
 		public void Ensure_Throws_OnNull_ConstructorParams()
 		{
-			Action firstParamAction = () => { new GeneratedRazorTemplate(null, new Mock<RazorCSharpDocument>().Object); };
-			Action secondParamAction = () => { new GeneratedRazorTemplate(null, new Mock<RazorCSharpDocument>().Object); };
+			Action firstParamAction = () => { new GeneratedRazorTemplate(null!, new Mock<RazorCSharpDocument>().Object); };
+			Action secondParamAction = () => { new GeneratedRazorTemplate(new Mock<RazorLightProjectItem>().Object, null!); };
 
 			Assert.Throws<ArgumentNullException>(firstParamAction);
 			Assert.Throws<ArgumentNullException>(secondParamAction);

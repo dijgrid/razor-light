@@ -17,7 +17,10 @@ The library also uses `Microsoft.CodeAnalysis.PublicApiAnalyzers` with checked-i
 `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt` files. The independent package has not shipped
 yet, so its inherited public surface remains in the unshipped file until the first stable release.
 Additions and removals therefore produce a human-readable source diff and fail warning-as-error
-builds unless the API record is updated intentionally. The inherited optional-parameter overload
+builds unless the API record is updated intentionally. The records use nullable mode, so every
+reference type carries an explicit `!` or `?` contract. `PublicApiBaselineTest` also includes
+nullable metadata in its fingerprint, and `NullableContractTest` checks representative rendering,
+lifecycle, configuration, descriptor, and caching contracts. The inherited optional-parameter overload
 shape is excluded from the analyzer's design-only RS0026 and RS0027 rules; TASK-018 owns any redesign,
 while the API inventory and package validator continue to enforce the binary surface.
 

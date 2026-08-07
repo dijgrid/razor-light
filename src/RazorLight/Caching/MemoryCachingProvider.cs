@@ -22,7 +22,7 @@ namespace RazorLight.Caching
 				throw new ArgumentNullException(nameof(key));
 			}
 
-			if (LookupCache.TryGetValue(key, out TemplateCacheItem template))
+			if (LookupCache.TryGetValue(key, out object? value) && value is TemplateCacheItem template)
 			{
 				var result = new TemplateCacheLookupResult(template);
 
@@ -39,7 +39,7 @@ namespace RazorLight.Caching
 			return LookupCache.TryGetValue(key, out _);
 		}
 
-		public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken expirationToken = null)
+		public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken? expirationToken = null)
 		{
 			if (string.IsNullOrEmpty(key))
 			{

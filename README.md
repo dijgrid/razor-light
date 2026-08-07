@@ -77,14 +77,15 @@ To render a compiled template:
 <!-- snippet: RenderCompiledTemplate -->
 <a id='snippet-RenderCompiledTemplate'></a>
 ```cs
-var cacheResult = engine.Handler.Cache.RetrieveTemplate("templateKey");
+var cacheResult = engine.Handler.Cache?.RetrieveTemplate("templateKey")
+	?? throw new System.InvalidOperationException("Caching is not configured.");
 if(cacheResult.Success)
 {
 	var templatePage = cacheResult.Template.TemplatePageFactory();
 	string result = await engine.RenderTemplateAsync(templatePage, model);
 }
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L35-L42' title='Snippet source file'>snippet source</a> | <a href='#snippet-RenderCompiledTemplate' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L35-L43' title='Snippet source file'>snippet source</a> | <a href='#snippet-RenderCompiledTemplate' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 # Compatibility and support
@@ -94,6 +95,8 @@ if(cacheResult.Success)
   [`docs/framework-support.md`](docs/framework-support.md) before upgrading.
 - The public API and historical behavior baseline are recorded in
   [`docs/compatibility-baseline.md`](docs/compatibility-baseline.md).
+- Version 3 publishes nullable reference annotations; see the
+  [nullable migration guide](docs/nullability.md) for newly diagnosed call sites.
 - Current model, import, LINQ, and template-cache behavior is recorded in the
   [template language compatibility matrix](docs/template-language-compatibility.md).
 - Azure Functions v4 is build-validated by the maintained sample. AWS Lambda and other hosting
@@ -128,7 +131,7 @@ var engine = new RazorLightEngineBuilder()
 var model = new {Name = "John Doe"};
 string result = await engine.CompileRenderAsync("Subfolder/View.cshtml", model);
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L47-L56' title='Snippet source file'>snippet source</a> | <a href='#snippet-FileSource' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L48-L57' title='Snippet source file'>snippet source</a> | <a href='#snippet-FileSource' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 ## Embedded-resource source
@@ -160,7 +163,7 @@ var engine = new RazorLightEngineBuilder()
 var model = new Model();
 string html = await engine.CompileRenderAsync("EmailTemplates.Body", model);
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L61-L70' title='Snippet source file'>snippet source</a> | <a href='#snippet-EmbeddedResourceSource' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L62-L71' title='Snippet source file'>snippet source</a> | <a href='#snippet-EmbeddedResourceSource' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 Setting the root namespace lets you omit that prefix from the template key:
@@ -176,7 +179,7 @@ var engine = new RazorLightEngineBuilder()
 var model = new Model();
 string html = await engine.CompileRenderAsync("Body", model);
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L75-L84' title='Snippet source file'>snippet source</a> | <a href='#snippet-EmbeddedResourceSourceWithRootNamespace' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L76-L85' title='Snippet source file'>snippet source</a> | <a href='#snippet-EmbeddedResourceSourceWithRootNamespace' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 ## Custom source

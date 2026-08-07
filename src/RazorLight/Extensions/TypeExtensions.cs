@@ -16,7 +16,7 @@ namespace RazorLight.Extensions
 				return exp;
 			}
 
-			IDictionary<string, object> expando = new ExpandoObject();
+			IDictionary<string, object?> expando = new ExpandoObject();
 			foreach (var propertyDescriptor in anonymousObject.GetType().GetTypeInfo().GetProperties())
 			{
 				var obj = propertyDescriptor.GetValue(anonymousObject);
@@ -36,7 +36,7 @@ namespace RazorLight.Extensions
 				.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false)
 				.Any();
 
-			bool nameContainsAnonymousType = type.FullName.Contains("AnonymousType");
+			bool nameContainsAnonymousType = type.FullName?.Contains("AnonymousType") == true;
 			bool isAnonymousType = hasCompilerGeneratedAttribute && nameContainsAnonymousType;
 
 			return isAnonymousType;

@@ -53,7 +53,7 @@ namespace RazorLight.TagHelpers
 
 			var propertiesToActivate = _injectActions.GetOrAdd(
 				tagHelper.GetType(),
-				default(PropertyActivator<PageContext>[]));// _getPropertiesToActivate);
+				Array.Empty<PropertyActivator<PageContext>>());// _getPropertiesToActivate);
 
 			for (var i = 0; i < propertiesToActivate.Length; i++)
 			{

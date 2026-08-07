@@ -9,11 +9,11 @@
 		/// <summary>
 		/// Gets the Model property.
 		/// </summary>
-		public TModel Model { get; set; }
+		public TModel? Model { get; set; }
 
-		public override void SetModel(object model)
+		public override void SetModel(object? model)
 		{
-			Model = (TModel)model;
+			Model = (TModel?)model;
 		}
 	}
 }

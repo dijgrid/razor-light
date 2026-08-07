@@ -46,7 +46,7 @@ namespace RazorLight.Compilation
 			return Resolve(assembly, dependencyContext);
 		}
 
-		internal IReadOnlyList<MetadataReference> Resolve(Assembly assembly, DependencyContext dependencyContext)
+		internal IReadOnlyList<MetadataReference> Resolve(Assembly assembly, DependencyContext? dependencyContext)
 		{
 			var libraryPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 			IEnumerable<string> references;
@@ -90,10 +90,10 @@ namespace RazorLight.Compilation
 			return metadataReferences;
 		}
 
-		private static IEnumerable<Assembly> GetReferencedAssemblies(Assembly a, ISet<string> excludedAssemblies, HashSet<string> visitedAssemblies = null)
+		private static IEnumerable<Assembly> GetReferencedAssemblies(Assembly a, ISet<string> excludedAssemblies, HashSet<string>? visitedAssemblies = null)
 		{
 			visitedAssemblies = visitedAssemblies ?? new HashSet<string>();
-			if (!visitedAssemblies.Add(a.FullName))
+			if (!visitedAssemblies.Add(a.FullName ?? a.GetName().Name ?? a.ToString()))
 			{
 				yield break;
 			}
@@ -102,7 +102,7 @@ namespace RazorLight.Compilation
 			{
 				if (visitedAssemblies.Contains(assemblyRef.FullName)) { continue; }
 
-				if (excludedAssemblies.Any(s => s.Contains(assemblyRef.Name))) { continue; }
+				if (assemblyRef.Name != null && excludedAssemblies.Any(s => s.Contains(assemblyRef.Name))) { continue; }
 				var loadedAssembly = Assembly.Load(assemblyRef);
 				yield return loadedAssembly;
 				foreach (var referenced in GetReferencedAssemblies(loadedAssembly, excludedAssemblies, visitedAssemblies))

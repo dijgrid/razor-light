@@ -8,7 +8,8 @@ namespace RazorLight.Compilation
 	{
 		public Func<ITemplatePage> CreateFactory(CompiledTemplateDescriptor templateDescriptor)
 		{
-			string templateKey = templateDescriptor.TemplateKey;
+			string templateKey = templateDescriptor.TemplateKey
+				?? throw new RazorLightException("The compiled template has no key.");
 
 			if (templateDescriptor.TemplateAttribute != null)
 			{
@@ -16,7 +17,9 @@ namespace RazorLight.Compilation
 
 				var newExpression = Expression.New(compiledType);
 				var keyProperty = compiledType.GetTypeInfo().GetProperty(nameof(ITemplatePage.Key));
-				var propertyBindExpression = Expression.Bind(keyProperty, Expression.Constant(templateKey));
+				var propertyBindExpression = Expression.Bind(
+					keyProperty ?? throw new RazorLightException($"Template type {compiledType} has no Key property."),
+					Expression.Constant(templateKey));
 				var objectInitializeExpression = Expression.MemberInit(newExpression, propertyBindExpression);
 
 				var pageFactory = Expression

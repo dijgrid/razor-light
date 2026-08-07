@@ -7,6 +7,12 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 
 ## Unreleased
 
+### Changed
+
+- The `RazorLight` public API now publishes nullable reference annotations. Runtime behavior is
+  unchanged, but nullable-enabled consumers may receive new diagnostics; see
+  [`docs/nullability.md`](docs/nullability.md).
+
 ## 3.0.0 - 2026-08-07
 
 ### Added

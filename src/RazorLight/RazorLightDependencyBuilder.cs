@@ -12,13 +12,13 @@ namespace RazorLight
 {
 	public class RazorLightDependencyBuilder
 	{
-		IServiceCollection _services;
+		private readonly IServiceCollection _services;
 		public RazorLightDependencyBuilder(IServiceCollection services)
 		{
 			_services = services;
 		}
 
-		public RazorLightDependencyBuilder UseFileSystemProject(string root, string extension = null)
+		public RazorLightDependencyBuilder UseFileSystemProject(string root, string? extension = null)
 		{
 			_services.RemoveAll<RazorLightProject>();
 

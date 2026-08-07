@@ -17,9 +17,9 @@ namespace RazorLight.Caching
 
 		public FileSystemCachingProvider(string baseDir, string cacheDir, IFileSystemCachingStrategy fileSystemCachingStrategy)
 		{
-			m_baseDir = baseDir;
-			m_cacheDir = cacheDir;
-			m_fileSystemCachingStrategy = fileSystemCachingStrategy;
+			m_baseDir = baseDir ?? throw new ArgumentNullException(nameof(baseDir));
+			m_cacheDir = cacheDir ?? throw new ArgumentNullException(nameof(cacheDir));
+			m_fileSystemCachingStrategy = fileSystemCachingStrategy ?? throw new ArgumentNullException(nameof(fileSystemCachingStrategy));
 		}
 
 		public string GetAssemblyFilePath(string key, string templateFilePath) => m_fileSystemCachingStrategy.GetCachedFileInfo(key, templateFilePath, m_cacheDir).AssemblyFilePath;
@@ -28,7 +28,8 @@ namespace RazorLight.Caching
 		{
 			var srcFilePath = Path.Combine(m_baseDir, generatedRazorTemplate.TemplateKey.Substring(1));
 			var (_, asmFilePath, pdbFilePath) = m_fileSystemCachingStrategy.GetCachedFileInfo(generatedRazorTemplate.TemplateKey, srcFilePath, m_cacheDir);
-			Directory.CreateDirectory(Path.GetDirectoryName(asmFilePath));
+			Directory.CreateDirectory(Path.GetDirectoryName(asmFilePath)
+				?? throw new InvalidOperationException($"The cache path '{asmFilePath}' has no directory."));
 			File.WriteAllBytes(asmFilePath, rawAssembly);
 			if (rawSymbolStore != null)
 			{
@@ -36,7 +37,7 @@ namespace RazorLight.Caching
 			}
 		}
 
-		public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken expirationToken)
+		public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken? expirationToken)
 		{
 			m_cache.CacheTemplate(key, pageFactory, expirationToken);
 		}
@@ -87,11 +88,14 @@ namespace RazorLight.Caching
 			return GetTemplatePageType(rawAssembly, rawSymbolStore);
 		}
 
-		public static ITemplatePage NewTemplatePage(Type templatePageType) => (ITemplatePage)Activator.CreateInstance(templatePageType);
+		public static ITemplatePage NewTemplatePage(Type templatePageType) =>
+			(ITemplatePage)(Activator.CreateInstance(templatePageType)
+				?? throw new InvalidOperationException($"Could not create template page type '{templatePageType}'."));
 
-		public static Type GetTemplatePageType(byte[] rawAssembly, byte[] rawSymbolStore) => Assembly
+		public static Type GetTemplatePageType(byte[] rawAssembly, byte[]? rawSymbolStore) => Assembly
 			.Load(rawAssembly, rawSymbolStore)
 			.GetCustomAttribute<RazorLightTemplateAttribute>()
-			.TemplateType;
+			?.TemplateType
+			?? throw new InvalidOperationException("The cached assembly has no RazorLight template attribute.");
 	}
 }

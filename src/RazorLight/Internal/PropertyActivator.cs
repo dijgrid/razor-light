@@ -6,12 +6,12 @@ namespace RazorLight.Internal
 {
 	internal class PropertyActivator<TContext>
 	{
-		private readonly Func<TContext, object> _valueAccessor;
-		private readonly Action<object, object> _fastPropertySetter;
+		private readonly Func<TContext, object?> _valueAccessor;
+		private readonly Action<object, object?> _fastPropertySetter;
 
 		public PropertyActivator(
 			PropertyInfo propertyInfo,
-			Func<TContext, object> valueAccessor)
+			Func<TContext, object?> valueAccessor)
 		{
 			if (propertyInfo == null)
 			{
@@ -30,7 +30,7 @@ namespace RazorLight.Internal
 
 		public PropertyInfo PropertyInfo { get; private set; }
 
-		public object Activate(object instance, TContext context)
+		public object? Activate(object instance, TContext context)
 		{
 			if (instance == null)
 			{
@@ -98,7 +98,7 @@ namespace RazorLight.Internal
 
 			if (!includeNonPublic)
 			{
-				properties = properties.Where(property => property.SetMethod.IsPublic);
+				properties = properties.Where(property => property.SetMethod?.IsPublic == true);
 			}
 
 			return properties.Select(createActivateInfo).ToArray();

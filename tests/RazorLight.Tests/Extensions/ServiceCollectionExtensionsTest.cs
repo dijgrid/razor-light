@@ -323,7 +323,7 @@ namespace RazorLight.Tests.Extensions
 				throw new NotImplementedException();
 			}
 
-			public Task<string> CompileRenderAsync(string key, object model, Type modelType, ExpandoObject? viewBag = null)
+			public Task<string> CompileRenderAsync(string key, object? model, Type modelType, ExpandoObject? viewBag = null)
 			{
 				throw new NotImplementedException();
 			}
@@ -340,7 +340,7 @@ namespace RazorLight.Tests.Extensions
 				throw new NotImplementedException();
 			}
 
-			public Task<string> RenderTemplateAsync(ITemplatePage templatePage, object model, Type modelType, ExpandoObject? viewBag = null)
+			public Task<string> RenderTemplateAsync(ITemplatePage templatePage, object? model, Type modelType, ExpandoObject? viewBag = null)
 			{
 				throw new NotImplementedException();
 			}
@@ -350,7 +350,7 @@ namespace RazorLight.Tests.Extensions
 				throw new NotImplementedException();
 			}
 
-			public Task RenderTemplateAsync(ITemplatePage templatePage, object model, Type modelType, TextWriter textWriter, ExpandoObject? viewBag = null)
+			public Task RenderTemplateAsync(ITemplatePage templatePage, object? model, Type modelType, TextWriter textWriter, ExpandoObject? viewBag = null)
 			{
 				throw new NotImplementedException();
 			}

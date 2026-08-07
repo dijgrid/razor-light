@@ -13,7 +13,7 @@ namespace RazorLight.Tests.Razor
 		[Fact]
 		public void Ensure_Throws_OnNullRootType()
 		{
-			Assert.Throws<ArgumentNullException>(() => { new EmbeddedRazorProject(null); });
+			Assert.Throws<ArgumentNullException>(() => { new EmbeddedRazorProject((Type)null!); });
 		}
 
 		[Fact]
@@ -21,7 +21,7 @@ namespace RazorLight.Tests.Razor
 		{
 			var project = new EmbeddedRazorProject(typeof(EmbeddedRazorProject));
 
-			await Assert.ThrowsAsync<ArgumentNullException>(() => project.GetItemAsync(null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => project.GetItemAsync(null!));
 		}
 
 		[Fact]

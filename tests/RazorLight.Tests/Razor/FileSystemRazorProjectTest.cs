@@ -54,7 +54,7 @@ namespace RazorLight.Tests.Razor
 		{
 			var project = new FileSystemRazorProject(DirectoryUtils.RootDirectory);
 
-			await Assert.ThrowsAsync<ArgumentNullException>(() => project.GetItemAsync(null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => project.GetItemAsync(null!));
 		}
 
 		[Fact]

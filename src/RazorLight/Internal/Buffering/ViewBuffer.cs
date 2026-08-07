@@ -20,10 +20,10 @@ namespace RazorLight.Internal.Buffering
 		public static readonly int ViewPageSize = 256;
 
 		private readonly IViewBufferScope _bufferScope;
-		private readonly string _name;
+		private readonly string? _name;
 		private readonly int _pageSize;
-		private ViewBufferPage _currentPage;         // Limits allocation if the ViewBuffer has only one page (frequent case).
-		private List<ViewBufferPage> _multiplePages; // Allocated only if necessary
+		private ViewBufferPage? _currentPage;         // Limits allocation if the ViewBuffer has only one page (frequent case).
+		private List<ViewBufferPage>? _multiplePages; // Allocated only if necessary
 
 		/// <summary>
 		/// Initializes a new instance of <see cref="ViewBuffer"/>.
@@ -31,7 +31,7 @@ namespace RazorLight.Internal.Buffering
 		/// <param name="bufferScope">The <see cref="IViewBufferScope"/>.</param>
 		/// <param name="name">A name to identify this instance.</param>
 		/// <param name="pageSize">The size of buffer pages.</param>
-		public ViewBuffer(IViewBufferScope bufferScope, string name, int pageSize)
+		public ViewBuffer(IViewBufferScope bufferScope, string? name, int pageSize)
 		{
 			if (bufferScope == null)
 			{
@@ -136,7 +136,7 @@ namespace RazorLight.Internal.Buffering
 			{
 				AddPage(new ViewBufferPage(_bufferScope.GetPage(_pageSize)));
 			}
-			return _currentPage;
+			return _currentPage!;
 		}
 
 		private void AddPage(ViewBufferPage page)
@@ -245,7 +245,7 @@ namespace RazorLight.Internal.Buffering
 			}
 		}
 
-		private string DebuggerToString() => _name;
+		private string DebuggerToString() => _name ?? string.Empty;
 
 		public void CopyTo(IHtmlContentBuilder destination)
 		{
@@ -261,8 +261,8 @@ namespace RazorLight.Internal.Buffering
 				{
 					var value = page.Buffer[j];
 
-					string valueAsString;
-					IHtmlContentContainer valueAsContainer;
+					string? valueAsString;
+					IHtmlContentContainer? valueAsContainer;
 					if ((valueAsString = value.Value as string) != null)
 					{
 						destination.AppendHtml(valueAsString);
@@ -271,9 +271,9 @@ namespace RazorLight.Internal.Buffering
 					{
 						valueAsContainer.CopyTo(destination);
 					}
-					else
+					else if (value.Value is IHtmlContent content)
 					{
-						destination.AppendHtml((IHtmlContent)value.Value);
+						destination.AppendHtml(content);
 					}
 				}
 			}
@@ -301,8 +301,8 @@ namespace RazorLight.Internal.Buffering
 				{
 					var value = page.Buffer[j];
 
-					string valueAsString;
-					IHtmlContentContainer valueAsContainer;
+					string? valueAsString;
+					IHtmlContentContainer? valueAsContainer;
 					if ((valueAsString = value.Value as string) != null)
 					{
 						destination.AppendHtml(valueAsString);
@@ -311,9 +311,9 @@ namespace RazorLight.Internal.Buffering
 					{
 						valueAsContainer.MoveTo(destination);
 					}
-					else
+					else if (value.Value is IHtmlContent content)
 					{
-						destination.AppendHtml((IHtmlContent)value.Value);
+						destination.AppendHtml(content);
 					}
 				}
 			}

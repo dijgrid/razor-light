@@ -13,19 +13,19 @@ namespace RazorLight.Internal
 		private delegate TValue ByRefFunc<TDeclaringType, TValue>(ref TDeclaringType arg);
 
 		private static readonly MethodInfo CallPropertyGetterOpenGenericMethod =
-			typeof(FastPropertySetter).GetTypeInfo().GetDeclaredMethod(nameof(CallPropertyGetter));
+			typeof(FastPropertySetter).GetTypeInfo().GetDeclaredMethod(nameof(CallPropertyGetter))!;
 
 		private static readonly MethodInfo CallPropertyGetterByReferenceOpenGenericMethod =
-			typeof(FastPropertySetter).GetTypeInfo().GetDeclaredMethod(nameof(CallPropertyGetterByReference));
+			typeof(FastPropertySetter).GetTypeInfo().GetDeclaredMethod(nameof(CallPropertyGetterByReference))!;
 
 		private static readonly MethodInfo CallNullSafePropertyGetterOpenGenericMethod =
-			typeof(FastPropertySetter).GetTypeInfo().GetDeclaredMethod(nameof(CallNullSafePropertyGetter));
+			typeof(FastPropertySetter).GetTypeInfo().GetDeclaredMethod(nameof(CallNullSafePropertyGetter))!;
 
 		private static readonly MethodInfo CallNullSafePropertyGetterByReferenceOpenGenericMethod =
-			typeof(FastPropertySetter).GetTypeInfo().GetDeclaredMethod(nameof(CallNullSafePropertyGetterByReference));
+			typeof(FastPropertySetter).GetTypeInfo().GetDeclaredMethod(nameof(CallNullSafePropertyGetterByReference))!;
 
 		private static readonly MethodInfo CallPropertySetterOpenGenericMethod =
-			typeof(FastPropertySetter).GetTypeInfo().GetDeclaredMethod(nameof(CallPropertySetter));
+			typeof(FastPropertySetter).GetTypeInfo().GetDeclaredMethod(nameof(CallPropertySetter))!;
 
 		// Using an array rather than IEnumerable, as target will be called on the hot path numerous times.
 		private static readonly ConcurrentDictionary<Type, FastPropertySetter[]> PropertiesCache =
@@ -34,8 +34,8 @@ namespace RazorLight.Internal
 		private static readonly ConcurrentDictionary<Type, FastPropertySetter[]> VisiblePropertiesCache =
 			new ConcurrentDictionary<Type, FastPropertySetter[]>();
 
-		private Action<object, object> _valueSetter;
-		private Func<object, object> _valueGetter;
+		private Action<object, object?>? _valueSetter;
+		private Func<object, object?>? _valueGetter;
 
 		/// <summary>
 		/// Initializes a fast <see cref="FastPropertySetter"/>.
@@ -65,7 +65,7 @@ namespace RazorLight.Internal
 		/// <summary>
 		/// Gets the property value getter.
 		/// </summary>
-		public Func<object, object> ValueGetter
+		public Func<object, object?> ValueGetter
 		{
 			get
 			{
@@ -81,7 +81,7 @@ namespace RazorLight.Internal
 		/// <summary>
 		/// Gets the property value setter.
 		/// </summary>
-		public Action<object, object> ValueSetter
+		public Action<object, object?> ValueSetter
 		{
 			get
 			{
@@ -99,7 +99,7 @@ namespace RazorLight.Internal
 		/// </summary>
 		/// <param name="instance">The object whose property value will be returned.</param>
 		/// <returns>The property value.</returns>
-		public object GetValue(object instance)
+		public object? GetValue(object instance)
 		{
 			return ValueGetter(instance);
 		}
@@ -109,7 +109,7 @@ namespace RazorLight.Internal
 		/// </summary>
 		/// <param name="instance">The object whose property value will be set.</param>
 		/// <param name="value">The property value.</param>
-		public void SetValue(object instance, object value)
+		public void SetValue(object instance, object? value)
 		{
 			ValueSetter(instance, value);
 		}
@@ -185,7 +185,7 @@ namespace RazorLight.Internal
 		/// This method is more memory efficient than a dynamically compiled lambda, and about the
 		/// same speed.
 		/// </remarks>
-		public static Func<object, object> MakeFastPropertyGetter(PropertyInfo propertyInfo)
+		public static Func<object, object?> MakeFastPropertyGetter(PropertyInfo propertyInfo)
 		{
 			Debug.Assert(propertyInfo != null);
 
@@ -204,7 +204,7 @@ namespace RazorLight.Internal
 		/// This method is more memory efficient than a dynamically compiled lambda, and about the
 		/// same speed.
 		/// </remarks>
-		public static Func<object, object> MakeNullSafeFastPropertyGetter(PropertyInfo propertyInfo)
+		public static Func<object, object?> MakeNullSafeFastPropertyGetter(PropertyInfo propertyInfo)
 		{
 			Debug.Assert(propertyInfo != null);
 
@@ -214,7 +214,7 @@ namespace RazorLight.Internal
 				CallNullSafePropertyGetterByReferenceOpenGenericMethod);
 		}
 
-		private static Func<object, object> MakeFastPropertyGetter(
+		private static Func<object, object?> MakeFastPropertyGetter(
 			PropertyInfo propertyInfo,
 			MethodInfo propertyGetterWrapperMethod,
 			MethodInfo propertyGetterByRefWrapperMethod)
@@ -239,7 +239,7 @@ namespace RazorLight.Internal
 			// Instance methods in the CLR can be turned into static methods where the first parameter
 			// is open over "target". This parameter is always passed by reference, so we have a code
 			// path for value types and a code path for reference types.
-			if (getMethod.DeclaringType.GetTypeInfo().IsValueType)
+			if ((getMethod.DeclaringType ?? throw new InvalidOperationException("The getter has no declaring type.")).GetTypeInfo().IsValueType)
 			{
 				// Create a delegate (ref TDeclaringType) -> TValue
 				return MakeFastPropertyGetter(
@@ -257,12 +257,13 @@ namespace RazorLight.Internal
 			}
 		}
 
-		private static Func<object, object> MakeFastPropertyGetter(
+		private static Func<object, object?> MakeFastPropertyGetter(
 			Type openGenericDelegateType,
 			MethodInfo propertyGetMethod,
 			MethodInfo openGenericWrapperMethod)
 		{
-			var typeInput = propertyGetMethod.DeclaringType;
+			var typeInput = propertyGetMethod.DeclaringType
+				?? throw new InvalidOperationException("The getter has no declaring type.");
 			var typeOutput = propertyGetMethod.ReturnType;
 
 			var delegateType = openGenericDelegateType.MakeGenericType(typeInput, typeOutput);
@@ -270,10 +271,10 @@ namespace RazorLight.Internal
 
 			var wrapperDelegateMethod = openGenericWrapperMethod.MakeGenericMethod(typeInput, typeOutput);
 			var accessorDelegate = wrapperDelegateMethod.CreateDelegate(
-				typeof(Func<object, object>),
+					typeof(Func<object, object?>),
 				propertyGetterDelegate);
 
-			return (Func<object, object>)accessorDelegate;
+			return (Func<object, object?>)accessorDelegate;
 		}
 
 		/// <summary>
@@ -285,10 +286,10 @@ namespace RazorLight.Internal
 		/// This method is more memory efficient than a dynamically compiled lambda, and about the
 		/// same speed. This only works for reference types.
 		/// </remarks>
-		public static Action<object, object> MakeFastPropertySetter(PropertyInfo propertyInfo)
+		public static Action<object, object?> MakeFastPropertySetter(PropertyInfo propertyInfo)
 		{
 			Debug.Assert(propertyInfo != null);
-			Debug.Assert(!propertyInfo.DeclaringType.GetTypeInfo().IsValueType);
+			Debug.Assert(propertyInfo.DeclaringType != null && !propertyInfo.DeclaringType.GetTypeInfo().IsValueType);
 
 			var setMethod = propertyInfo.SetMethod;
 			Debug.Assert(setMethod != null);
@@ -300,7 +301,8 @@ namespace RazorLight.Internal
 			// Instance methods in the CLR can be turned into static methods where the first parameter
 			// is open over "target". This parameter is always passed by reference, so we have a code
 			// path for value types and a code path for reference types.
-			var typeInput = setMethod.DeclaringType;
+			var typeInput = setMethod.DeclaringType
+				?? throw new InvalidOperationException("The setter has no declaring type.");
 			var parameterType = parameters[0].ParameterType;
 
 			// Create a delegate TDeclaringType -> { TDeclaringType.Property = TValue; }
@@ -310,9 +312,9 @@ namespace RazorLight.Internal
 				CallPropertySetterOpenGenericMethod.MakeGenericMethod(typeInput, parameterType);
 			var callPropertySetterDelegate =
 				callPropertySetterClosedGenericMethod.CreateDelegate(
-					typeof(Action<object, object>), propertySetterAsAction);
+					typeof(Action<object, object?>), propertySetterAsAction);
 
-			return (Action<object, object>)callPropertySetterDelegate;
+			return (Action<object, object?>)callPropertySetterDelegate;
 		}
 
 		/// <summary>
@@ -326,15 +328,15 @@ namespace RazorLight.Internal
 		/// The implementation of PropertyHelper will cache the property accessors per-type. This is
 		/// faster when the same type is used multiple times with ObjectToDictionary.
 		/// </remarks>
-		public static IDictionary<string, object> ObjectToDictionary(object value)
+		public static IDictionary<string, object?> ObjectToDictionary(object? value)
 		{
-			var dictionary = value as IDictionary<string, object>;
+			var dictionary = value as IDictionary<string, object?>;
 			if (dictionary != null)
 			{
-				return new Dictionary<string, object>(dictionary, StringComparer.OrdinalIgnoreCase);
+				return new Dictionary<string, object?>(dictionary, StringComparer.OrdinalIgnoreCase);
 			}
 
-			dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+			dictionary = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
 			if (value != null)
 			{
@@ -353,7 +355,7 @@ namespace RazorLight.Internal
 		}
 
 		// Called via reflection
-		private static object CallPropertyGetter<TDeclaringType, TValue>(
+		private static object? CallPropertyGetter<TDeclaringType, TValue>(
 			Func<TDeclaringType, TValue> getter,
 			object target)
 		{
@@ -361,7 +363,7 @@ namespace RazorLight.Internal
 		}
 
 		// Called via reflection
-		private static object CallPropertyGetterByReference<TDeclaringType, TValue>(
+		private static object? CallPropertyGetterByReference<TDeclaringType, TValue>(
 			ByRefFunc<TDeclaringType, TValue> getter,
 			object target)
 		{
@@ -370,9 +372,9 @@ namespace RazorLight.Internal
 		}
 
 		// Called via reflection
-		private static object CallNullSafePropertyGetter<TDeclaringType, TValue>(
+		private static object? CallNullSafePropertyGetter<TDeclaringType, TValue>(
 			Func<TDeclaringType, TValue> getter,
-			object target)
+			object? target)
 		{
 			if (target == null)
 			{
@@ -383,9 +385,9 @@ namespace RazorLight.Internal
 		}
 
 		// Called via reflection
-		private static object CallNullSafePropertyGetterByReference<TDeclaringType, TValue>(
+		private static object? CallNullSafePropertyGetterByReference<TDeclaringType, TValue>(
 			ByRefFunc<TDeclaringType, TValue> getter,
-			object target)
+			object? target)
 		{
 			if (target == null)
 			{
@@ -399,9 +401,9 @@ namespace RazorLight.Internal
 		private static void CallPropertySetter<TDeclaringType, TValue>(
 			Action<TDeclaringType, TValue> setter,
 			object target,
-			object value)
+			object? value)
 		{
-			setter((TDeclaringType)target, (TValue)value);
+			setter((TDeclaringType)target, value is null ? default! : (TValue)value);
 		}
 
 		protected static FastPropertySetter[] GetVisibleProperties(
@@ -410,7 +412,7 @@ namespace RazorLight.Internal
 			ConcurrentDictionary<Type, FastPropertySetter[]> allPropertiesCache,
 			ConcurrentDictionary<Type, FastPropertySetter[]> visiblePropertiesCache)
 		{
-			FastPropertySetter[] result;
+			FastPropertySetter[]? result;
 			if (visiblePropertiesCache.TryGetValue(type, out result))
 			{
 				return result;
@@ -453,7 +455,7 @@ namespace RazorLight.Internal
 				// Walk up the hierarchy until we find the type that actually declares this
 				// PropertyInfo.
 				var currentTypeInfo = type.GetTypeInfo();
-				var declaringTypeInfo = declaringType.GetTypeInfo();
+				var declaringTypeInfo = declaringType?.GetTypeInfo();
 				while (currentTypeInfo != null && currentTypeInfo != declaringTypeInfo)
 				{
 					// We've found a 'more proximal' public definition
@@ -487,7 +489,7 @@ namespace RazorLight.Internal
 			// part of the sequence of properties returned by this method.
 			type = Nullable.GetUnderlyingType(type) ?? type;
 
-			FastPropertySetter[] helpers;
+			FastPropertySetter[]? helpers;
 			if (!cache.TryGetValue(type, out helpers))
 			{
 				// We avoid loading indexed properties using the Where statement.
@@ -505,7 +507,7 @@ namespace RazorLight.Internal
 				cache.TryAdd(type, helpers);
 			}
 
-			return helpers;
+			return helpers!;
 		}
 
 		// Indexed properties are not useful (or valid) for grabbing properties off an object.

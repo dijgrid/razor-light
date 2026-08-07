@@ -19,27 +19,27 @@ namespace RazorLight
 	public abstract class TemplatePageBase : ITemplatePage
 	{
 		private readonly Stack<TextWriter> _textWriterStack = new Stack<TextWriter>();
-		private StringWriter _valueBuffer;
-		private ITagHelperFactory _tagHelperFactory;
-		private IViewBufferScope _bufferScope;
-		private TextWriter _pageWriter;
+		private StringWriter? _valueBuffer;
+		private ITagHelperFactory? _tagHelperFactory;
+		private IViewBufferScope? _bufferScope;
+		private TextWriter? _pageWriter;
 		private AttributeInfo _attributeInfo;
 		private TagHelperAttributeInfo _tagHelperAttributeInfo;
 		//private IUrlHelper _urlHelper;
 
-		public abstract void SetModel(object model);
+		public abstract void SetModel(object? model);
 
 		/// <inheritdoc />
-		public virtual PageContext PageContext { get; set; }
+		public virtual PageContext? PageContext { get; set; }
 
 		/// <inheritdoc />
-		public IHtmlContent BodyContent { get; set; }
+		public IHtmlContent? BodyContent { get; set; }
 
 		/// <inheritdoc />
 		public bool IsLayoutBeingRendered { get; set; }
 
 		/// <inheritdoc />
-		public string Layout { get; set; }
+		public string? Layout { get; set; }
 
 		public virtual dynamic ViewBag
 		{
@@ -54,12 +54,12 @@ namespace RazorLight
 			}
 		}
 
-		public Func<string, object, Task> IncludeFunc { get; set; }
+		public Func<string, object?, Task>? IncludeFunc { get; set; }
 
 		private Stack<TagHelperScopeInfo> TagHelperScopes { get; } = new Stack<TagHelperScopeInfo>();
 
 		/// <inheritdoc />
-		public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
+		public IDictionary<string, RenderAsyncDelegate>? PreviousSectionWriters { get; set; }
 
 		/// <inheritdoc />
 		public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; } =
@@ -72,7 +72,7 @@ namespace RazorLight
 		public HtmlEncoder HtmlEncoder { get; set; } = HtmlEncoder.Default;
 
 		/// <inheritdoc />
-		public string Key { get; set; }
+		public string? Key { get; set; }
 
 		public bool DisableEncoding { get; set; } = false;
 
@@ -174,7 +174,7 @@ namespace RazorLight
 			return new RawString(rawString);
 		}
 
-		public static IHtmlContent HelperFunction(Func<object, IHtmlContent> body)
+		public static IHtmlContent HelperFunction(Func<object?, IHtmlContent> body)
 		{
 			return body(null);
 		}
@@ -191,7 +191,7 @@ namespace RazorLight
 		/// </remarks>
 		public TTagHelper CreateTagHelper<TTagHelper>() where TTagHelper : ITagHelper
 		{
-			return TagHelperFactory.CreateTagHelper<TTagHelper>(PageContext);
+			return TagHelperFactory.CreateTagHelper<TTagHelper>(PageContext ?? throw new InvalidOperationException("PageContext is not set."));
 		}
 
 		/// <summary>
@@ -205,10 +205,11 @@ namespace RazorLight
 		/// All writes to the <see cref="Output"/> or <see cref="M:PageContext.Writer"/> after calling this method will
 		/// be buffered until <see cref="EndTagHelperWritingScope"/> is called.
 		/// </remarks>
-		public void StartTagHelperWritingScope(HtmlEncoder encoder)
+		public void StartTagHelperWritingScope(HtmlEncoder? encoder)
 		{
+			var pageContext = PageContext ?? throw new InvalidOperationException("PageContext is not set.");
 			var buffer = new ViewBuffer(BufferScope, Key, ViewBuffer.TagHelperPageSize);
-			TagHelperScopes.Push(new TagHelperScopeInfo(buffer, HtmlEncoder, PageContext.Writer));
+			TagHelperScopes.Push(new TagHelperScopeInfo(buffer, HtmlEncoder, pageContext.Writer));
 
 			// If passed an HtmlEncoder, override the property.
 			if (encoder != null)
@@ -218,7 +219,7 @@ namespace RazorLight
 
 			// We need to replace the ViewContext's Writer to ensure that all content (including content written
 			// from HTML helpers) is redirected.
-			PageContext.Writer = new ViewBufferTextWriter(buffer, PageContext.Writer.Encoding);
+			pageContext.Writer = new ViewBufferTextWriter(buffer, pageContext.Writer.Encoding);
 		}
 
 		/// <summary>
@@ -240,7 +241,7 @@ namespace RazorLight
 
 			// Restore previous scope.
 			HtmlEncoder = scopeInfo.HtmlEncoder;
-			PageContext.Writer = scopeInfo.Writer;
+			(PageContext ?? throw new InvalidOperationException("PageContext is not set.")).Writer = scopeInfo.Writer;
 
 			return tagHelperContent;
 		}
@@ -262,7 +263,8 @@ namespace RazorLight
 				throw new InvalidOperationException("Nesting of attribute writing scope is not supported");
 			}
 
-			_pageWriter = PageContext.Writer;
+			var pageContext = PageContext ?? throw new InvalidOperationException("PageContext is not set.");
+			_pageWriter = pageContext.Writer;
 
 			if (_valueBuffer == null)
 			{
@@ -271,7 +273,7 @@ namespace RazorLight
 
 			// We need to replace the ViewContext's Writer to ensure that all content (including content written
 			// from HTML helpers) is redirected.
-			PageContext.Writer = _valueBuffer;
+			pageContext.Writer = _valueBuffer;
 
 		}
 
@@ -290,11 +292,12 @@ namespace RazorLight
 				throw new InvalidOperationException("There is no active writing scope to end");
 			}
 
-			var content = _valueBuffer.ToString();
-			_valueBuffer.GetStringBuilder().Clear();
+			var valueBuffer = _valueBuffer ?? throw new InvalidOperationException("There is no active value buffer.");
+			var content = valueBuffer.ToString();
+			valueBuffer.GetStringBuilder().Clear();
 
 			// Restore previous writer.
-			PageContext.Writer = _pageWriter;
+			(PageContext ?? throw new InvalidOperationException("PageContext is not set.")).Writer = _pageWriter;
 			_pageWriter = null;
 
 			return content;
@@ -328,7 +331,7 @@ namespace RazorLight
 		/// <param name="section">The delegate to execute when rendering the section.</param>
 		/// <remarks>This is a temporary placeholder method to support ASP.NET Core 2.0.0 editor code generation.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected void DefineSection(string name, Func<object, Task> section)
+		protected void DefineSection(string name, Func<object?, Task> section)
 			=> DefineSection(name, () => section(null /* writer */));
 
 		/// <summary>
@@ -362,7 +365,7 @@ namespace RazorLight
 		/// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Output"/>.
 		/// </summary>
 		/// <param name="value">The <see cref="object"/> to write.</param>
-		public virtual void Write(object value)
+		public virtual void Write(object? value)
 		{
 			if (value == null || value == HtmlString.Empty)
 			{
@@ -408,7 +411,7 @@ namespace RazorLight
 		/// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Output"/>.
 		/// </summary>
 		/// <param name="value">The <see cref="string"/> to write.</param>
-		public virtual void Write(string value)
+		public virtual void Write(string? value)
 		{
 			var writer = Output;
 			var encoder = HtmlEncoder;
@@ -425,7 +428,7 @@ namespace RazorLight
 		/// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
 		/// </summary>
 		/// <param name="value">The <see cref="object"/> to write.</param>
-		public virtual void WriteLiteral(object value)
+		public virtual void WriteLiteral(object? value)
 		{
 			if (value == null)
 			{
@@ -439,7 +442,7 @@ namespace RazorLight
 		/// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
 		/// </summary>
 		/// <param name="value">The <see cref="string"/> to write.</param>
-		public virtual void WriteLiteral(string value)
+		public virtual void WriteLiteral(string? value)
 		{
 			if (!string.IsNullOrEmpty(value))
 			{
@@ -455,15 +458,17 @@ namespace RazorLight
 				throw new ArgumentNullException(nameof(writer));
 			}
 
-			_textWriterStack.Push(PageContext.Writer);
-			PageContext.Writer = writer;
+			var pageContext = PageContext ?? throw new InvalidOperationException("PageContext is not set.");
+			_textWriterStack.Push(pageContext.Writer);
+			pageContext.Writer = writer;
 		}
 
 		// Internal for unit testing.
 		protected internal virtual TextWriter PopWriter()
 		{
-			PageContext.Writer = _textWriterStack.Pop();
-			return PageContext.Writer;
+			var pageContext = PageContext ?? throw new InvalidOperationException("PageContext is not set.");
+			pageContext.Writer = _textWriterStack.Pop();
+			return pageContext.Writer;
 		}
 
 		public virtual void BeginWriteAttribute(
@@ -497,7 +502,7 @@ namespace RazorLight
 		public void WriteAttributeValue(
 			string prefix,
 			int prefixOffset,
-			object value,
+			object? value,
 			int valueOffset,
 			int valueLength,
 			bool isLiteral)
@@ -662,14 +667,14 @@ namespace RazorLight
 
 		#region Helpers
 
-		private bool IsBoolFalseOrNullValue(string prefix, object value)
+		private bool IsBoolFalseOrNullValue(string prefix, object? value)
 		{
 			return string.IsNullOrEmpty(prefix) &&
 				(value == null ||
 				(value is bool && !(bool)value));
 		}
 
-		private bool IsBoolTrueWithEmptyPrefixValue(string prefix, object value)
+		private bool IsBoolTrueWithEmptyPrefixValue(string prefix, object? value)
 		{
 			// If the value is just the bool 'true', use the attribute name as the value.
 			return string.IsNullOrEmpty(prefix) &&

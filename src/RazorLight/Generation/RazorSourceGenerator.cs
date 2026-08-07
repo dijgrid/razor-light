@@ -11,7 +11,7 @@ namespace RazorLight.Generation
 {
 	public class RazorSourceGenerator
 	{
-		public RazorSourceGenerator(RazorEngine projectEngine, RazorLightProject project = null, ISet<string> namespaces = null)
+		public RazorSourceGenerator(RazorEngine projectEngine, RazorLightProject? project = null, ISet<string>? namespaces = null)
 		{
 			if (projectEngine == null)
 			{
@@ -27,7 +27,7 @@ namespace RazorLight.Generation
 
 		public RazorEngine ProjectEngine { get; set; }
 
-		public RazorLightProject Project { get; set; }
+		public RazorLightProject? Project { get; set; }
 
 		public ISet<string> Namespaces { get; set; }
 
@@ -141,7 +141,8 @@ namespace RazorLight.Generation
 
 			var result = new List<RazorSourceDocument>();
 
-			IEnumerable<RazorLightProjectItem> importProjectItems = await Project.GetImportsAsync(projectItem.Key);
+			var project = Project ?? throw new InvalidOperationException("A project is required to resolve imports.");
+			IEnumerable<RazorLightProjectItem> importProjectItems = await project.GetImportsAsync(projectItem.Key);
 			foreach (var importItem in importProjectItems)
 			{
 				if (importItem.Exists)

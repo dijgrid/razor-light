@@ -22,12 +22,12 @@ namespace RazorLight
 		/// The known template keys of any dynamically created templates.
 		/// Only set when <c>RazorLightOptions.DebugMode = true</c>
 		/// </summary>
-		public IEnumerable<string> KnownDynamicTemplateKeys { get; }
+		public IEnumerable<string>? KnownDynamicTemplateKeys { get; }
 
 		/// <summary>
 		/// The known template keys by the associated <c>RazorLightProject</c>.
 		/// Only set when <c>RazorLightOptions.DebugMode = true</c>
 		/// </summary>
-		public IEnumerable<string> KnownProjectTemplateKeys { get; }
+		public IEnumerable<string>? KnownProjectTemplateKeys { get; }
 	}
 }

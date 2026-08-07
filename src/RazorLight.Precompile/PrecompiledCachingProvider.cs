@@ -59,7 +59,7 @@ namespace RazorLight.Precompile
 			return null;
 		}
 
-		public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken expirationToken) => throw new NotImplementedException();
+		public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken? expirationToken) => throw new NotImplementedException();
 
 		public bool Contains(string key) => Map.ContainsKey(key);
 
