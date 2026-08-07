@@ -2,10 +2,12 @@
 
 Notable changes to this independently maintained continuation are recorded here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning and package
-identity will be finalized before the first independent release.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Package identity and
+versioning follow the independent release policy in [`docs/releasing.md`](docs/releasing.md).
 
 ## Unreleased
+
+## 3.0.0 - 2026-08-07
 
 ### Added
 

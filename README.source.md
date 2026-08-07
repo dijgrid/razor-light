@@ -7,9 +7,9 @@
 > for provenance and the upstream synchronization policy.
 
 > [!NOTE]
-> The maintained source targets .NET 10. The first independent release is planned as
-> `Dijgrid.RazorLight 3.0.0`; it has not been published yet. The package currently published as
-> `RazorLight 2.3.1` is the historical upstream build rather than this branch.
+> The maintained release line targets .NET 10 and is published as `Dijgrid.RazorLight`, beginning
+> with version `3.0.0`. The `RazorLight 2.3.1` package is the historical upstream build rather than
+> this continuation.
 
 Use Razor to build templates from files, embedded resources, strings, databases, or a custom source
 outside ASP.NET MVC. The maintained source and samples support **.NET 10**. See
@@ -17,6 +17,7 @@ outside ASP.NET MVC. The maintained source and samples support **.NET 10**. See
 and [testing guidance](docs/testing.md) for the current maintenance baseline.
 
 ![Build Status](https://github.com/dijgrid/razor-light/actions/workflows/dotnet.yml/badge.svg)
+[![NuGet](https://img.shields.io/nuget/v/Dijgrid.RazorLight.svg)](https://www.nuget.org/packages/Dijgrid.RazorLight/)
 
 # Table of contents
 
@@ -35,10 +36,15 @@ and [testing guidance](docs/testing.md) for the current maintenance baseline.
 
 # Quickstart
 
-Install the .NET 10 SDK selected by [`global.json`](global.json). Until the first
-`Dijgrid.RazorLight` package is published, consume this continuation from source with a project
-reference. Do not use the historical `2.3.1` NuGet package as evidence of the maintained branch's
-framework or dependency baseline.
+Install the .NET 10 SDK selected by [`global.json`](global.json), then add the independently
+maintained package:
+
+```shell
+dotnet add package Dijgrid.RazorLight --version 3.0.0
+```
+
+Do not use the historical `RazorLight 2.3.1` package as evidence of this continuation's framework
+or dependency baseline.
 
 The simplest scenario creates a template from a string. Each template has a `templateKey`, allowing
 RazorLight to cache and reuse its compiled form. String templates do not require a project; layouts,
