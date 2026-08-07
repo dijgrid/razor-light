@@ -100,6 +100,9 @@ if(cacheResult.Success)
   [nullable migration guide](docs/nullability.md) for newly diagnosed call sites.
 - Current model, import, LINQ, and template-cache behavior is recorded in the
   [template language compatibility matrix](docs/template-language-compatibility.md).
+- Generated template code uses the .NET 10 C# 14 language baseline. The
+  [Razor compiler integration decision](docs/razor-compiler-integration.md) documents the retained
+  runtime parser boundary, supported alternatives, and replacement criteria.
 - Azure Functions v4 is build-validated by the maintained sample. AWS Lambda and other hosting
   environments are not part of CI and should be treated as community-supported until a focused
   integration fixture is added.

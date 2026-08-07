@@ -3,6 +3,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using RazorLight.Compatibility;
 using RazorLight.Caching;
 using RazorLight.Compilation;
 using RazorLight.DependencyInjection;
@@ -47,7 +48,7 @@ namespace RazorLight.Extensions
 			});
 			services.TryAddSingleton<PropertyInjector>();
 			services.TryAddSingleton<ICachingProvider, MemoryCachingProvider>();
-			services.TryAddSingleton<RazorEngine>(DefaultRazorEngine.Instance);
+			services.TryAddSingleton<RazorEngine>(Razor6CompilerCompatibility.CreateEngine());
 			services.TryAddSingleton<RazorSourceGenerator>();
 			services.TryAddSingleton<IRazorTemplateCompiler, RazorTemplateCompiler>();
 			services.TryAddSingleton<ITemplateFactoryProvider, TemplateFactoryProvider>();

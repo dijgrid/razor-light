@@ -31,3 +31,16 @@ This framework change belongs to the next major RazorLight release.
 
 The repository's `global.json` is the authoritative SDK selection. CI installs only that supported
 SDK and runs restore, build, and tests on Windows, Linux, and macOS.
+
+## Compiler lifecycle
+
+The .NET target and generated-C# language version move together. The `net10.0` line intentionally
+compiles generated templates as C# 14 and tests modern C# syntax in Razor templates. A future target
+framework change must select that framework's supported C# version explicitly and update the syntax
+matrix; a host application's dependency-context value does not control this policy.
+
+Runtime Razor parsing currently uses a version-guarded Razor 6 compatibility adapter because the
+.NET 10 Razor SDK is a build-time tool and the .NET 10 MVC runtime-compilation API is obsolete. See
+the [Razor compiler integration decision](razor-compiler-integration.md) for the evaluated options,
+risks, sources, and replacement criteria. This boundary supports the tested syntax matrix but does
+not claim support for every Razor feature introduced after Razor 6.

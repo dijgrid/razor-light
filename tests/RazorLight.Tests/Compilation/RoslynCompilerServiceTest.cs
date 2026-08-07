@@ -65,7 +65,7 @@ namespace RazorLight.Tests.Compilation
 		}
 
 		[Fact]
-		public void Constructor_ConfiguresLanguageVersion()
+		public void Constructor_Uses_Maintained_CSharp_Language_Version()
 		{
 			// Arrange
 			var dependencyContextOptions = new DependencyContextCompilationOptions(
@@ -86,7 +86,7 @@ namespace RazorLight.Tests.Compilation
 
 			// Act & Assert
 			var compilationOptions = compiler.ParseOptions;
-			Assert.Equal(LanguageVersion.CSharp7_1, compilationOptions.LanguageVersion);
+			Assert.Equal(LanguageVersion.CSharp14, compilationOptions.LanguageVersion);
 		}
 
 		[Fact]

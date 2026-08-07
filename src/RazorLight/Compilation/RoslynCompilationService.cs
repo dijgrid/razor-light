@@ -252,21 +252,13 @@ namespace RazorLight.Compilation
 			var configurationSymbol = isDevelopment ? "DEBUG" : "RELEASE";
 			var defines = dependencyContextOptions.Defines.OfType<string>().Concat(new[] { configurationSymbol });
 
-			var parseOptions = new CSharpParseOptions(preprocessorSymbols: defines);
-
-			if (!string.IsNullOrEmpty(dependencyContextOptions.LanguageVersion))
-			{
-				if (LanguageVersionFacts.TryParse(dependencyContextOptions.LanguageVersion, out var languageVersion))
-				{
-					parseOptions = parseOptions.WithLanguageVersion(languageVersion);
-				}
-				else
-				{
-					Debug.Fail($"LanguageVersion {dependencyContextOptions.LanguageVersion} specified in the deps file could not be parsed.");
-				}
-			}
-
-			return parseOptions;
+			// RazorLight's maintained runtime baseline is .NET 10, whose supported
+			// language version is C# 14. A consuming application's dependency context
+			// describes how that application was built; it must not silently downgrade
+			// or otherwise select the language used to compile generated templates.
+			return new CSharpParseOptions(
+				languageVersion: LanguageVersion.CSharp14,
+				preprocessorSymbols: defines);
 		}
 	}
 }

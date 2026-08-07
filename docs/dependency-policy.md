@@ -13,10 +13,13 @@ silently satisfying a package ID.
 
 - .NET runtime and `Microsoft.Extensions` packages follow the .NET 10 servicing line.
 - Roslyn compiler packages use the current 5.6 line.
-- The Razor compiler compatibility packages use `6.0.36`, the final published versions of those
-  package IDs. They have no reported NuGet advisories and run with the .NET 10 framework and current
-  Roslyn packages, but they are a known compatibility layer rather than a current Razor product
-  surface. Replacing their internal APIs requires a separately baselined compiler integration.
+- The Razor compiler compatibility packages use `6.0.36`, the highest published 6.x versions of
+  those package IDs. They have no reported NuGet advisories and run with the .NET 10 framework and
+  current Roslyn packages, but they are a known compatibility layer rather than a current Razor
+  product surface. The [compiler integration decision](razor-compiler-integration.md) records why
+  the layer remains, how it is isolated, and the conditions for replacing it.
+- Generated template C# is compiled with an explicit C# 14 parse policy. Host dependency-context
+  language settings do not select or downgrade RazorLight's compiler behavior.
 - Test and build tools use current stable releases compatible with .NET 10.
 - The precompile tool no longer depends on the abandoned `ManyConsole` and `Glob` packages. Its
   command parser is local and its glob behavior uses `Microsoft.Extensions.FileSystemGlobbing`.
@@ -27,7 +30,7 @@ Only packages that share a release train or compatibility boundary are grouped:
 
 | Group | Packages | Rationale |
 | --- | --- | --- |
-| `razor-compiler` | ASP.NET Core Razor extensions and CodeAnalysis Razor | Both packages are the retained Razor 6 compiler compatibility layer. |
+| `razor-compiler` | ASP.NET Core Razor extensions and CodeAnalysis Razor | Both packages form the version-guarded Razor 6 compiler compatibility adapter and must be reviewed together. |
 | `roslyn` | CodeAnalysis Common and CSharp | Roslyn compiler assemblies must remain on the same version. |
 | `entity-framework` | Entity Framework Core packages | The maintained EF sample uses one EF Core release train. |
 | `microsoft-extensions` | Microsoft.Extensions packages | Runtime extensions follow the .NET 10 servicing line. |

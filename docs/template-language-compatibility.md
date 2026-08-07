@@ -4,6 +4,12 @@ This note records RazorLight's supported model, import, LINQ, and string-templat
 on the maintained .NET 10 line. The executable policy lives in
 `TemplateLanguageCompatibilityTest`.
 
+Generated template code is intentionally parsed as C# 14. `CurrentCompilerCompatibilityTest`
+covers collection expressions, raw strings, property patterns, nullable directives, async code,
+representative Razor directives, generated-code fragments, and a stable Razor diagnostic. The
+[compiler integration decision](razor-compiler-integration.md) explains the retained Razor parser
+boundary and its lifecycle.
+
 ## Source and import matrix
 
 | Source | Built-in imports | `AddDefaultNamespaces` | Explicit `@using` | No import |

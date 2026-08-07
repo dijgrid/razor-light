@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RazorLight.Compilation;
+using RazorLight.Compatibility;
 using RazorLight.Generation;
 using RazorLight.Razor;
 using RazorLight.Tests.Integration;
@@ -120,7 +121,7 @@ namespace RazorLight.Tests.Compatibility
 		[Fact]
 		public async Task Generated_Source_Records_The_Dynamic_Model_And_Lambda_Call()
 		{
-			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, new NoRazorProject());
+			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), new NoRazorProject());
 			var item = new TextSourceRazorProjectItem(
 				"generated-source",
 				"@using System.Linq\n@(Model.Items.Where(item => item.Length > 1).FirstOrDefault())");

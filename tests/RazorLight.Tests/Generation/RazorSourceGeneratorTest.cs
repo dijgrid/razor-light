@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using RazorLight.Compatibility;
 using RazorLight.Generation;
 using RazorLight.Razor;
 using Xunit;
@@ -14,7 +15,7 @@ namespace RazorLight.Tests.Generation
 		private RazorSourceGenerator NewGenerator()
 		{
 			return new RazorSourceGenerator(
-				DefaultRazorEngine.Instance,
+				Razor6CompilerCompatibility.CreateEngine(),
 				new EmbeddedRazorProject(typeof(RazorSourceGeneratorTest)));
 		}
 
@@ -30,7 +31,7 @@ namespace RazorLight.Tests.Generation
 		public void Namespaces_NotNull_If_Not_Specified()
 		{
 			var generator = new RazorSourceGenerator(
-				DefaultRazorEngine.Instance,
+				Razor6CompilerCompatibility.CreateEngine(),
 				new EmbeddedRazorProject(typeof(Root)),
 				namespaces: null);
 
@@ -41,7 +42,7 @@ namespace RazorLight.Tests.Generation
 		public void Ensure_Engine_And_Project_Not_Null()
 		{
 			var generator = new RazorSourceGenerator(
-				DefaultRazorEngine.Instance,
+				Razor6CompilerCompatibility.CreateEngine(),
 				new EmbeddedRazorProject(typeof(RazorSourceGeneratorTest)));
 
 			Assert.NotNull(generator.ProjectEngine);
@@ -52,7 +53,7 @@ namespace RazorLight.Tests.Generation
 		public void DefaultImports_Created_On_Constructor()
 		{
 			var generator = new RazorSourceGenerator(
-			   DefaultRazorEngine.Instance,
+			   Razor6CompilerCompatibility.CreateEngine(),
 			   new EmbeddedRazorProject(typeof(RazorSourceGeneratorTest)));
 
 			var defaultImports = generator.GetDefaultImportLines().ToList();
@@ -75,7 +76,7 @@ namespace RazorLight.Tests.Generation
 				"System.CodeDom"
 			};
 
-			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, new EmbeddedRazorProject(typeof(Root)), namespaces);
+			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), new EmbeddedRazorProject(typeof(Root)), namespaces);
 
 			Assert.NotNull(generator.Namespaces);
 			Assert.Equal(generator.Namespaces, namespaces);
@@ -84,7 +85,7 @@ namespace RazorLight.Tests.Generation
 		[Fact]
 		public void Allow_Null_Project()
 		{
-			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, project: null);
+			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), project: null);
 
 			Assert.NotNull(generator);
 		}
@@ -93,7 +94,7 @@ namespace RazorLight.Tests.Generation
 		public async Task TextSource_ProjectItem_Receives_Default_Imports()
 		{
 			//Assign
-			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, new EmbeddedRazorProject(typeof(Root)));
+			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), new EmbeddedRazorProject(typeof(Root)));
 
 			//Act
 			var projectItem = new TextSourceRazorProjectItem("key", "some content");
@@ -110,7 +111,7 @@ namespace RazorLight.Tests.Generation
 		{
 			//Assign
 			var generator = new RazorSourceGenerator(
-				DefaultRazorEngine.Instance,
+				Razor6CompilerCompatibility.CreateEngine(),
 				new EmbeddedRazorProject(typeof(Root)),
 				new HashSet<string> { "System.Diagnostics" });
 
@@ -126,7 +127,7 @@ namespace RazorLight.Tests.Generation
 		[Fact]
 		public async Task GenerateCode_ByKey_Throws_OnEmpty_Project()
 		{
-			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, project: null);
+			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), project: null);
 
 			Func<Task> action = () => generator.GenerateCodeAsync("key");
 
@@ -137,7 +138,7 @@ namespace RazorLight.Tests.Generation
 		[Fact]
 		public async Task GenerateCode_ByProjectItem_Throws_On_Null_ProjectItem()
 		{
-			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, project: null);
+			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), project: null);
 
 			Func<Task> action = () => generator.GenerateCodeAsync((RazorLightProjectItem)null!);
 
@@ -148,7 +149,7 @@ namespace RazorLight.Tests.Generation
 		[Fact]
 		public async Task GenerateCode_ByProjectItem_Throws_On_ProjectItem_Not_Exists()
 		{
-			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, project: null);
+			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), project: null);
 
 			string templateKey = "Assets.Embedded.IDoNotExist.cshtml";
 
@@ -165,7 +166,7 @@ namespace RazorLight.Tests.Generation
 		[Fact]
 		public async Task CreateCodeDocumentAsync_Throws_On_Null_ProjectItem()
 		{
-			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, project: null);
+			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), project: null);
 
 			Func<Task> action = () => generator.CreateCodeDocumentAsync(null!);
 
@@ -176,7 +177,7 @@ namespace RazorLight.Tests.Generation
 		[Fact]
 		public async Task CreateCodeDocumentAsync_Throws_On_ProjectItem_Not_Exists()
 		{
-			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, project: null);
+			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), project: null);
 
 			string templateKey = "Assets.Embedded.IDoNotExist.cshtml";
 

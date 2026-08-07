@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using RazorLight.Caching;
+using RazorLight.Compatibility;
 using RazorLight.Compilation;
 using RazorLight.Generation;
 using RazorLight.Razor;
@@ -353,7 +354,7 @@ namespace RazorLight
 				?? throw new InvalidOperationException("An operating assembly could not be determined. Configure one with SetOperatingAssembly.");
 			var compiler = new RoslynCompilationService(metadataReferenceManager, assembly, cachingProvider as IPrecompileCallback);
 
-			var sourceGenerator = new RazorSourceGenerator(DefaultRazorEngine.Instance, project, options.Namespaces);
+			var sourceGenerator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), project, options.Namespaces);
 			var templateCompiler = new RazorTemplateCompiler(sourceGenerator, compiler, project, options);
 			var templateFactoryProvider = new TemplateFactoryProvider();
 

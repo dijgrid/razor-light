@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using RazorLight.Compilation;
+using RazorLight.Compatibility;
 using RazorLight.Generation;
 using RazorLight.Razor;
 using Xunit;
@@ -20,7 +21,7 @@ namespace RazorLight.Tests.Compilation
 			var assembly = Assembly.GetCallingAssembly();
 			var project = new EmbeddedRazorProject(assembly);
 			var compilerService = new RoslynCompilationService(metadataManager, assembly);
-			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, project);
+			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), project);
 
 			Action p1 = new Action(() => { new RazorTemplateCompiler(null!, compilerService, project, options); });
 			Action p2 = new Action(() => { new RazorTemplateCompiler(generator, null!, project, options); });
@@ -202,7 +203,7 @@ namespace RazorLight.Tests.Compilation
 				var assembly = Assembly.GetCallingAssembly();
 				var razorProject = project ?? new EmbeddedRazorProject(assembly);
 				var compilerService = new RoslynCompilationService(metadataManager, assembly);
-				var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, razorProject);
+				var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), razorProject);
 
 				return new TestRazorTemplateCompiler(generator, compilerService, razorProject, razorOptions);
 			}
