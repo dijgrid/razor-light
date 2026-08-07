@@ -91,3 +91,8 @@ The inherited reports in
 [`#387`](https://github.com/toddams/RazorLight/issues/387), and
 [`#257`](https://github.com/toddams/RazorLight/issues/257) describe both failure modes. Treat this as
 a compatibility design task, not as a blind addition of `@using System.Linq`.
+
+TASK-023 records the executable evidence in
+`tests/RazorLight.Tests/Compatibility/TemplateLanguageCompatibilityTest.cs` and the observed matrix
+in `docs/template-language-compatibility.md`. Use those cases when converting the baseline into an
+intentional policy.

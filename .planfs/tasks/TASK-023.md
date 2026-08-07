@@ -1,7 +1,7 @@
 ---
 id: TASK-023
 title: Capture the template import and model compatibility matrix
-status: todo
+status: done
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-language-runtime-compatibility
@@ -14,7 +14,7 @@ tags:
   - compatibility
   - ready-for-implementation
 createdAt: 2026-08-07T03:54:00Z
-updatedAt: 2026-08-07T04:38:55.870Z
+updatedAt: 2026-08-07T04:39:53.693Z
 refinementState: ready
 ---
 
@@ -28,21 +28,21 @@ failure modes without selecting the future compatibility policy.
 
 ## Acceptance criteria
 
-- [ ] A data-driven matrix covers string, file, embedded-resource, and custom/in-memory project
+- [x] A data-driven matrix covers string, file, embedded-resource, and custom/in-memory project
       sources where each source type supports the scenario.
-- [ ] Model cases include explicit strongly typed `@model`, a generic render call without `@model`,
+- [x] Model cases include explicit strongly typed `@model`, a generic render call without `@model`,
       an anonymous object, `ExpandoObject`, and a dynamic receiver.
-- [ ] Import cases distinguish built-in imports, `AddDefaultNamespaces`, explicit `@using`, and no
+- [x] Import cases distinguish built-in imports, `AddDefaultNamespaces`, explicit `@using`, and no
       import.
-- [ ] LINQ cases cover `Any`, `Where`, `Select`, and `FirstOrDefault`, including a lambda-based
+- [x] LINQ cases cover `Any`, `Where`, `Select`, and `FirstOrDefault`, including a lambda-based
       extension method that exposes dynamic binding limitations.
-- [ ] Generated Razor source or compiler diagnostics are captured where they explain a pass or
+- [x] Generated Razor source or compiler diagnostics are captured where they explain a pass or
       failure, without brittle full-file snapshots.
-- [ ] Reusing a string-template key with changed content, model type, or imports has a focused
+- [x] Reusing a string-template key with changed content, model type, or imports has a focused
       characterization test that records current cache behavior.
-- [ ] A concise compatibility note summarizes observed behavior and labels known limitations rather
+- [x] A concise compatibility note summarizes observed behavior and labels known limitations rather
       than presenting expected failures as regressions.
-- [ ] Production source files and public APIs are unchanged.
+- [x] Production source files and public APIs are unchanged.
 
 ## Implementation plan
 
@@ -78,3 +78,14 @@ templates lose both built-in `System.Linq` and namespaces configured through
 `AddDefaultNamespaces`. A template without `@model` is generated with a dynamic model, and normal C#
 extension-method binding cannot dispatch a lambda against a dynamic receiver. These are separate
 failure modes and need separate test expectations.
+
+## Implementation notes
+
+- Added a 15-case characterization suite covering the four source types, import paths, five model
+  forms, generated-code evidence, diagnostic categories, and string-key cache reuse.
+- Added file and embedded-resource fixtures that exercise `Any`, `Where`, `Select`, and
+  `FirstOrDefault`; the custom source uses a non-text in-memory project item so project imports are
+  represented accurately.
+- Documented the observed matrix and known limitations in
+  `docs/template-language-compatibility.md`, and linked the evidence from TASK-010.
+- No files under `src` and no public APIs were changed.

@@ -1,0 +1,5 @@
+@model RazorLight.Tests.Compatibility.CompatibilityModel
+@{
+	var filtered = Model.Items.Where(item => item.Length > 1).Select(item => item.ToUpperInvariant());
+}
+@(Model.Items.Any())|@(filtered.FirstOrDefault())
