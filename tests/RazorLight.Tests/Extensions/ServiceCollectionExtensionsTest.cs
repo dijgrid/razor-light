@@ -22,16 +22,10 @@ namespace RazorLight.Tests.Extensions
 	public class ServiceCollectionExtensionsTest
 	{
 		private readonly string _rootPath = DirectoryUtils.RootDirectory;
-		private readonly string _contentRootPath = PathUtility.GetViewsPath();
 
 		private IServiceCollection GetServices()
 		{
-			var services = new ServiceCollection();
-			var envMock = new Mock<Microsoft.AspNetCore.Hosting.IHostingEnvironment>();
-			envMock.Setup(m => m.ContentRootPath).Returns(_contentRootPath);
-			services.AddSingleton<Microsoft.AspNetCore.Hosting.IHostingEnvironment>(envMock.Object);
-
-			return services;
+			return new ServiceCollection();
 		}
 
 		[Fact]
@@ -52,9 +46,6 @@ namespace RazorLight.Tests.Extensions
 			{
 				called = true;
 				return new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-					.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 					.UseEmbeddedResourcesProject(typeof(Root).Assembly).Build();
 			});
 
@@ -83,7 +74,6 @@ namespace RazorLight.Tests.Extensions
 			}
 		}
 
-#if !(NETCOREAPP2_0 || NETFRAMEWORK)
 		[Fact]
 		public void Ensure_Works_With_Generic_Host()
 		{
@@ -231,7 +221,6 @@ namespace RazorLight.Tests.Extensions
 			Assert.NotNull(host);
 			host.Services.GetService<IRazorLightEngine>();
 		}
-#endif
 
 		[Fact]
 		public void Ensure_RazorLightEngineWithFileSystemFactory_Is_Called()
@@ -254,7 +243,7 @@ namespace RazorLight.Tests.Extensions
 		}
 
 		[Fact]
-		public void Ensure_DI_Extension_Can_Inject()
+		public async Task Ensure_DI_Extension_Can_Inject()
 		{
 			var services = GetServices();
 			bool newRazorLightEngineCalled = false;
@@ -282,12 +271,12 @@ namespace RazorLight.Tests.Extensions
 			var project = provider.GetService<RazorLightProject>();
 			Assert.IsType<FileSystemRazorProject>(project);
 			var fileSystemProject = (FileSystemRazorProject)project;
-			Assert.Equal(fileSystemProject.Root, _rootPath);
+			Assert.Equal(_rootPath, fileSystemProject.Root);
 
 			var engine = provider.GetService<IRazorLightEngine>();
 			Assert.NotNull(engine);
 			Assert.IsType<TestRazorLightEngine>(engine);
-			engine.CompileRenderStringAsync("","","").GetAwaiter().GetResult();
+			await engine.CompileRenderStringAsync("", "", "");
 			Assert.True(newRazorLightEngineCalled);
 
 			Assert.IsType<TestMetadataReferenceManager>(provider.GetService<IMetadataReferenceManager>());
@@ -380,9 +369,6 @@ namespace RazorLight.Tests.Extensions
 			var services = GetServices();
 			services.AddRazorLight()
 				.UseMemoryCachingProvider()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseFileSystemProject(Path.Combine(path, "Assets", "Files"));
 
 			var provider = services.BuildServiceProvider();

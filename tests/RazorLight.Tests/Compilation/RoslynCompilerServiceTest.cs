@@ -28,11 +28,7 @@ namespace RazorLight.Tests.Compilation
 		public void Constructor_SetsCompilationOptionsFromDependencyContext()
 		{
 			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(),
-				Assembly.GetEntryAssembly()
-#if NETFRAMEWORK
-				?? typeof(Root).Assembly
-#endif
-				);
+				Assembly.GetEntryAssembly());
 
 			// Act & Assert
 			var parseOptions = compiler.ParseOptions;
@@ -43,11 +39,7 @@ namespace RazorLight.Tests.Compilation
 		public void EnsureOptions_ConfiguresCompilationOptions()
 		{
 			// Arrange
-			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly()
-#if NETFRAMEWORK
-				?? typeof(Root).Assembly
-#endif
-			);
+			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly());
 
 			// Act & Assert
 			var compilationOptions = compiler.CSharpCompilationOptions;
@@ -90,11 +82,7 @@ namespace RazorLight.Tests.Compilation
 				emitEntryPoint: null,
 				generateXmlDocumentation: null);
 
-			var compiler = new TestCSharpCompiler(new DefaultMetadataReferenceManager(), dependencyContextOptions
-#if NETFRAMEWORK
-				, typeof(Root).Assembly
-#endif
-			);
+			var compiler = new TestCSharpCompiler(new DefaultMetadataReferenceManager(), dependencyContextOptions);
 
 			// Act & Assert
 			var compilationOptions = compiler.ParseOptions;
@@ -120,11 +108,7 @@ namespace RazorLight.Tests.Compilation
 				generateXmlDocumentation: null);
 
 			var compiler = new TestCSharpCompiler(
-				new DefaultMetadataReferenceManager(), dependencyContextOptions
-#if NETFRAMEWORK
-				, typeof(Root).Assembly
-#endif
-				);
+				new DefaultMetadataReferenceManager(), dependencyContextOptions);
 
 			// Act & Assert
 			var compilationOptions = compiler.CSharpCompilationOptions;
@@ -149,11 +133,7 @@ namespace RazorLight.Tests.Compilation
 				emitEntryPoint: null,
 				generateXmlDocumentation: null);
 
-			var compiler = new TestCSharpCompiler(new DefaultMetadataReferenceManager(), dependencyContextOptions
-#if NETFRAMEWORK
-				, typeof(Root).Assembly
-#endif
-			);
+			var compiler = new TestCSharpCompiler(new DefaultMetadataReferenceManager(), dependencyContextOptions);
 
 			// Act & Assert
 			var compilationOptions = compiler.CSharpCompilationOptions;
@@ -178,11 +158,7 @@ namespace RazorLight.Tests.Compilation
 				emitEntryPoint: null,
 				generateXmlDocumentation: null);
 
-			var compiler = new TestCSharpCompiler(new DefaultMetadataReferenceManager(), dependencyContextOptions
-#if NETFRAMEWORK
-				, typeof(Root).Assembly
-#endif
-			);
+			var compiler = new TestCSharpCompiler(new DefaultMetadataReferenceManager(), dependencyContextOptions);
 
 			// Act & Assert
 			var compilationOptions = compiler.CSharpCompilationOptions;
@@ -207,11 +183,7 @@ namespace RazorLight.Tests.Compilation
 				emitEntryPoint: null,
 				generateXmlDocumentation: null);
 
-			var compiler = new TestCSharpCompiler(new DefaultMetadataReferenceManager(), dependencyContextOptions
-#if NETFRAMEWORK
-				, typeof(Root).Assembly
-#endif
-			);
+			var compiler = new TestCSharpCompiler(new DefaultMetadataReferenceManager(), dependencyContextOptions);
 
 			// Act & Assert
 			var parseOptions = compiler.ParseOptions;
@@ -219,12 +191,7 @@ namespace RazorLight.Tests.Compilation
 			var expected = new[]
 			{
 				"MyDefine",
-				// I spent hours trying to figure out why the behavior is different between "Microsoft.CodeAnalysis.CSharp 2.8.0.0, NETStandard v1.3" included in netstandard2.0 config via Microsoft.CodeAnalysis.Razor 2.1.0
-#if NETFRAMEWORK
-				"DEBUG"
-				#else
 				"RELEASE"
-#endif
 			};
 
 			_testOutputHelper.WriteLine($"{AssemblyDebugModeUtility.IsAssemblyDebugBuild(typeof(Root).Assembly)}");
@@ -251,11 +218,7 @@ namespace RazorLight.Tests.Compilation
 				emitEntryPoint: null,
 				generateXmlDocumentation: null);
 			var compiler = new TestCSharpCompiler(
-				new DefaultMetadataReferenceManager(), dependencyContextOptions
-#if NETFRAMEWORK
-				, typeof(Root).Assembly
-#endif
-				);
+				new DefaultMetadataReferenceManager(), dependencyContextOptions);
 			// Act
 			var syntaxTree = compiler.CreateSyntaxTree(SourceText.From(content));
 			// Assert
@@ -265,29 +228,21 @@ namespace RazorLight.Tests.Compilation
 		[Fact]
 		public void Throw_With_CompilationErrors_On_Failed_BuildAsync()
 		{
-			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly()
-#if NETFRAMEWORK
-				?? typeof(Root).Assembly
-#endif
-			);
+			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly());
 
 			var template = new TestGeneratedRazorTemplate("key", "public class Test { error }");
 
 			var ex = Assert.Throws<TemplateCompilationException>(() => compiler.CompileAndEmit(template));
 			Assert.NotEmpty(ex.CompilationErrors);
 			Assert.NotEmpty(ex.CompilationDiagnostics);
-			Assert.Equal(1, ex.CompilationDiagnostics.Count);
-			Assert.Equal(1, ex.CompilationErrors.Count);
+			Assert.Single(ex.CompilationDiagnostics);
+			Assert.Single(ex.CompilationErrors);
 		}
 
 		[Fact]
 		public void Throw_OnNullRazorTemplate_OnCompile()
 		{
-			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly()
-#if NETFRAMEWORK
-				?? typeof(Root).Assembly
-#endif
-			);
+			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly());
 
 			Func<Assembly> action = () => compiler.CompileAndEmit(null);
 

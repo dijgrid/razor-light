@@ -9,9 +9,19 @@ updates:
       timezone: America/Denver
     open-pull-requests-limit: 10
     groups:
-      microsoft-packages:
+      microsoft-runtime:
         patterns:
-          - Microsoft.*
+          - Microsoft.AspNetCore.*
+          - Microsoft.CodeAnalysis.*
+          - Microsoft.EntityFrameworkCore*
+          - Microsoft.Extensions.*
+      build-tooling:
+        patterns:
+          - MarkdownSnippets.*
+          - Microsoft.SourceLink.*
+          - Mono.Cecil
+          - Newtonsoft.Json
+          - ZstdNet
       test-tooling:
         patterns:
           - Microsoft.NET.Test.Sdk

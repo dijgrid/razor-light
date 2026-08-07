@@ -36,7 +36,8 @@ namespace Samples.EntityFrameworkProject
 
 		public override async Task<IEnumerable<string>> GetKnownKeysAsync()
 		{
-			var ids = await dbContext.Templates.Select(x => x.Id).ToListAsync();
+			IQueryable<TemplateEntity> templates = dbContext.Templates;
+			var ids = await templates.Select(x => x.Id).ToListAsync();
 			return ids.Select(x => x.ToString());
 		}
 	}

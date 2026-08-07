@@ -11,7 +11,7 @@ namespace RazorLight.Sandbox
 		static async Task<byte[]> UnwrapStream(DecompressionStream decompressionStream)
 		{
 			var result = new byte[64];
-			await decompressionStream.ReadAsync(result, 0, 64);
+			await decompressionStream.ReadExactlyAsync(result);
 			return result;
 		}
 		public static async Task Main()

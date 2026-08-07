@@ -1,13 +1,13 @@
-﻿using ManyConsole;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RazorLight.Caching;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
 namespace RazorLight.Precompile
 {
-	public class PrecompileCmd : ConsoleCommand
+	public class PrecompileCmd
 	{
 		private enum StrategyName
 		{
@@ -28,41 +28,25 @@ namespace RazorLight.Precompile
 		private string m_modelFilePath;
 		private string m_jsonQuery;
 
-		public PrecompileCmd()
+		public int Run(string[] args)
 		{
-			IsCommand("precompile", "Precompiles the given razor template.");
-
-			HasRequiredOption("t|template=", "The path to a razor template. " +
-				"A relative path is based off the current directory or the base directory, if the latter is given.", v => m_templateFile = v);
-			HasOption("c|cache=", "The cache directory where precompiled assemblies are stored. Will be created, if does not exist. " +
-				"Defaults to the directory containing the template files.", v => m_cacheDir = v);
-			HasOption("b|base=", "The razor template base directory. Defaults to the home directory of the given template. " +
-				"If given and the template file path is relative, then it is relative to this base directory.", v => m_baseDir = v);
-			HasOption("s|strategy=", "The file system caching strategy. The default strategy is " + m_strategyName, (StrategyName v) => m_strategyName = v);
-			HasOption("m|model=", "The path to a JSON file representing the model object to be rendered against the given template.", v => m_modelFilePath = v);
-			HasOption("q|jsonQuery=", "Renders the first item returned by the given JSON query.", v => m_jsonQuery = v);
-
-			HasLongDescription(
-				"Precompiles the given razor template into the given cache directory. " +
-				"When the --model argument is given the command also renders the given model and outputs the result to the stdout. " +
-				"Otherwise the command outputs the path to the precompiled assembly.");
-		}
-
-		public override int? OverrideAfterHandlingArgumentsBeforeRun(string[] remainingArguments)
-		{
-			if (remainingArguments.Length > 0)
+			var options = CommandLineArguments.Parse(args, new[]
 			{
-				throw new ConsoleHelpAsException("Unrecognized command line arguments - " + string.Join(' ', remainingArguments));
-			}
-			if (!s_strategyMap.ContainsKey(m_strategyName))
-			{
-				throw new ConsoleHelpAsException("Unsupported strategy " + m_strategyName);
-			}
-			return base.OverrideAfterHandlingArgumentsBeforeRun(remainingArguments);
-		}
+				"-t", "--template", "-c", "--cache", "-b", "--base", "-s", "--strategy",
+				"-m", "--model", "-q", "--jsonQuery"
+			});
+			m_templateFile = options.GetRequiredValue("-t", "--template");
+			m_cacheDir = options.GetValue("-c", "--cache");
+			m_baseDir = options.GetValue("-b", "--base");
+			m_modelFilePath = options.GetValue("-m", "--model");
+			m_jsonQuery = options.GetValue("-q", "--jsonQuery");
 
-		public override int Run(string[] remainingArguments)
-		{
+			var strategy = options.GetValue("-s", "--strategy");
+			if (strategy != null && !Enum.TryParse(strategy, true, out m_strategyName))
+			{
+				throw new RazorLightException("Unsupported strategy " + strategy);
+			}
+
 			string templateKey;
 			if (m_baseDir == null)
 			{
@@ -76,6 +60,7 @@ namespace RazorLight.Precompile
 				{
 					throw new RazorLightException($"The razor template base directory {m_baseDir} does not exist.");
 				}
+
 				m_baseDir = Path.GetFullPath(m_baseDir);
 				if (Path.IsPathRooted(m_templateFile))
 				{
@@ -115,14 +100,16 @@ namespace RazorLight.Precompile
 			}
 			else
 			{
-				var o = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(m_modelFilePath));
+				var modelToken = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(m_modelFilePath));
 				if (m_jsonQuery != null)
 				{
-					o = o.SelectToken(m_jsonQuery);
+					modelToken = modelToken.SelectToken(m_jsonQuery);
 				}
-				var model = JsonModel.New(o);
+
+				var model = JsonModel.New(modelToken);
 				Program.ConsoleOut.WriteLine(engine.CompileRenderAsync(templateKey, model).GetAwaiter().GetResult());
 			}
+
 			return 0;
 		}
 	}

@@ -20,18 +20,16 @@ dotnet restore RazorLight.sln
 dotnet build RazorLight.sln --configuration Release --no-restore
 ```
 
-The legacy test project currently targets several end-of-life runtimes. Until the modernization
-tasks are complete, the maintained CI baseline temporarily uses the .NET 6 SDK and ASP.NET Core
-runtime in addition to the SDK selected by `global.json`:
+The maintained build and test baseline uses the .NET 10 SDK and ASP.NET Core runtime selected by
+`global.json`:
 
 ```shell
-dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net6.0 --configuration Release
+dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net10.0 --configuration Release
 dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj --configuration Release
 ```
 
-Do not install the older .NET Core 2.x, .NET Core 3.1, or .NET 5 runtimes. On a machine without the
-.NET 6 ASP.NET Core runtime, `DOTNET_ROLL_FORWARD=Major` can be used for a supported-runtime probe;
-the three known newline-sensitive failures from that probe are recorded in `TASK-005`.
+Do not install or reintroduce end-of-life .NET runtimes to make a change pass. The maintained build
+and test baseline is .NET 10.
 
 ## Documentation
 

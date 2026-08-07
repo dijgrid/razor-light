@@ -96,9 +96,6 @@ namespace RazorLight.Tests
 		public async Task Template_Shares_Model_With_Layout()
 		{
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseEmbeddedResourcesProject(typeof(Root).Assembly, "RazorLight.Tests.Assets.Embedded")
 				.Build();
 
@@ -110,7 +107,7 @@ namespace RazorLight.Tests
 			string expected = $"Layout: {model.Value}_body: {model.Value}";
 
 			string result = await engine.CompileRenderAsync("WithModelAndLayout", model);
-			result = result.Replace(Environment.NewLine, "");
+			result = result.Replace("\r", "").Replace("\n", "");
 
 			Assert.Equal(expected, result);
 		}
@@ -121,16 +118,13 @@ namespace RazorLight.Tests
 			// See https://github.com/aspnet/Razor/issues/715
 
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseEmbeddedResourcesProject(typeof(Root).Assembly, "RazorLight.Tests.Assets.Embedded")
 				.Build();
 
 			string expected = "<strong>LocalFunction</strong>";
 
 			string result = await engine.CompileRenderAsync("LocalFunction", (object)null);
-			result = result.Replace(Environment.NewLine, "");
+			result = result.Replace("\r", "").Replace("\n", "");
 
 			Assert.Equal(expected, result);
 		}
@@ -141,16 +135,13 @@ namespace RazorLight.Tests
 			// See https://github.com/aspnet/Razor/issues/715
 
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseEmbeddedResourcesProject(typeof(Root).Assembly, "RazorLight.Tests.Assets.Embedded")
 				.Build();
 
 			string expected = "<strong>LocalFunctionUsingHelper</strong>";
 
 			string result = await engine.CompileRenderAsync("LocalFunctionUsingHelper", (object)null);
-			result = result.Replace(Environment.NewLine, "");
+			result = result.Replace("\r", "").Replace("\n", "");
 
 			Assert.Equal(expected, result);
 		}
@@ -160,9 +151,6 @@ namespace RazorLight.Tests
 		{
 			// https://github.com/aspnet/AspNetCore/issues/5076
 			var engine = new RazorLightEngineBuilder()
-#if NETFRAMEWORK
-				.SetOperatingAssembly(typeof(Root).Assembly)
-#endif
 				.UseEmbeddedResourcesProject(typeof(Root).Assembly, "RazorLight.Tests.Assets.Embedded")
 				.Build();
 

@@ -41,16 +41,38 @@ jobs:
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
           global-json-file: global.json
-          dotnet-version: 6.0.x
 
       - name: Restore
         run: dotnet restore RazorLight.sln
 
       - name: Build
-        run: dotnet build RazorLight.sln --configuration Release --no-restore
+        run: dotnet build RazorLight.sln --configuration Release --no-restore --warnaserror
 
       - name: Test RazorLight
-        run: dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net6.0 --configuration Release --no-build --logger "console;verbosity=normal"
+        run: dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net10.0 --configuration Release --no-build --collect:"XPlat Code Coverage;Format=cobertura" --results-directory artifacts/TestResults/RazorLight --logger "console;verbosity=normal"
 
       - name: Test precompile tool
-        run: dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj --configuration Release --no-build --logger "console;verbosity=normal"
+        run: dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage;Format=cobertura" --results-directory artifacts/TestResults/Precompile --logger "console;verbosity=normal"
+
+      - name: Validate package
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages
+
+      - name: Run Entity Framework sample
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet run --project samples/RazorLight.Samples/Samples.EntityFrameworkProject.csproj --configuration Release --no-build
+
+      - name: Build Azure Functions sample
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet build samples/FunctionApp-WebMvc-Sample/FunctionApp-WebMvc-Sample/FunctionApp-WebMvc-Sample.csproj --configuration Release --warnaserror
+
+      - name: Verify generated README
+        if: matrix.os == 'ubuntu-latest'
+        run: git diff --exit-code -- README.md
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-${{ matrix.os }}
+          path: artifacts/TestResults/**/coverage.cobertura.xml
+          if-no-files-found: error

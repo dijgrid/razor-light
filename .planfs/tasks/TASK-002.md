@@ -1,7 +1,7 @@
 ---
 id: TASK-002
 title: Capture the compatibility and package baseline
-status: todo
+status: done
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-modernization-foundation
@@ -13,7 +13,7 @@ tags:
   - packaging
   - baseline
 createdAt: 2026-08-06T00:00:00Z
-updatedAt: 2026-08-06T00:00:00Z
+updatedAt: 2026-08-06T23:04:00Z
 ---
 
 Record the behavior and package surface that existing users rely on before changing frameworks and
@@ -21,15 +21,21 @@ dependencies.
 
 ## Acceptance criteria
 
-- [ ] Public API is captured in a reviewable baseline or compatibility test.
-- [ ] Current NuGet package contents, dependencies, symbols, and Source Link metadata are inspected.
-- [ ] Representative compilation, rendering, caching, includes, layouts, and error behavior have
+- [x] Public API is captured in a reviewable baseline or compatibility test.
+- [x] Current NuGet package contents, dependencies, symbols, and Source Link metadata are inspected.
+- [x] Representative compilation, rendering, caching, includes, layouts, and error behavior have
       regression coverage.
-- [ ] Current supported and unsupported scenarios are reconciled with tests and documentation.
-- [ ] Compatibility risks for changing Razor and Roslyn versions are documented.
-- [ ] A migration policy distinguishes intentional breaking changes from regressions.
+- [x] Current supported and unsupported scenarios are reconciled with tests and documentation.
+- [x] Compatibility risks for changing Razor and Roslyn versions are documented.
+- [x] A migration policy distinguishes intentional breaking changes from regressions.
 
 ## Implementation notes
 
 Do not begin by mechanically updating every package. Establish what must remain compatible so later
 changes can be evaluated against evidence.
+
+The inherited `2.3.1` package was packed from the detached repository baseline and inspected before
+framework or dependency changes. `docs/compatibility-baseline.md` records its assets, dependency
+groups, missing symbol package, Source Link limitation, behavior evidence, unsupported-claim status,
+and migration policy. `PublicApiBaselineTest` fingerprints a deterministic reflection description of
+the exported API so later tasks cannot change it silently.
