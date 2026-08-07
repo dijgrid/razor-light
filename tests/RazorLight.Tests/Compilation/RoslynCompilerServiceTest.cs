@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using RazorLight.Compilation;
 using RazorLight.Generation;
@@ -22,6 +23,16 @@ namespace RazorLight.Tests.Compilation
 		public RoslynCompilerServiceTest(ITestOutputHelper testOutputHelper)
 		{
 			_testOutputHelper = testOutputHelper ?? throw new ArgumentNullException(nameof(testOutputHelper));
+		}
+
+		[Fact]
+		public void Constructor_UsesPortablePdbs()
+		{
+			var compiler = new RoslynCompilationService(
+				new DefaultMetadataReferenceManager(),
+				Assembly.GetEntryAssembly()!);
+
+			Assert.Equal(DebugInformationFormat.PortablePdb, compiler.EmitOptions.DebugInformationFormat);
 		}
 
 		[Fact]
