@@ -1,0 +1,658 @@
+abstract RazorLight.Razor.RazorLightProject.GetImportsAsync(string templateKey) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<RazorLight.Razor.RazorLightProjectItem>>
+abstract RazorLight.Razor.RazorLightProject.GetItemAsync(string templateKey) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem>
+abstract RazorLight.Razor.RazorLightProjectItem.Exists.get -> bool
+abstract RazorLight.Razor.RazorLightProjectItem.Key.get -> string
+abstract RazorLight.Razor.RazorLightProjectItem.Read() -> System.IO.Stream
+abstract RazorLight.TemplatePageBase.BeginContext(int position, int length, bool isLiteral) -> void
+abstract RazorLight.TemplatePageBase.EndContext() -> void
+abstract RazorLight.TemplatePageBase.EnsureRenderedBodyOrSections() -> void
+abstract RazorLight.TemplatePageBase.ExecuteAsync() -> System.Threading.Tasks.Task
+abstract RazorLight.TemplatePageBase.SetModel(object model) -> void
+const RazorLight.Internal.Buffering.PagedCharBuffer.PageSize = 1024 -> int
+const RazorLight.Razor.FileSystemRazorProject.DefaultExtension = ".cshtml" -> string
+override RazorLight.Instrumentation.RazorLightAssemblyAttributeInjectionPass.ExecuteCore(Microsoft.AspNetCore.Razor.Language.RazorCodeDocument codeDocument, Microsoft.AspNetCore.Razor.Language.Intermediate.DocumentIntermediateNode documentNode) -> void
+override RazorLight.Instrumentation.RazorLightTemplateDocumentClassifierPass.DocumentKind.get -> string
+override RazorLight.Instrumentation.RazorLightTemplateDocumentClassifierPass.IsMatch(Microsoft.AspNetCore.Razor.Language.RazorCodeDocument codeDocument, Microsoft.AspNetCore.Razor.Language.Intermediate.DocumentIntermediateNode documentNode) -> bool
+override RazorLight.Instrumentation.RazorLightTemplateDocumentClassifierPass.OnDocumentStructureCreated(Microsoft.AspNetCore.Razor.Language.RazorCodeDocument codeDocument, Microsoft.AspNetCore.Razor.Language.Intermediate.NamespaceDeclarationIntermediateNode namespace, Microsoft.AspNetCore.Razor.Language.Intermediate.ClassDeclarationIntermediateNode class, Microsoft.AspNetCore.Razor.Language.Intermediate.MethodDeclarationIntermediateNode method) -> void
+override RazorLight.Internal.Buffering.PagedBufferedTextWriter.Dispose(bool disposing) -> void
+override RazorLight.Internal.Buffering.PagedBufferedTextWriter.Encoding.get -> System.Text.Encoding
+override RazorLight.Internal.Buffering.PagedBufferedTextWriter.Flush() -> void
+override RazorLight.Internal.Buffering.PagedBufferedTextWriter.FlushAsync() -> System.Threading.Tasks.Task
+override RazorLight.Internal.Buffering.PagedBufferedTextWriter.Write(char value) -> void
+override RazorLight.Internal.Buffering.PagedBufferedTextWriter.Write(char[] buffer) -> void
+override RazorLight.Internal.Buffering.PagedBufferedTextWriter.Write(char[] buffer, int index, int count) -> void
+override RazorLight.Internal.Buffering.PagedBufferedTextWriter.Write(string value) -> void
+override RazorLight.Internal.Buffering.PagedBufferedTextWriter.WriteAsync(char value) -> System.Threading.Tasks.Task
+override RazorLight.Internal.Buffering.PagedBufferedTextWriter.WriteAsync(char[] buffer, int index, int count) -> System.Threading.Tasks.Task
+override RazorLight.Internal.Buffering.PagedBufferedTextWriter.WriteAsync(string value) -> System.Threading.Tasks.Task
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.Encoding.get -> System.Text.Encoding
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.Flush() -> void
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.FlushAsync() -> System.Threading.Tasks.Task
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.Write(char value) -> void
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.Write(char[] buffer, int index, int count) -> void
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.Write(object value) -> void
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.Write(string value) -> void
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.WriteAsync(char value) -> System.Threading.Tasks.Task
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.WriteAsync(char[] buffer, int index, int count) -> System.Threading.Tasks.Task
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.WriteAsync(string value) -> System.Threading.Tasks.Task
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.WriteLine() -> void
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.WriteLine(object value) -> void
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.WriteLine(string value) -> void
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.WriteLineAsync() -> System.Threading.Tasks.Task
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.WriteLineAsync(char value) -> System.Threading.Tasks.Task
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.WriteLineAsync(char[] value, int start, int offset) -> System.Threading.Tasks.Task
+override RazorLight.Internal.Buffering.ViewBufferTextWriter.WriteLineAsync(string value) -> System.Threading.Tasks.Task
+override RazorLight.Internal.ExpressionRewriter.VisitClassDeclaration(Microsoft.CodeAnalysis.CSharp.Syntax.ClassDeclarationSyntax node) -> Microsoft.CodeAnalysis.SyntaxNode
+override RazorLight.Internal.ExpressionRewriter.VisitSimpleLambdaExpression(Microsoft.CodeAnalysis.CSharp.Syntax.SimpleLambdaExpressionSyntax node) -> Microsoft.CodeAnalysis.SyntaxNode
+override RazorLight.Razor.EmbeddedRazorProject.GetImportsAsync(string templateKey) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<RazorLight.Razor.RazorLightProjectItem>>
+override RazorLight.Razor.EmbeddedRazorProject.GetItemAsync(string templateKey) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem>
+override RazorLight.Razor.EmbeddedRazorProject.GetKnownKeysAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>>
+override RazorLight.Razor.EmbeddedRazorProjectItem.Exists.get -> bool
+override RazorLight.Razor.EmbeddedRazorProjectItem.Key.get -> string
+override RazorLight.Razor.EmbeddedRazorProjectItem.Read() -> System.IO.Stream
+override RazorLight.Razor.FileSystemRazorProject.GetImportsAsync(string templateKey) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<RazorLight.Razor.RazorLightProjectItem>>
+override RazorLight.Razor.FileSystemRazorProject.GetItemAsync(string templateKey) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem>
+override RazorLight.Razor.FileSystemRazorProject.GetKnownKeysAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>>
+override RazorLight.Razor.FileSystemRazorProject.NormalizeKey(string templateKey) -> string
+override RazorLight.Razor.FileSystemRazorProjectItem.Exists.get -> bool
+override RazorLight.Razor.FileSystemRazorProjectItem.Key.get -> string
+override RazorLight.Razor.FileSystemRazorProjectItem.Read() -> System.IO.Stream
+override RazorLight.Razor.NoRazorProject.GetImportsAsync(string templateKey) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<RazorLight.Razor.RazorLightProjectItem>>
+override RazorLight.Razor.NoRazorProject.GetItemAsync(string templateKey) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem>
+override RazorLight.Razor.NoRazorProject.GetKnownKeysAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>>
+override RazorLight.Razor.NoRazorProjectItem.Equals(object obj) -> bool
+override RazorLight.Razor.NoRazorProjectItem.Exists.get -> bool
+override RazorLight.Razor.NoRazorProjectItem.GetHashCode() -> int
+override RazorLight.Razor.NoRazorProjectItem.Key.get -> string
+override RazorLight.Razor.NoRazorProjectItem.Read() -> System.IO.Stream
+override RazorLight.Razor.TextSourceRazorProjectItem.Exists.get -> bool
+override RazorLight.Razor.TextSourceRazorProjectItem.Key.get -> string
+override RazorLight.Razor.TextSourceRazorProjectItem.Read() -> System.IO.Stream
+override RazorLight.TemplatePage.BeginContext(int position, int length, bool isLiteral) -> void
+override RazorLight.TemplatePage.DefineSection(string name, RazorLight.Internal.RenderAsyncDelegate section) -> void
+override RazorLight.TemplatePage.EndContext() -> void
+override RazorLight.TemplatePage.EnsureRenderedBodyOrSections() -> void
+override RazorLight.TemplatePage<TModel>.SetModel(object model) -> void
+RazorLight.Caching.CachedFileInfo
+RazorLight.Caching.CachedFileInfo.CachedFileInfo() -> void
+RazorLight.Caching.CachedFileInfo.CachedFileInfo(bool upToDate, string assemblyFilePath, string pdbFilePath) -> void
+RazorLight.Caching.CachedFileInfo.Deconstruct(out bool upToDate, out string assemblyFilePath, out string pdbFilePath) -> void
+RazorLight.Caching.FileHashCachingStrategy
+RazorLight.Caching.FileHashCachingStrategy.FileHashCachingStrategy() -> void
+RazorLight.Caching.FileHashCachingStrategy.GetCachedFileInfo(string key, string templateFilePath, string cacheDir) -> RazorLight.Caching.CachedFileInfo
+RazorLight.Caching.FileHashCachingStrategy.Name.get -> string
+RazorLight.Caching.FileSystemCachingProvider
+RazorLight.Caching.FileSystemCachingProvider.CacheTemplate(string key, System.Func<RazorLight.ITemplatePage> pageFactory, Microsoft.Extensions.Primitives.IChangeToken expirationToken) -> void
+RazorLight.Caching.FileSystemCachingProvider.Contains(string key) -> bool
+RazorLight.Caching.FileSystemCachingProvider.FileSystemCachingProvider(string baseDir, string cacheDir, RazorLight.Caching.IFileSystemCachingStrategy fileSystemCachingStrategy) -> void
+RazorLight.Caching.FileSystemCachingProvider.GetAssemblyFilePath(string key, string templateFilePath) -> string
+RazorLight.Caching.FileSystemCachingProvider.Remove(string key) -> void
+RazorLight.Caching.FileSystemCachingProvider.RetrieveTemplate(string key) -> RazorLight.Caching.TemplateCacheLookupResult
+RazorLight.Caching.ICachingProvider
+RazorLight.Caching.ICachingProvider.CacheTemplate(string key, System.Func<RazorLight.ITemplatePage> pageFactory, Microsoft.Extensions.Primitives.IChangeToken expirationToken) -> void
+RazorLight.Caching.ICachingProvider.Contains(string key) -> bool
+RazorLight.Caching.ICachingProvider.Remove(string key) -> void
+RazorLight.Caching.ICachingProvider.RetrieveTemplate(string key) -> RazorLight.Caching.TemplateCacheLookupResult
+RazorLight.Caching.IFileSystemCachingStrategy
+RazorLight.Caching.IFileSystemCachingStrategy.GetCachedFileInfo(string key, string templateFilePath, string cacheDir) -> RazorLight.Caching.CachedFileInfo
+RazorLight.Caching.IFileSystemCachingStrategy.Name.get -> string
+RazorLight.Caching.MemoryCachingProvider
+RazorLight.Caching.MemoryCachingProvider.CacheTemplate(string key, System.Func<RazorLight.ITemplatePage> pageFactory, Microsoft.Extensions.Primitives.IChangeToken expirationToken = null) -> void
+RazorLight.Caching.MemoryCachingProvider.Contains(string key) -> bool
+RazorLight.Caching.MemoryCachingProvider.LookupCache.get -> Microsoft.Extensions.Caching.Memory.IMemoryCache
+RazorLight.Caching.MemoryCachingProvider.LookupCache.set -> void
+RazorLight.Caching.MemoryCachingProvider.MemoryCachingProvider() -> void
+RazorLight.Caching.MemoryCachingProvider.Remove(string key) -> void
+RazorLight.Caching.MemoryCachingProvider.RetrieveTemplate(string key) -> RazorLight.Caching.TemplateCacheLookupResult
+RazorLight.Caching.SimpleFileCachingStrategy
+RazorLight.Caching.SimpleFileCachingStrategy.GetCachedFileInfo(string key, string templateFilePath, string cacheDir) -> RazorLight.Caching.CachedFileInfo
+RazorLight.Caching.SimpleFileCachingStrategy.Name.get -> string
+RazorLight.Caching.SimpleFileCachingStrategy.SimpleFileCachingStrategy() -> void
+RazorLight.Caching.TemplateCacheItem
+RazorLight.Caching.TemplateCacheItem.Key.get -> string
+RazorLight.Caching.TemplateCacheItem.Key.set -> void
+RazorLight.Caching.TemplateCacheItem.TemplateCacheItem() -> void
+RazorLight.Caching.TemplateCacheItem.TemplateCacheItem(string key, System.Func<RazorLight.ITemplatePage> pageFactory) -> void
+RazorLight.Caching.TemplateCacheItem.TemplatePageFactory.get -> System.Func<RazorLight.ITemplatePage>
+RazorLight.Caching.TemplateCacheItem.TemplatePageFactory.set -> void
+RazorLight.Caching.TemplateCacheLookupResult
+RazorLight.Caching.TemplateCacheLookupResult.Success.get -> bool
+RazorLight.Caching.TemplateCacheLookupResult.Template.get -> RazorLight.Caching.TemplateCacheItem
+RazorLight.Caching.TemplateCacheLookupResult.Template.set -> void
+RazorLight.Caching.TemplateCacheLookupResult.TemplateCacheLookupResult() -> void
+RazorLight.Caching.TemplateCacheLookupResult.TemplateCacheLookupResult(RazorLight.Caching.TemplateCacheItem cacheItem) -> void
+RazorLight.Compilation.CompiledTemplateDescriptor
+RazorLight.Compilation.CompiledTemplateDescriptor.CompiledTemplateDescriptor() -> void
+RazorLight.Compilation.CompiledTemplateDescriptor.ExpirationToken.get -> Microsoft.Extensions.Primitives.IChangeToken
+RazorLight.Compilation.CompiledTemplateDescriptor.ExpirationToken.set -> void
+RazorLight.Compilation.CompiledTemplateDescriptor.IsPrecompiled.get -> bool
+RazorLight.Compilation.CompiledTemplateDescriptor.IsPrecompiled.set -> void
+RazorLight.Compilation.CompiledTemplateDescriptor.Item.get -> Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem
+RazorLight.Compilation.CompiledTemplateDescriptor.Item.set -> void
+RazorLight.Compilation.CompiledTemplateDescriptor.TemplateAttribute.get -> RazorLight.Razor.RazorLightTemplateAttribute
+RazorLight.Compilation.CompiledTemplateDescriptor.TemplateAttribute.set -> void
+RazorLight.Compilation.CompiledTemplateDescriptor.TemplateKey.get -> string
+RazorLight.Compilation.CompiledTemplateDescriptor.TemplateKey.set -> void
+RazorLight.Compilation.CompiledTemplateDescriptor.Type.get -> System.Type
+RazorLight.Compilation.DefaultAssemblyPathFormatter
+RazorLight.Compilation.DefaultAssemblyPathFormatter.DefaultAssemblyPathFormatter() -> void
+RazorLight.Compilation.DefaultAssemblyPathFormatter.GetAssemblyPath(System.Reflection.Assembly assembly) -> string
+RazorLight.Compilation.DefaultMetadataReferenceManager
+RazorLight.Compilation.DefaultMetadataReferenceManager.AdditionalMetadataReferences.get -> System.Collections.Generic.HashSet<Microsoft.CodeAnalysis.MetadataReference>
+RazorLight.Compilation.DefaultMetadataReferenceManager.DefaultMetadataReferenceManager() -> void
+RazorLight.Compilation.DefaultMetadataReferenceManager.DefaultMetadataReferenceManager(Microsoft.Extensions.Options.IOptions<RazorLight.RazorLightOptions> options, RazorLight.Compilation.IAssemblyPathFormatter pathFormatter) -> void
+RazorLight.Compilation.DefaultMetadataReferenceManager.DefaultMetadataReferenceManager(System.Collections.Generic.HashSet<Microsoft.CodeAnalysis.MetadataReference> metadataReferences) -> void
+RazorLight.Compilation.DefaultMetadataReferenceManager.DefaultMetadataReferenceManager(System.Collections.Generic.HashSet<Microsoft.CodeAnalysis.MetadataReference> metadataReferences, System.Collections.Generic.HashSet<string> excludedAssemblies) -> void
+RazorLight.Compilation.DefaultMetadataReferenceManager.ExcludedAssemblies.get -> System.Collections.Generic.HashSet<string>
+RazorLight.Compilation.DefaultMetadataReferenceManager.Resolve(System.Reflection.Assembly assembly) -> System.Collections.Generic.IReadOnlyList<Microsoft.CodeAnalysis.MetadataReference>
+RazorLight.Compilation.IAssemblyPathFormatter
+RazorLight.Compilation.IAssemblyPathFormatter.GetAssemblyPath(System.Reflection.Assembly assembly) -> string
+RazorLight.Compilation.ICompilationService
+RazorLight.Compilation.ICompilationService.CompileAndEmit(RazorLight.Generation.IGeneratedRazorTemplate razorTemplate) -> System.Reflection.Assembly
+RazorLight.Compilation.ICompilationService.CSharpCompilationOptions.get -> Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions
+RazorLight.Compilation.ICompilationService.EmitOptions.get -> Microsoft.CodeAnalysis.Emit.EmitOptions
+RazorLight.Compilation.ICompilationService.OperatingAssembly.get -> System.Reflection.Assembly
+RazorLight.Compilation.ICompilationService.ParseOptions.get -> Microsoft.CodeAnalysis.CSharp.CSharpParseOptions
+RazorLight.Compilation.IMetadataReferenceManager
+RazorLight.Compilation.IMetadataReferenceManager.AdditionalMetadataReferences.get -> System.Collections.Generic.HashSet<Microsoft.CodeAnalysis.MetadataReference>
+RazorLight.Compilation.IMetadataReferenceManager.Resolve(System.Reflection.Assembly assembly) -> System.Collections.Generic.IReadOnlyList<Microsoft.CodeAnalysis.MetadataReference>
+RazorLight.Compilation.IPrecompileCallback
+RazorLight.Compilation.IPrecompileCallback.Invoke(RazorLight.Generation.IGeneratedRazorTemplate generatedRazorTemplate, byte[] rawAssembly, byte[] rawSymbolStore) -> void
+RazorLight.Compilation.IRazorTemplateCompiler
+RazorLight.Compilation.IRazorTemplateCompiler.CompilationService.get -> RazorLight.Compilation.ICompilationService
+RazorLight.Compilation.IRazorTemplateCompiler.CompileAsync(string templateKey) -> System.Threading.Tasks.Task<RazorLight.Compilation.CompiledTemplateDescriptor>
+RazorLight.Compilation.ITemplateFactoryProvider
+RazorLight.Compilation.ITemplateFactoryProvider.CreateFactory(RazorLight.Compilation.CompiledTemplateDescriptor templateDescriptor) -> System.Func<RazorLight.ITemplatePage>
+RazorLight.Compilation.LegacyFixAssemblyPathFormatter
+RazorLight.Compilation.LegacyFixAssemblyPathFormatter.GetAssemblyPath(System.Reflection.Assembly assembly) -> string
+RazorLight.Compilation.LegacyFixAssemblyPathFormatter.LegacyFixAssemblyPathFormatter() -> void
+RazorLight.Compilation.RazorTemplateCompiler
+RazorLight.Compilation.RazorTemplateCompiler.CompilationService.get -> RazorLight.Compilation.ICompilationService
+RazorLight.Compilation.RazorTemplateCompiler.CompileAsync(string templateKey) -> System.Threading.Tasks.Task<RazorLight.Compilation.CompiledTemplateDescriptor>
+RazorLight.Compilation.RazorTemplateCompiler.RazorTemplateCompiler(RazorLight.Generation.RazorSourceGenerator sourceGenerator, RazorLight.Compilation.ICompilationService compilationService, RazorLight.Razor.RazorLightProject razorLightProject, Microsoft.Extensions.Options.IOptions<RazorLight.RazorLightOptions> options) -> void
+RazorLight.Compilation.RazorTemplateCompiler.RazorTemplateCompiler(RazorLight.Generation.RazorSourceGenerator sourceGenerator, RazorLight.Compilation.ICompilationService compilationService, RazorLight.Razor.RazorLightProject razorLightProject, RazorLight.RazorLightOptions razorLightOptions) -> void
+RazorLight.Compilation.RoslynCompilationService
+RazorLight.Compilation.RoslynCompilationService.CompileAndEmit(RazorLight.Generation.IGeneratedRazorTemplate razorTemplate) -> System.Reflection.Assembly
+RazorLight.Compilation.RoslynCompilationService.CreateCompilation(string assemblyName) -> Microsoft.CodeAnalysis.CSharp.CSharpCompilation
+RazorLight.Compilation.RoslynCompilationService.CreateSyntaxTree(Microsoft.CodeAnalysis.Text.SourceText sourceText) -> Microsoft.CodeAnalysis.SyntaxTree
+RazorLight.Compilation.RoslynCompilationService.RoslynCompilationService(RazorLight.Compilation.IMetadataReferenceManager referenceManager, Microsoft.Extensions.Options.IOptions<RazorLight.RazorLightOptions> options, RazorLight.Compilation.IPrecompileCallback precompileCallback = null) -> void
+RazorLight.Compilation.RoslynCompilationService.RoslynCompilationService(RazorLight.Compilation.IMetadataReferenceManager referenceManager, System.Reflection.Assembly operatingAssembly, RazorLight.Compilation.IPrecompileCallback precompileCallback = null) -> void
+RazorLight.Compilation.TemplateCompilationDiagnostic
+RazorLight.Compilation.TemplateCompilationDiagnostic.ErrorMessage.get -> string
+RazorLight.Compilation.TemplateCompilationDiagnostic.FormattedMessage.get -> string
+RazorLight.Compilation.TemplateCompilationDiagnostic.LineSpan.get -> Microsoft.CodeAnalysis.FileLinePositionSpan?
+RazorLight.Compilation.TemplateCompilationDiagnostic.TemplateCompilationDiagnostic(string errorMessage, string formattedMessage, Microsoft.CodeAnalysis.FileLinePositionSpan? lineSpan) -> void
+RazorLight.Compilation.TemplateCompilationException
+RazorLight.Compilation.TemplateCompilationException.CompilationDiagnostics.get -> System.Collections.Generic.IReadOnlyList<RazorLight.Compilation.TemplateCompilationDiagnostic>
+RazorLight.Compilation.TemplateCompilationException.CompilationErrors.get -> System.Collections.Generic.IReadOnlyList<string>
+RazorLight.Compilation.TemplateCompilationException.TemplateCompilationException(string message, System.Collections.Generic.IEnumerable<RazorLight.Compilation.TemplateCompilationDiagnostic> diagnostics) -> void
+RazorLight.Compilation.TemplateCompilationException.TemplateCompilationException(string message, System.Collections.Generic.IEnumerable<string> errors) -> void
+RazorLight.Compilation.TemplateFactoryProvider
+RazorLight.Compilation.TemplateFactoryProvider.CreateFactory(RazorLight.Compilation.CompiledTemplateDescriptor templateDescriptor) -> System.Func<RazorLight.ITemplatePage>
+RazorLight.Compilation.TemplateFactoryProvider.TemplateFactoryProvider() -> void
+RazorLight.Compilation.TemplateFactoryResult
+RazorLight.Compilation.TemplateFactoryResult.TemplateDescriptor.get -> RazorLight.Compilation.CompiledTemplateDescriptor
+RazorLight.Compilation.TemplateFactoryResult.TemplateFactoryResult() -> void
+RazorLight.Compilation.TemplateFactoryResult.TemplateFactoryResult(RazorLight.Compilation.CompiledTemplateDescriptor viewDescriptor, System.Func<RazorLight.ITemplatePage> templatePageFactory) -> void
+RazorLight.Compilation.TemplateFactoryResult.TemplatePageFactory.get -> System.Func<RazorLight.ITemplatePage>
+RazorLight.DependencyInjection.PropertyInjector
+RazorLight.DependencyInjection.PropertyInjector.Inject(RazorLight.ITemplatePage page) -> void
+RazorLight.DependencyInjection.PropertyInjector.PropertyInjector(System.IServiceProvider services) -> void
+RazorLight.EngineFactory
+RazorLight.EngineFactory.Create(RazorLight.RazorLightOptions options = null) -> RazorLight.RazorLightEngine
+RazorLight.EngineFactory.EngineFactory() -> void
+RazorLight.EngineHandler
+RazorLight.EngineHandler.Cache.get -> RazorLight.Caching.ICachingProvider
+RazorLight.EngineHandler.Compiler.get -> RazorLight.Compilation.IRazorTemplateCompiler
+RazorLight.EngineHandler.CompileRenderAsync<T>(string key, T model, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.EngineHandler.CompileRenderStringAsync<T>(string key, string content, T model, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.EngineHandler.CompileTemplateAsync(string key) -> System.Threading.Tasks.Task<RazorLight.ITemplatePage>
+RazorLight.EngineHandler.EngineHandler(Microsoft.Extensions.Options.IOptions<RazorLight.RazorLightOptions> options, RazorLight.Compilation.IRazorTemplateCompiler compiler, RazorLight.Compilation.ITemplateFactoryProvider factoryProvider, RazorLight.Caching.ICachingProvider cache) -> void
+RazorLight.EngineHandler.EngineHandler(RazorLight.RazorLightOptions options, RazorLight.Compilation.IRazorTemplateCompiler compiler, RazorLight.Compilation.ITemplateFactoryProvider factoryProvider, RazorLight.Caching.ICachingProvider cache) -> void
+RazorLight.EngineHandler.FactoryProvider.get -> RazorLight.Compilation.ITemplateFactoryProvider
+RazorLight.EngineHandler.IsCachingEnabled.get -> bool
+RazorLight.EngineHandler.Options.get -> RazorLight.RazorLightOptions
+RazorLight.EngineHandler.RenderIncludedTemplateAsync<T>(RazorLight.ITemplatePage templatePage, T model, System.IO.TextWriter textWriter, System.Dynamic.ExpandoObject viewBag, RazorLight.TemplateRenderer templateRenderer) -> System.Threading.Tasks.Task
+RazorLight.EngineHandler.RenderTemplateAsync<T>(RazorLight.ITemplatePage templatePage, T model, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.EngineHandler.RenderTemplateAsync<T>(RazorLight.ITemplatePage templatePage, T model, System.IO.TextWriter textWriter, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task
+RazorLight.Extensions.ServiceCollectionExtensions
+RazorLight.Extensions.TypeExtensions
+RazorLight.Generation.GeneratedRazorTemplate
+RazorLight.Generation.GeneratedRazorTemplate.CSharpDocument.get -> Microsoft.AspNetCore.Razor.Language.RazorCSharpDocument
+RazorLight.Generation.GeneratedRazorTemplate.CSharpDocument.set -> void
+RazorLight.Generation.GeneratedRazorTemplate.GeneratedCode.get -> string
+RazorLight.Generation.GeneratedRazorTemplate.GeneratedRazorTemplate(RazorLight.Razor.RazorLightProjectItem projectItem, Microsoft.AspNetCore.Razor.Language.RazorCSharpDocument cSharpDocument) -> void
+RazorLight.Generation.GeneratedRazorTemplate.ProjectItem.get -> RazorLight.Razor.RazorLightProjectItem
+RazorLight.Generation.GeneratedRazorTemplate.ProjectItem.set -> void
+RazorLight.Generation.GeneratedRazorTemplate.TemplateKey.get -> string
+RazorLight.Generation.IGeneratedRazorTemplate
+RazorLight.Generation.IGeneratedRazorTemplate.GeneratedCode.get -> string
+RazorLight.Generation.IGeneratedRazorTemplate.ProjectItem.get -> RazorLight.Razor.RazorLightProjectItem
+RazorLight.Generation.IGeneratedRazorTemplate.ProjectItem.set -> void
+RazorLight.Generation.IGeneratedRazorTemplate.TemplateKey.get -> string
+RazorLight.Generation.RazorSourceGenerator
+RazorLight.Generation.RazorSourceGenerator.DefaultImports.get -> Microsoft.AspNetCore.Razor.Language.RazorSourceDocument
+RazorLight.Generation.RazorSourceGenerator.DefaultImports.set -> void
+RazorLight.Generation.RazorSourceGenerator.GenerateCodeAsync(RazorLight.Razor.RazorLightProjectItem projectItem) -> System.Threading.Tasks.Task<RazorLight.Generation.IGeneratedRazorTemplate>
+RazorLight.Generation.RazorSourceGenerator.GenerateCodeAsync(string key) -> System.Threading.Tasks.Task<RazorLight.Generation.IGeneratedRazorTemplate>
+RazorLight.Generation.RazorSourceGenerator.GetDefaultImports() -> Microsoft.AspNetCore.Razor.Language.RazorSourceDocument
+RazorLight.Generation.RazorSourceGenerator.GetNamespacesImports() -> Microsoft.AspNetCore.Razor.Language.RazorSourceDocument
+RazorLight.Generation.RazorSourceGenerator.Namespaces.get -> System.Collections.Generic.ISet<string>
+RazorLight.Generation.RazorSourceGenerator.Namespaces.set -> void
+RazorLight.Generation.RazorSourceGenerator.Project.get -> RazorLight.Razor.RazorLightProject
+RazorLight.Generation.RazorSourceGenerator.Project.set -> void
+RazorLight.Generation.RazorSourceGenerator.ProjectEngine.get -> Microsoft.AspNetCore.Razor.Language.RazorEngine
+RazorLight.Generation.RazorSourceGenerator.ProjectEngine.set -> void
+RazorLight.Generation.RazorSourceGenerator.RazorSourceGenerator(Microsoft.AspNetCore.Razor.Language.RazorEngine projectEngine, RazorLight.Razor.RazorLightProject project = null, System.Collections.Generic.ISet<string> namespaces = null) -> void
+RazorLight.Generation.TemplateGenerationException
+RazorLight.Generation.TemplateGenerationException.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Razor.Language.RazorDiagnostic>
+RazorLight.Generation.TemplateGenerationException.Diagnostics.set -> void
+RazorLight.Generation.TemplateGenerationException.TemplateGenerationException(string message, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Razor.Language.RazorDiagnostic> diagnostic) -> void
+RazorLight.IEngineFactory
+RazorLight.IEngineFactory.Create(RazorLight.Razor.RazorLightProject project, RazorLight.RazorLightOptions options) -> RazorLight.RazorLightEngine
+RazorLight.IEngineFactory.Create(RazorLight.RazorLightOptions options = null) -> RazorLight.RazorLightEngine
+RazorLight.IEngineFactory.ForEmbeddedResources(System.Type rootType) -> RazorLight.RazorLightEngine
+RazorLight.IEngineFactory.ForEmbeddedResources(System.Type rootType, RazorLight.RazorLightOptions options) -> RazorLight.RazorLightEngine
+RazorLight.IEngineFactory.ForFileSystem(string root) -> RazorLight.RazorLightEngine
+RazorLight.IEngineFactory.ForFileSystem(string root, RazorLight.RazorLightOptions options) -> RazorLight.RazorLightEngine
+RazorLight.IEngineHandler
+RazorLight.IEngineHandler.Cache.get -> RazorLight.Caching.ICachingProvider
+RazorLight.IEngineHandler.Compiler.get -> RazorLight.Compilation.IRazorTemplateCompiler
+RazorLight.IEngineHandler.CompileRenderAsync<T>(string key, T model, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.IEngineHandler.CompileRenderStringAsync<T>(string key, string content, T model, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.IEngineHandler.CompileTemplateAsync(string key) -> System.Threading.Tasks.Task<RazorLight.ITemplatePage>
+RazorLight.IEngineHandler.FactoryProvider.get -> RazorLight.Compilation.ITemplateFactoryProvider
+RazorLight.IEngineHandler.IsCachingEnabled.get -> bool
+RazorLight.IEngineHandler.Options.get -> RazorLight.RazorLightOptions
+RazorLight.IEngineHandler.RenderIncludedTemplateAsync<T>(RazorLight.ITemplatePage templatePage, T model, System.IO.TextWriter textWriter, System.Dynamic.ExpandoObject viewBag, RazorLight.TemplateRenderer templateRenderer) -> System.Threading.Tasks.Task
+RazorLight.IEngineHandler.RenderTemplateAsync<T>(RazorLight.ITemplatePage templatePage, T model, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.IEngineHandler.RenderTemplateAsync<T>(RazorLight.ITemplatePage templatePage, T model, System.IO.TextWriter textWriter, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task
+RazorLight.Instrumentation.InjectDirective
+RazorLight.Instrumentation.InjectDirective.InjectDirective() -> void
+RazorLight.Instrumentation.ModelDirective
+RazorLight.Instrumentation.RazorLightAssemblyAttributeInjectionPass
+RazorLight.Instrumentation.RazorLightAssemblyAttributeInjectionPass.RazorLightAssemblyAttributeInjectionPass() -> void
+RazorLight.Instrumentation.RazorLightTemplateDocumentClassifierPass
+RazorLight.Instrumentation.RazorLightTemplateDocumentClassifierPass.RazorLightTemplateDocumentClassifierPass() -> void
+RazorLight.Internal.Buffering.ArrayPoolBufferSource
+RazorLight.Internal.Buffering.ArrayPoolBufferSource.ArrayPoolBufferSource(System.Buffers.ArrayPool<char> pool) -> void
+RazorLight.Internal.Buffering.ArrayPoolBufferSource.Rent(int bufferSize) -> char[]
+RazorLight.Internal.Buffering.ArrayPoolBufferSource.Return(char[] buffer) -> void
+RazorLight.Internal.Buffering.ICharBufferSource
+RazorLight.Internal.Buffering.ICharBufferSource.Rent(int bufferSize) -> char[]
+RazorLight.Internal.Buffering.ICharBufferSource.Return(char[] buffer) -> void
+RazorLight.Internal.Buffering.IViewBufferScope
+RazorLight.Internal.Buffering.IViewBufferScope.CreateWriter(System.IO.TextWriter writer) -> RazorLight.Internal.Buffering.PagedBufferedTextWriter
+RazorLight.Internal.Buffering.IViewBufferScope.GetPage(int pageSize) -> RazorLight.Internal.Buffering.ViewBufferValue[]
+RazorLight.Internal.Buffering.IViewBufferScope.ReturnSegment(RazorLight.Internal.Buffering.ViewBufferValue[] segment) -> void
+RazorLight.Internal.Buffering.MemoryPoolViewBufferScope
+RazorLight.Internal.Buffering.MemoryPoolViewBufferScope.CreateWriter(System.IO.TextWriter writer) -> RazorLight.Internal.Buffering.PagedBufferedTextWriter
+RazorLight.Internal.Buffering.MemoryPoolViewBufferScope.Dispose() -> void
+RazorLight.Internal.Buffering.MemoryPoolViewBufferScope.GetPage(int pageSize) -> RazorLight.Internal.Buffering.ViewBufferValue[]
+RazorLight.Internal.Buffering.MemoryPoolViewBufferScope.MemoryPoolViewBufferScope() -> void
+RazorLight.Internal.Buffering.MemoryPoolViewBufferScope.MemoryPoolViewBufferScope(System.Buffers.ArrayPool<RazorLight.Internal.Buffering.ViewBufferValue> viewBufferPool, System.Buffers.ArrayPool<char> charPool) -> void
+RazorLight.Internal.Buffering.MemoryPoolViewBufferScope.ReturnSegment(RazorLight.Internal.Buffering.ViewBufferValue[] segment) -> void
+RazorLight.Internal.Buffering.PagedBufferedTextWriter
+RazorLight.Internal.Buffering.PagedBufferedTextWriter.PagedBufferedTextWriter(System.Buffers.ArrayPool<char> pool, System.IO.TextWriter inner) -> void
+RazorLight.Internal.Buffering.PagedCharBuffer
+RazorLight.Internal.Buffering.PagedCharBuffer.Append(char value) -> void
+RazorLight.Internal.Buffering.PagedCharBuffer.Append(char[] buffer, int index, int count) -> void
+RazorLight.Internal.Buffering.PagedCharBuffer.Append(string value) -> void
+RazorLight.Internal.Buffering.PagedCharBuffer.BufferSource.get -> RazorLight.Internal.Buffering.ICharBufferSource
+RazorLight.Internal.Buffering.PagedCharBuffer.Clear() -> void
+RazorLight.Internal.Buffering.PagedCharBuffer.Dispose() -> void
+RazorLight.Internal.Buffering.PagedCharBuffer.Length.get -> int
+RazorLight.Internal.Buffering.PagedCharBuffer.PagedCharBuffer(RazorLight.Internal.Buffering.ICharBufferSource bufferSource) -> void
+RazorLight.Internal.Buffering.PagedCharBuffer.Pages.get -> System.Collections.Generic.IList<char[]>
+RazorLight.Internal.Buffering.ViewBuffer
+RazorLight.Internal.Buffering.ViewBuffer.Append(string unencoded) -> Microsoft.AspNetCore.Html.IHtmlContentBuilder
+RazorLight.Internal.Buffering.ViewBuffer.AppendHtml(Microsoft.AspNetCore.Html.IHtmlContent content) -> Microsoft.AspNetCore.Html.IHtmlContentBuilder
+RazorLight.Internal.Buffering.ViewBuffer.AppendHtml(string encoded) -> Microsoft.AspNetCore.Html.IHtmlContentBuilder
+RazorLight.Internal.Buffering.ViewBuffer.Clear() -> Microsoft.AspNetCore.Html.IHtmlContentBuilder
+RazorLight.Internal.Buffering.ViewBuffer.CopyTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
+RazorLight.Internal.Buffering.ViewBuffer.Count.get -> int
+RazorLight.Internal.Buffering.ViewBuffer.MoveTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
+RazorLight.Internal.Buffering.ViewBuffer.this[int index].get -> RazorLight.Internal.Buffering.ViewBufferPage
+RazorLight.Internal.Buffering.ViewBuffer.ViewBuffer(RazorLight.Internal.Buffering.IViewBufferScope bufferScope, string name, int pageSize) -> void
+RazorLight.Internal.Buffering.ViewBuffer.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
+RazorLight.Internal.Buffering.ViewBuffer.WriteToAsync(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> System.Threading.Tasks.Task
+RazorLight.Internal.Buffering.ViewBufferPage
+RazorLight.Internal.Buffering.ViewBufferPage.Append(RazorLight.Internal.Buffering.ViewBufferValue value) -> void
+RazorLight.Internal.Buffering.ViewBufferPage.Buffer.get -> RazorLight.Internal.Buffering.ViewBufferValue[]
+RazorLight.Internal.Buffering.ViewBufferPage.Capacity.get -> int
+RazorLight.Internal.Buffering.ViewBufferPage.Count.get -> int
+RazorLight.Internal.Buffering.ViewBufferPage.Count.set -> void
+RazorLight.Internal.Buffering.ViewBufferPage.IsFull.get -> bool
+RazorLight.Internal.Buffering.ViewBufferPage.ViewBufferPage(RazorLight.Internal.Buffering.ViewBufferValue[] buffer) -> void
+RazorLight.Internal.Buffering.ViewBufferTextWriter
+RazorLight.Internal.Buffering.ViewBufferTextWriter.Buffer.get -> RazorLight.Internal.Buffering.ViewBuffer
+RazorLight.Internal.Buffering.ViewBufferTextWriter.IsBuffering.get -> bool
+RazorLight.Internal.Buffering.ViewBufferTextWriter.ViewBufferTextWriter(RazorLight.Internal.Buffering.ViewBuffer buffer, System.Text.Encoding encoding) -> void
+RazorLight.Internal.Buffering.ViewBufferTextWriter.ViewBufferTextWriter(RazorLight.Internal.Buffering.ViewBuffer buffer, System.Text.Encoding encoding, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, System.IO.TextWriter inner) -> void
+RazorLight.Internal.Buffering.ViewBufferTextWriter.Write(Microsoft.AspNetCore.Html.IHtmlContent value) -> void
+RazorLight.Internal.Buffering.ViewBufferTextWriter.Write(Microsoft.AspNetCore.Html.IHtmlContentContainer value) -> void
+RazorLight.Internal.Buffering.ViewBufferValue
+RazorLight.Internal.Buffering.ViewBufferValue.Value.get -> object
+RazorLight.Internal.Buffering.ViewBufferValue.ViewBufferValue() -> void
+RazorLight.Internal.Buffering.ViewBufferValue.ViewBufferValue(Microsoft.AspNetCore.Html.IHtmlContent content) -> void
+RazorLight.Internal.Buffering.ViewBufferValue.ViewBufferValue(string value) -> void
+RazorLight.Internal.ExpressionRewriter
+RazorLight.Internal.ExpressionRewriter.ExpressionRewriter(Microsoft.CodeAnalysis.SemanticModel semanticModel) -> void
+RazorLight.Internal.RazorInjectAttribute
+RazorLight.Internal.RazorInjectAttribute.RazorInjectAttribute() -> void
+RazorLight.Internal.RenderAsyncDelegate
+RazorLight.IPageContext
+RazorLight.IPageContext.ViewBag.get -> dynamic
+RazorLight.IPageContext.Writer.get -> System.IO.TextWriter
+RazorLight.IPageContext.Writer.set -> void
+RazorLight.IRazorLightEngine
+RazorLight.IRazorLightEngine.CompileRenderAsync(string key, object model, System.Type modelType, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.IRazorLightEngine.CompileRenderAsync<T>(string key, T model, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.IRazorLightEngine.CompileRenderStringAsync<T>(string key, string content, T model, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.IRazorLightEngine.CompileTemplateAsync(string key) -> System.Threading.Tasks.Task<RazorLight.ITemplatePage>
+RazorLight.IRazorLightEngine.Handler.get -> RazorLight.IEngineHandler
+RazorLight.IRazorLightEngine.Options.get -> RazorLight.RazorLightOptions
+RazorLight.IRazorLightEngine.RenderTemplateAsync(RazorLight.ITemplatePage templatePage, object model, System.Type modelType, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.IRazorLightEngine.RenderTemplateAsync(RazorLight.ITemplatePage templatePage, object model, System.Type modelType, System.IO.TextWriter textWriter, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task
+RazorLight.IRazorLightEngine.RenderTemplateAsync<T>(RazorLight.ITemplatePage templatePage, T model, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.IRazorLightEngine.RenderTemplateAsync<T>(RazorLight.ITemplatePage templatePage, T model, System.IO.TextWriter textWriter, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task
+RazorLight.IRazorLightEngineFactory
+RazorLight.IRazorLightEngineFactory.Create(System.Reflection.Assembly operatingAssembly = null, string fileSystemProjectRoot = null) -> RazorLight.IRazorLightEngine
+RazorLight.ITemplatePage
+RazorLight.ITemplatePage.BodyContent.get -> Microsoft.AspNetCore.Html.IHtmlContent
+RazorLight.ITemplatePage.BodyContent.set -> void
+RazorLight.ITemplatePage.DisableEncoding.get -> bool
+RazorLight.ITemplatePage.DisableEncoding.set -> void
+RazorLight.ITemplatePage.EnsureRenderedBodyOrSections() -> void
+RazorLight.ITemplatePage.ExecuteAsync() -> System.Threading.Tasks.Task
+RazorLight.ITemplatePage.IncludeFunc.get -> System.Func<string, object, System.Threading.Tasks.Task>
+RazorLight.ITemplatePage.IncludeFunc.set -> void
+RazorLight.ITemplatePage.IsLayoutBeingRendered.get -> bool
+RazorLight.ITemplatePage.IsLayoutBeingRendered.set -> void
+RazorLight.ITemplatePage.Key.get -> string
+RazorLight.ITemplatePage.Key.set -> void
+RazorLight.ITemplatePage.Layout.get -> string
+RazorLight.ITemplatePage.Layout.set -> void
+RazorLight.ITemplatePage.PageContext.get -> RazorLight.PageContext
+RazorLight.ITemplatePage.PageContext.set -> void
+RazorLight.ITemplatePage.PreviousSectionWriters.get -> System.Collections.Generic.IDictionary<string, RazorLight.Internal.RenderAsyncDelegate>
+RazorLight.ITemplatePage.PreviousSectionWriters.set -> void
+RazorLight.ITemplatePage.SectionWriters.get -> System.Collections.Generic.IDictionary<string, RazorLight.Internal.RenderAsyncDelegate>
+RazorLight.ITemplatePage.SetModel(object model) -> void
+RazorLight.ModelTypeInfo
+RazorLight.ModelTypeInfo.CreateTemplateModel(object model) -> object
+RazorLight.ModelTypeInfo.IsStrongType.get -> bool
+RazorLight.ModelTypeInfo.ModelTypeInfo(System.Type type) -> void
+RazorLight.ModelTypeInfo.TemplateType.get -> System.Type
+RazorLight.ModelTypeInfo.TemplateTypeName.get -> string
+RazorLight.ModelTypeInfo.Type.get -> System.Type
+RazorLight.PageContext
+RazorLight.PageContext.ExecutingPageKey.get -> string
+RazorLight.PageContext.ExecutingPageKey.set -> void
+RazorLight.PageContext.Model.get -> object
+RazorLight.PageContext.Model.set -> void
+RazorLight.PageContext.ModelTypeInfo.get -> RazorLight.ModelTypeInfo
+RazorLight.PageContext.ModelTypeInfo.set -> void
+RazorLight.PageContext.PageContext() -> void
+RazorLight.PageContext.PageContext(System.Dynamic.ExpandoObject viewBag) -> void
+RazorLight.PageContext.ViewBag.get -> dynamic
+RazorLight.PageContext.Writer.get -> System.IO.TextWriter
+RazorLight.PageContext.Writer.set -> void
+RazorLight.Razor.EmbeddedRazorProject
+RazorLight.Razor.EmbeddedRazorProject.Assembly.get -> System.Reflection.Assembly
+RazorLight.Razor.EmbeddedRazorProject.Assembly.set -> void
+RazorLight.Razor.EmbeddedRazorProject.EmbeddedRazorProject(System.Reflection.Assembly assembly, string rootNamespace = "") -> void
+RazorLight.Razor.EmbeddedRazorProject.EmbeddedRazorProject(System.Type rootType) -> void
+RazorLight.Razor.EmbeddedRazorProject.Extension.get -> string
+RazorLight.Razor.EmbeddedRazorProject.Extension.set -> void
+RazorLight.Razor.EmbeddedRazorProject.RootNamespace.get -> string
+RazorLight.Razor.EmbeddedRazorProject.RootNamespace.set -> void
+RazorLight.Razor.EmbeddedRazorProjectItem
+RazorLight.Razor.EmbeddedRazorProjectItem.Assembly.get -> System.Reflection.Assembly
+RazorLight.Razor.EmbeddedRazorProjectItem.Assembly.set -> void
+RazorLight.Razor.EmbeddedRazorProjectItem.EmbeddedRazorProjectItem(System.Reflection.Assembly assembly, string rootNamespace, string key) -> void
+RazorLight.Razor.EmbeddedRazorProjectItem.EmbeddedRazorProjectItem(System.Type rootType, string key) -> void
+RazorLight.Razor.FileSystemRazorProject
+RazorLight.Razor.FileSystemRazorProject.Extension.get -> string
+RazorLight.Razor.FileSystemRazorProject.Extension.set -> void
+RazorLight.Razor.FileSystemRazorProject.FileSystemRazorProject(string root) -> void
+RazorLight.Razor.FileSystemRazorProject.FileSystemRazorProject(string root, string extension) -> void
+RazorLight.Razor.FileSystemRazorProject.GetAbsoluteFilePathFromKey(string templateKey) -> string
+RazorLight.Razor.FileSystemRazorProject.Root.get -> string
+RazorLight.Razor.FileSystemRazorProjectHelper
+RazorLight.Razor.FileSystemRazorProjectItem
+RazorLight.Razor.FileSystemRazorProjectItem.File.get -> System.IO.FileInfo
+RazorLight.Razor.FileSystemRazorProjectItem.FileSystemRazorProjectItem(string templateKey, System.IO.FileInfo fileInfo) -> void
+RazorLight.Razor.NoRazorProject
+RazorLight.Razor.NoRazorProject.NoRazorProject() -> void
+RazorLight.Razor.NoRazorProjectItem
+RazorLight.Razor.RazorLightHelperResult
+RazorLight.Razor.RazorLightHelperResult.RazorLightHelperResult(System.Func<System.IO.TextWriter, System.Threading.Tasks.Task> asyncAction) -> void
+RazorLight.Razor.RazorLightProject
+RazorLight.Razor.RazorLightProject.RazorLightProject() -> void
+RazorLight.Razor.RazorLightProjectItem
+RazorLight.Razor.RazorLightProjectItem.ExpirationToken.get -> Microsoft.Extensions.Primitives.IChangeToken
+RazorLight.Razor.RazorLightProjectItem.ExpirationToken.set -> void
+RazorLight.Razor.RazorLightProjectItem.RazorLightProjectItem() -> void
+RazorLight.Razor.RazorLightTemplateAttribute
+RazorLight.Razor.RazorLightTemplateAttribute.Key.get -> string
+RazorLight.Razor.RazorLightTemplateAttribute.RazorLightTemplateAttribute(string key, System.Type templateType) -> void
+RazorLight.Razor.RazorLightTemplateAttribute.TemplateType.get -> System.Type
+RazorLight.Razor.TextSourceRazorProjectItem
+RazorLight.Razor.TextSourceRazorProjectItem.Content.get -> string
+RazorLight.Razor.TextSourceRazorProjectItem.TextSourceRazorProjectItem(string key, string content) -> void
+RazorLight.RazorLightDependencyBuilder
+RazorLight.RazorLightDependencyBuilder.AddMetadataReferences(params Microsoft.CodeAnalysis.MetadataReference[] metadata) -> RazorLight.RazorLightDependencyBuilder
+RazorLight.RazorLightDependencyBuilder.ExcludeAssemblies(params string[] assemblyNames) -> RazorLight.RazorLightDependencyBuilder
+RazorLight.RazorLightDependencyBuilder.RazorLightDependencyBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> void
+RazorLight.RazorLightDependencyBuilder.SetOperatingAssembly(System.Reflection.Assembly assembly) -> RazorLight.RazorLightDependencyBuilder
+RazorLight.RazorLightDependencyBuilder.UseEmbeddedResourcesProject(System.Type rootType) -> RazorLight.RazorLightDependencyBuilder
+RazorLight.RazorLightDependencyBuilder.UseFileSystemProject(string root, string extension = null) -> RazorLight.RazorLightDependencyBuilder
+RazorLight.RazorLightDependencyBuilder.UseMemoryCachingProvider() -> RazorLight.RazorLightDependencyBuilder
+RazorLight.RazorLightDependencyBuilder.UseNetFrameworkLegacyFix() -> RazorLight.RazorLightDependencyBuilder
+RazorLight.RazorLightEngine
+RazorLight.RazorLightEngine.CompileRenderAsync(string key, object model, System.Type modelType, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.RazorLightEngine.CompileRenderAsync(string key, string content, object model, System.Type modelType, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.RazorLightEngine.CompileRenderAsync<T>(string key, T model, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.RazorLightEngine.CompileRenderStringAsync<T>(string key, string content, T model, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.RazorLightEngine.CompileTemplateAsync(string key) -> System.Threading.Tasks.Task<RazorLight.ITemplatePage>
+RazorLight.RazorLightEngine.Handler.get -> RazorLight.IEngineHandler
+RazorLight.RazorLightEngine.Options.get -> RazorLight.RazorLightOptions
+RazorLight.RazorLightEngine.RazorLightEngine(RazorLight.IEngineHandler handler) -> void
+RazorLight.RazorLightEngine.RenderTemplateAsync(RazorLight.ITemplatePage templatePage, object model, System.Type modelType, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.RazorLightEngine.RenderTemplateAsync(RazorLight.ITemplatePage templatePage, object model, System.Type modelType, System.IO.TextWriter textWriter, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task
+RazorLight.RazorLightEngine.RenderTemplateAsync<T>(RazorLight.ITemplatePage templatePage, T model, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task<string>
+RazorLight.RazorLightEngine.RenderTemplateAsync<T>(RazorLight.ITemplatePage templatePage, T model, System.IO.TextWriter textWriter, System.Dynamic.ExpandoObject viewBag = null) -> System.Threading.Tasks.Task
+RazorLight.RazorLightEngineBuilder
+RazorLight.RazorLightEngineBuilder.cachingProvider -> RazorLight.Caching.ICachingProvider
+RazorLight.RazorLightEngineBuilder.DisableEncoding() -> RazorLight.RazorLightEngineBuilder
+RazorLight.RazorLightEngineBuilder.dynamicTemplates -> System.Collections.Concurrent.ConcurrentDictionary<string, string>
+RazorLight.RazorLightEngineBuilder.EnableEncoding() -> RazorLight.RazorLightEngineBuilder
+RazorLight.RazorLightEngineBuilder.excludedAssemblies -> System.Collections.Generic.HashSet<string>
+RazorLight.RazorLightEngineBuilder.metadataReferences -> System.Collections.Generic.HashSet<Microsoft.CodeAnalysis.MetadataReference>
+RazorLight.RazorLightEngineBuilder.namespaces -> System.Collections.Generic.HashSet<string>
+RazorLight.RazorLightEngineBuilder.operatingAssembly -> System.Reflection.Assembly
+RazorLight.RazorLightEngineBuilder.prerenderCallbacks -> System.Collections.Generic.List<System.Action<RazorLight.ITemplatePage>>
+RazorLight.RazorLightEngineBuilder.project -> RazorLight.Razor.RazorLightProject
+RazorLight.RazorLightEngineBuilder.RazorLightEngineBuilder() -> void
+RazorLight.RazorLightEngineBuilder.UseEmbeddedResourcesProject(System.Reflection.Assembly assembly, string rootNamespace = null) -> RazorLight.RazorLightEngineBuilder
+RazorLight.RazorLightEngineBuilder.UseEmbeddedResourcesProject(System.Type rootType) -> RazorLight.RazorLightEngineBuilder
+RazorLight.RazorLightEngineBuilder.UseFileSystemProject(string root) -> RazorLight.RazorLightEngineBuilder
+RazorLight.RazorLightEngineBuilder.UseFileSystemProject(string root, string extension) -> RazorLight.RazorLightEngineBuilder
+RazorLight.RazorLightEngineBuilder.UseNoProject() -> RazorLight.RazorLightEngineBuilder
+RazorLight.RazorLightEngineBuilder.UseOptions(RazorLight.RazorLightOptions razorLightOptions) -> RazorLight.RazorLightEngineBuilder
+RazorLight.RazorLightEngineWithFileSystemProjectFactory
+RazorLight.RazorLightEngineWithFileSystemProjectFactory.Create(System.Reflection.Assembly operatingAssembly = null, string fileSystemProjectRoot = null) -> RazorLight.IRazorLightEngine
+RazorLight.RazorLightEngineWithFileSystemProjectFactory.RazorLightEngineWithFileSystemProjectFactory() -> void
+RazorLight.RazorLightException
+RazorLight.RazorLightException.RazorLightException() -> void
+RazorLight.RazorLightException.RazorLightException(string message) -> void
+RazorLight.RazorLightException.RazorLightException(string message, System.Exception exception) -> void
+RazorLight.RazorLightOptions
+RazorLight.RazorLightOptions.AdditionalMetadataReferences.get -> System.Collections.Generic.HashSet<Microsoft.CodeAnalysis.MetadataReference>
+RazorLight.RazorLightOptions.AdditionalMetadataReferences.set -> void
+RazorLight.RazorLightOptions.CachingProvider.get -> RazorLight.Caching.ICachingProvider
+RazorLight.RazorLightOptions.CachingProvider.set -> void
+RazorLight.RazorLightOptions.DisableEncoding.get -> bool?
+RazorLight.RazorLightOptions.DisableEncoding.set -> void
+RazorLight.RazorLightOptions.DynamicTemplates.get -> System.Collections.Generic.IDictionary<string, string>
+RazorLight.RazorLightOptions.DynamicTemplates.set -> void
+RazorLight.RazorLightOptions.EnableDebugMode.get -> bool?
+RazorLight.RazorLightOptions.EnableDebugMode.set -> void
+RazorLight.RazorLightOptions.ExcludedAssemblies.get -> System.Collections.Generic.HashSet<string>
+RazorLight.RazorLightOptions.ExcludedAssemblies.set -> void
+RazorLight.RazorLightOptions.Namespaces.get -> System.Collections.Generic.ISet<string>
+RazorLight.RazorLightOptions.Namespaces.set -> void
+RazorLight.RazorLightOptions.OperatingAssembly.get -> System.Reflection.Assembly
+RazorLight.RazorLightOptions.OperatingAssembly.set -> void
+RazorLight.RazorLightOptions.RazorLightOptions() -> void
+RazorLight.TagHelpers.DefaultTagHelperActivator
+RazorLight.TagHelpers.DefaultTagHelperActivator.Create<TTagHelper>(RazorLight.PageContext context) -> TTagHelper
+RazorLight.TagHelpers.DefaultTagHelperActivator.DefaultTagHelperActivator(RazorLight.TagHelpers.ITypeActivatorCache typeActivatorCache) -> void
+RazorLight.TagHelpers.DefaultTagHelperFactory
+RazorLight.TagHelpers.DefaultTagHelperFactory.CreateTagHelper<TTagHelper>(RazorLight.PageContext context) -> TTagHelper
+RazorLight.TagHelpers.DefaultTagHelperFactory.DefaultTagHelperFactory(RazorLight.TagHelpers.ITagHelperActivator activator) -> void
+RazorLight.TagHelpers.ITagHelperActivator
+RazorLight.TagHelpers.ITagHelperActivator.Create<TTagHelper>(RazorLight.PageContext context) -> TTagHelper
+RazorLight.TagHelpers.ITagHelperFactory
+RazorLight.TagHelpers.ITagHelperFactory.CreateTagHelper<TTagHelper>(RazorLight.PageContext context) -> TTagHelper
+RazorLight.TagHelpers.ITagHelperInitializer<TTagHelper>
+RazorLight.TagHelpers.ITagHelperInitializer<TTagHelper>.Initialize(TTagHelper helper, RazorLight.PageContext context) -> void
+RazorLight.TagHelpers.ITypeActivatorCache
+RazorLight.TagHelpers.ITypeActivatorCache.CreateInstance<TInstance>(System.IServiceProvider serviceProvider, System.Type optionType) -> TInstance
+RazorLight.TagHelpers.TypeActivatorCache
+RazorLight.TagHelpers.TypeActivatorCache.CreateInstance<TInstance>(System.IServiceProvider serviceProvider, System.Type implementationType) -> TInstance
+RazorLight.TagHelpers.TypeActivatorCache.TypeActivatorCache() -> void
+RazorLight.TemplateNotFoundException
+RazorLight.TemplateNotFoundException.KnownDynamicTemplateKeys.get -> System.Collections.Generic.IEnumerable<string>
+RazorLight.TemplateNotFoundException.KnownProjectTemplateKeys.get -> System.Collections.Generic.IEnumerable<string>
+RazorLight.TemplateNotFoundException.TemplateNotFoundException(string message) -> void
+RazorLight.TemplateNotFoundException.TemplateNotFoundException(string message, System.Collections.Generic.IEnumerable<string> knownDynamicTemplateKeys, System.Collections.Generic.IEnumerable<string> knownProjectTemplateKeys) -> void
+RazorLight.TemplateNotFoundException.TemplateNotFoundException(string message, System.Exception exception) -> void
+RazorLight.TemplatePage
+RazorLight.TemplatePage.IgnoreBody() -> void
+RazorLight.TemplatePage.IgnoreSection(string sectionName) -> void
+RazorLight.TemplatePage.IncludeAsync(string key, object model = null) -> System.Threading.Tasks.Task
+RazorLight.TemplatePage.IsSectionDefined(string name) -> bool
+RazorLight.TemplatePage.RenderSection(string name) -> Microsoft.AspNetCore.Html.HtmlString
+RazorLight.TemplatePage.RenderSection(string name, bool required) -> Microsoft.AspNetCore.Html.HtmlString
+RazorLight.TemplatePage.RenderSectionAsync(string name) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.HtmlString>
+RazorLight.TemplatePage.RenderSectionAsync(string name, bool required) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.HtmlString>
+RazorLight.TemplatePage.TemplatePage() -> void
+RazorLight.TemplatePage<TModel>
+RazorLight.TemplatePage<TModel>.Model.get -> TModel
+RazorLight.TemplatePage<TModel>.Model.set -> void
+RazorLight.TemplatePage<TModel>.TemplatePage() -> void
+RazorLight.TemplatePageBase
+RazorLight.TemplatePageBase.AddHtmlAttributeValue(string prefix, int prefixOffset, object value, int valueOffset, int valueLength, bool isLiteral) -> void
+RazorLight.TemplatePageBase.BeginAddHtmlAttributeValues(Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext executionContext, string attributeName, int attributeValuesCount, Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle attributeValueStyle) -> void
+RazorLight.TemplatePageBase.BeginWriteTagHelperAttribute() -> void
+RazorLight.TemplatePageBase.BodyContent.get -> Microsoft.AspNetCore.Html.IHtmlContent
+RazorLight.TemplatePageBase.BodyContent.set -> void
+RazorLight.TemplatePageBase.CreateTagHelper<TTagHelper>() -> TTagHelper
+RazorLight.TemplatePageBase.DefineSection(string name, System.Func<object, System.Threading.Tasks.Task> section) -> void
+RazorLight.TemplatePageBase.DisableEncoding.get -> bool
+RazorLight.TemplatePageBase.DisableEncoding.set -> void
+RazorLight.TemplatePageBase.EndAddHtmlAttributeValues(Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext executionContext) -> void
+RazorLight.TemplatePageBase.EndTagHelperWritingScope() -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+RazorLight.TemplatePageBase.EndWriteTagHelperAttribute() -> string
+RazorLight.TemplatePageBase.HtmlEncoder.get -> System.Text.Encodings.Web.HtmlEncoder
+RazorLight.TemplatePageBase.HtmlEncoder.set -> void
+RazorLight.TemplatePageBase.IncludeFunc.get -> System.Func<string, object, System.Threading.Tasks.Task>
+RazorLight.TemplatePageBase.IncludeFunc.set -> void
+RazorLight.TemplatePageBase.IsLayoutBeingRendered.get -> bool
+RazorLight.TemplatePageBase.IsLayoutBeingRendered.set -> void
+RazorLight.TemplatePageBase.Key.get -> string
+RazorLight.TemplatePageBase.Key.set -> void
+RazorLight.TemplatePageBase.Layout.get -> string
+RazorLight.TemplatePageBase.Layout.set -> void
+RazorLight.TemplatePageBase.PreviousSectionWriters.get -> System.Collections.Generic.IDictionary<string, RazorLight.Internal.RenderAsyncDelegate>
+RazorLight.TemplatePageBase.PreviousSectionWriters.set -> void
+RazorLight.TemplatePageBase.Raw(string rawString) -> RazorLight.Text.IRawString
+RazorLight.TemplatePageBase.SectionWriters.get -> System.Collections.Generic.IDictionary<string, RazorLight.Internal.RenderAsyncDelegate>
+RazorLight.TemplatePageBase.StartTagHelperWritingScope(System.Text.Encodings.Web.HtmlEncoder encoder) -> void
+RazorLight.TemplatePageBase.TemplatePageBase() -> void
+RazorLight.TemplatePageBase.WriteAttributeValue(string prefix, int prefixOffset, object value, int valueOffset, int valueLength, bool isLiteral) -> void
+RazorLight.TemplateRenderer
+RazorLight.TemplateRenderer.TemplateRenderer(RazorLight.IEngineHandler engineHandler, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, RazorLight.Internal.Buffering.IViewBufferScope bufferScope) -> void
+RazorLight.Text.IRawString
+RazorLight.Text.IRawString.WriteTo(System.IO.TextWriter writer) -> void
+RazorLight.Text.RawString
+RazorLight.Text.RawString.RawString(string value) -> void
+RazorLight.Text.RawString.Value.get -> string
+RazorLight.Text.RawString.WriteTo(System.IO.TextWriter writer) -> void
+readonly RazorLight.Caching.CachedFileInfo.AssemblyFilePath -> string
+readonly RazorLight.Caching.CachedFileInfo.PdbFilePath -> string
+readonly RazorLight.Caching.CachedFileInfo.UpToDate -> bool
+static RazorLight.Caching.FileSystemCachingProvider.GetTemplatePageType(byte[] rawAssembly, byte[] rawSymbolStore) -> System.Type
+static RazorLight.Caching.FileSystemCachingProvider.GetTemplatePageType(string asmFilePath) -> System.Type
+static RazorLight.Caching.FileSystemCachingProvider.NewTemplatePage(System.Type templatePageType) -> RazorLight.ITemplatePage
+static RazorLight.Extensions.ServiceCollectionExtensions.AddRazorLight(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> RazorLight.RazorLightDependencyBuilder
+static RazorLight.Extensions.ServiceCollectionExtensions.AddRazorLight(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Func<RazorLight.IRazorLightEngine> engineFactoryProvider) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+static RazorLight.Extensions.TypeExtensions.IsAnonymousType(this System.Type type) -> bool
+static RazorLight.Extensions.TypeExtensions.ToExpando(this object anonymousObject) -> System.Dynamic.ExpandoObject
+static RazorLight.Instrumentation.InjectDirective.Register(Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder
+static RazorLight.Instrumentation.ModelDirective.GetModelType(Microsoft.AspNetCore.Razor.Language.Intermediate.DocumentIntermediateNode document) -> string
+static RazorLight.Instrumentation.ModelDirective.Register(Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder
+static RazorLight.Internal.ExpressionRewriter.Rewrite(Microsoft.CodeAnalysis.CSharp.CSharpCompilation compilation) -> Microsoft.CodeAnalysis.CSharp.CSharpCompilation
+static RazorLight.ModelTypeInfo.GetFriendlyName(System.Type type) -> string
+static RazorLight.Razor.FileSystemRazorProjectHelper.NormalizeKey(string templateKey) -> string
+static RazorLight.Razor.NoRazorProjectItem.Empty.get -> RazorLight.Razor.NoRazorProjectItem
+static RazorLight.TemplatePageBase.HelperFunction(System.Func<object, Microsoft.AspNetCore.Html.IHtmlContent> body) -> Microsoft.AspNetCore.Html.IHtmlContent
+static readonly RazorLight.Caching.FileHashCachingStrategy.Instance -> RazorLight.Caching.IFileSystemCachingStrategy
+static readonly RazorLight.Caching.SimpleFileCachingStrategy.Instance -> RazorLight.Caching.IFileSystemCachingStrategy
+static readonly RazorLight.Instrumentation.InjectDirective.Directive -> Microsoft.AspNetCore.Razor.Language.DirectiveDescriptor
+static readonly RazorLight.Instrumentation.ModelDirective.Directive -> Microsoft.AspNetCore.Razor.Language.DirectiveDescriptor
+static readonly RazorLight.Instrumentation.RazorLightTemplateDocumentClassifierPass.RazorLightTemplateDocumentKind -> string
+static readonly RazorLight.Internal.Buffering.MemoryPoolViewBufferScope.MinimumSize -> int
+static readonly RazorLight.Internal.Buffering.ViewBuffer.PartialViewPageSize -> int
+static readonly RazorLight.Internal.Buffering.ViewBuffer.TagHelperPageSize -> int
+static readonly RazorLight.Internal.Buffering.ViewBuffer.ViewComponentPageSize -> int
+static readonly RazorLight.Internal.Buffering.ViewBuffer.ViewPageSize -> int
+virtual RazorLight.Compilation.RazorTemplateCompiler.CompileAndEmitAsync(RazorLight.Razor.RazorLightProjectItem projectItem) -> System.Threading.Tasks.Task<RazorLight.Compilation.CompiledTemplateDescriptor>
+virtual RazorLight.Compilation.RoslynCompilationService.CSharpCompilationOptions.get -> Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions
+virtual RazorLight.Compilation.RoslynCompilationService.EmitOptions.get -> Microsoft.CodeAnalysis.Emit.EmitOptions
+virtual RazorLight.Compilation.RoslynCompilationService.GetDependencyContextCompilationOptions() -> Microsoft.Extensions.DependencyModel.CompilationOptions
+virtual RazorLight.Compilation.RoslynCompilationService.OperatingAssembly.get -> System.Reflection.Assembly
+virtual RazorLight.Compilation.RoslynCompilationService.ParseOptions.get -> Microsoft.CodeAnalysis.CSharp.CSharpParseOptions
+virtual RazorLight.EngineFactory.Create(RazorLight.Razor.RazorLightProject project, RazorLight.RazorLightOptions options = null) -> RazorLight.RazorLightEngine
+virtual RazorLight.EngineFactory.ForEmbeddedResources(System.Type rootType) -> RazorLight.RazorLightEngine
+virtual RazorLight.EngineFactory.ForEmbeddedResources(System.Type rootType, RazorLight.RazorLightOptions options) -> RazorLight.RazorLightEngine
+virtual RazorLight.EngineFactory.ForFileSystem(string root) -> RazorLight.RazorLightEngine
+virtual RazorLight.EngineFactory.ForFileSystem(string root, RazorLight.RazorLightOptions options) -> RazorLight.RazorLightEngine
+virtual RazorLight.Generation.RazorSourceGenerator.CreateCodeDocumentAsync(RazorLight.Razor.RazorLightProjectItem projectItem) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.Language.RazorCodeDocument>
+virtual RazorLight.Generation.RazorSourceGenerator.GetDefaultImportLines() -> System.Collections.Generic.IEnumerable<string>
+virtual RazorLight.Generation.RazorSourceGenerator.GetImportsAsync(RazorLight.Razor.RazorLightProjectItem projectItem) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Language.RazorSourceDocument>>
+virtual RazorLight.Internal.RenderAsyncDelegate.Invoke() -> System.Threading.Tasks.Task
+virtual RazorLight.Razor.RazorLightHelperResult.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
+virtual RazorLight.Razor.RazorLightProject.GetKnownKeysAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>>
+virtual RazorLight.Razor.RazorLightProject.NormalizeKey(string templateKey) -> string
+virtual RazorLight.RazorLightEngineBuilder.AddDefaultNamespaces(params string[] namespaces) -> RazorLight.RazorLightEngineBuilder
+virtual RazorLight.RazorLightEngineBuilder.AddDynamicTemplates(System.Collections.Generic.IDictionary<string, string> dynamicTemplates) -> RazorLight.RazorLightEngineBuilder
+virtual RazorLight.RazorLightEngineBuilder.AddMetadataReferences(params Microsoft.CodeAnalysis.MetadataReference[] metadata) -> RazorLight.RazorLightEngineBuilder
+virtual RazorLight.RazorLightEngineBuilder.AddPrerenderCallbacks(params System.Action<RazorLight.ITemplatePage>[] callbacks) -> RazorLight.RazorLightEngineBuilder
+virtual RazorLight.RazorLightEngineBuilder.Build() -> RazorLight.RazorLightEngine
+virtual RazorLight.RazorLightEngineBuilder.EnableDebugMode(bool enableDebugMode = true) -> RazorLight.RazorLightEngineBuilder
+virtual RazorLight.RazorLightEngineBuilder.ExcludeAssemblies(params string[] assemblyNames) -> RazorLight.RazorLightEngineBuilder
+virtual RazorLight.RazorLightEngineBuilder.SetOperatingAssembly(System.Reflection.Assembly assembly) -> RazorLight.RazorLightEngineBuilder
+virtual RazorLight.RazorLightEngineBuilder.UseCachingProvider(RazorLight.Caching.ICachingProvider provider) -> RazorLight.RazorLightEngineBuilder
+virtual RazorLight.RazorLightEngineBuilder.UseMemoryCachingProvider() -> RazorLight.RazorLightEngineBuilder
+virtual RazorLight.RazorLightEngineBuilder.UseProject(RazorLight.Razor.RazorLightProject razorLightProject) -> RazorLight.RazorLightEngineBuilder
+virtual RazorLight.RazorLightOptions.PreRenderCallbacks.get -> System.Collections.Generic.IList<System.Action<RazorLight.ITemplatePage>>
+virtual RazorLight.RazorLightOptions.PreRenderCallbacks.set -> void
+virtual RazorLight.TemplatePage.RenderBody() -> Microsoft.AspNetCore.Html.IHtmlContent
+virtual RazorLight.TemplatePageBase.BeginWriteAttribute(string name, string prefix, int prefixOffset, string suffix, int suffixOffset, int attributeValuesCount) -> void
+virtual RazorLight.TemplatePageBase.DefineSection(string name, RazorLight.Internal.RenderAsyncDelegate section) -> void
+virtual RazorLight.TemplatePageBase.EndWriteAttribute() -> void
+virtual RazorLight.TemplatePageBase.FlushAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.HtmlString>
+virtual RazorLight.TemplatePageBase.Output.get -> System.IO.TextWriter
+virtual RazorLight.TemplatePageBase.PageContext.get -> RazorLight.PageContext
+virtual RazorLight.TemplatePageBase.PageContext.set -> void
+virtual RazorLight.TemplatePageBase.PopWriter() -> System.IO.TextWriter
+virtual RazorLight.TemplatePageBase.PushWriter(System.IO.TextWriter writer) -> void
+virtual RazorLight.TemplatePageBase.ViewBag.get -> dynamic
+virtual RazorLight.TemplatePageBase.Write(object value) -> void
+virtual RazorLight.TemplatePageBase.Write(string value) -> void
+virtual RazorLight.TemplatePageBase.WriteLiteral(object value) -> void
+virtual RazorLight.TemplatePageBase.WriteLiteral(string value) -> void
+virtual RazorLight.TemplateRenderer.RenderAsync(RazorLight.ITemplatePage page) -> System.Threading.Tasks.Task

@@ -10,9 +10,11 @@ $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $repositoryUrl = "https://github.com/dijgrid/razor-light"
+$repositoryRoot = Split-Path -Parent $PSScriptRoot
 $expectedPackages = @(
     @{
         Id = "Dijgrid.RazorLight"
+        AssetDirectories = @("lib/net10.0")
         PrimaryEntries = @(
             "LICENSE",
             "README.md",
@@ -24,6 +26,7 @@ $expectedPackages = @(
     },
     @{
         Id = "Dijgrid.RazorLight.Precompile"
+        AssetDirectories = @("tools/net10.0/any")
         PrimaryEntries = @(
             "LICENSE",
             "README.md",
@@ -82,6 +85,71 @@ function Assert-ArchiveEntries {
         if ($null -eq $Archive.GetEntry($entryName)) {
             throw "Expected package entry '$entryName' was not found."
         }
+    }
+}
+
+function Assert-AssetDirectories {
+    param(
+        [System.IO.Compression.ZipArchive] $Archive,
+        [string[]] $ExpectedDirectories
+    )
+
+    $actualDirectories = @($Archive.Entries |
+        ForEach-Object {
+            $parts = $_.FullName.Split('/')
+            if ($parts[0] -in @("lib", "ref") -and $parts.Count -ge 3) {
+                return "$($parts[0])/$($parts[1])"
+            }
+            if ($parts[0] -eq "tools" -and $parts.Count -ge 4) {
+                return "$($parts[0])/$($parts[1])/$($parts[2])"
+            }
+            if ($parts[0] -eq "runtimes" -and $parts.Count -ge 4) {
+                return "$($parts[0])/$($parts[1])/$($parts[2])"
+            }
+        } |
+        Where-Object { $null -ne $_ } |
+        Sort-Object -Unique)
+
+    $missingDirectories = @($ExpectedDirectories | Where-Object { $_ -notin $actualDirectories })
+    $unexpectedDirectories = @($actualDirectories | Where-Object { $_ -notin $ExpectedDirectories })
+    if ($missingDirectories.Count -gt 0 -or $unexpectedDirectories.Count -gt 0) {
+        throw "Package asset directories differ. Expected [$($ExpectedDirectories -join ', ')], " +
+            "actual [$($actualDirectories -join ', ')]."
+    }
+}
+
+function Assert-LibraryAssemblies {
+    param(
+        [System.IO.Compression.ZipArchive] $Archive,
+        [string] $TemporaryDirectory
+    )
+
+    $referenceAssemblyPath = Join-Path $repositoryRoot "src/RazorLight/obj/Release/net10.0/ref/RazorLight.dll"
+    $implementationAssemblyPath = Join-Path $repositoryRoot "src/RazorLight/bin/Release/net10.0/RazorLight.dll"
+    foreach ($path in @($referenceAssemblyPath, $implementationAssemblyPath)) {
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+            throw "Expected build assembly '$path' was not created."
+        }
+    }
+
+    # Without a ref/ group, NuGet intentionally uses lib/net10.0 as both the compile-time and
+    # runtime asset. Verify that this asset is the exact implementation produced by the build;
+    # SDK package validation independently uses the generated reference assembly above.
+    $packageAssembly = $Archive.GetEntry("lib/net10.0/RazorLight.dll")
+    if ($null -eq $packageAssembly) {
+        throw "The RazorLight implementation assembly was not found in the package."
+    }
+
+    $extractedAssemblyPath = Join-Path $TemporaryDirectory "packaged-RazorLight.dll"
+    [System.IO.Compression.ZipFileExtensions]::ExtractToFile(
+        $packageAssembly,
+        $extractedAssemblyPath,
+        $true)
+
+    $packagedHash = (Get-FileHash -LiteralPath $extractedAssemblyPath -Algorithm SHA256).Hash
+    $implementationHash = (Get-FileHash -LiteralPath $implementationAssemblyPath -Algorithm SHA256).Hash
+    if ($packagedHash -ne $implementationHash) {
+        throw "The packaged RazorLight assembly does not match the Release implementation assembly."
     }
 }
 
@@ -154,7 +222,11 @@ try {
         $primaryArchive = [System.IO.Compression.ZipFile]::OpenRead($primaryPath)
         try {
             Assert-ArchiveEntries -Archive $primaryArchive -ExpectedEntries $package.PrimaryEntries
+            Assert-AssetDirectories -Archive $primaryArchive -ExpectedDirectories $package.AssetDirectories
             Assert-Nuspec -Archive $primaryArchive -PackageId $package.Id -PackageVersion $Version
+            if ($package.Id -eq "Dijgrid.RazorLight") {
+                Assert-LibraryAssemblies -Archive $primaryArchive -TemporaryDirectory $temporaryRoot
+            }
         }
         finally {
             $primaryArchive.Dispose()

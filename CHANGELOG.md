@@ -20,6 +20,8 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
   at version `3.0.0`.
 - Deterministic-output, package-content, symbol, and Source Link validation for both release
   artifacts.
+- SDK package compatibility validation against the inherited `RazorLight 2.3.1` baseline, with
+  reviewed suppressions for its retired framework groups and a human-readable public API inventory.
 - Protected tag-triggered release automation using GitHub OIDC and NuGet trusted publishing.
 
 ### Changed

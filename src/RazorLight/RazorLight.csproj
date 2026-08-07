@@ -9,6 +9,11 @@
     <Description>Use Razor to build templates from strings, files, embedded resources, and custom sources outside ASP.NET MVC on .NET 10.</Description>
     <PackageTags>RazorLight;razor;render;dotnet;template-engine;email</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineName>RazorLight</PackageValidationBaselineName>
+    <PackageValidationBaselineVersion>2.3.1</PackageValidationBaselineVersion>
+    <EnableStrictModeForBaselineValidation>true</EnableStrictModeForBaselineValidation>
+    <ApiCompatEnableRuleCannotChangeParameterName>true</ApiCompatEnableRuleCannotChangeParameterName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,8 +21,14 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Razor" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
   </ItemGroup>
 
 </Project>

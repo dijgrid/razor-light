@@ -13,6 +13,37 @@ the complete description can be emitted while reviewing a proposed baseline chan
 change must be classified as either an intentional breaking change or a regression before it is
 accepted.
 
+The library also uses `Microsoft.CodeAnalysis.PublicApiAnalyzers` with checked-in
+`PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt` files. The independent package has not shipped
+yet, so its inherited public surface remains in the unshipped file until the first stable release.
+Additions and removals therefore produce a human-readable source diff and fail warning-as-error
+builds unless the API record is updated intentionally. The inherited optional-parameter overload
+shape is excluded from the analyzer's design-only RS0026 and RS0027 rules; TASK-018 owns any redesign,
+while the API inventory and package validator continue to enforce the binary surface.
+
+## Independent package validation
+
+`Dijgrid.RazorLight` enables the .NET SDK package validator during every pack. Until the first stable
+independent release, it uses package name `RazorLight` and version `2.3.1` as the baseline selected by
+TASK-008. Strict baseline comparison and parameter-name compatibility are enabled.
+
+The SDK no longer supports validating the baseline's `netstandard2.0`, `netcoreapp3.1`, `net5.0`, or
+`net6.0` groups. `src/RazorLight/CompatibilitySuppressions.xml` records one generated `PKV006`
+suppression for each retired framework. These are framework-level next-major migration decisions,
+not member-level API suppressions. The maintained package contains only `lib/net10.0`; under NuGet's
+asset conventions that assembly is both the compile-time and runtime asset when no separate `ref`
+group exists.
+
+`scripts/Validate-Packages.ps1` supplements SDK validation by requiring the exact library and tool
+asset directories, checking the generated reference and implementation assemblies, proving the
+packaged library is the Release implementation, and validating symbols, Source Link, metadata, and
+the selected framework group.
+
+After a stable independent release, move that release's API entries from `PublicAPI.Unshipped.txt`
+to `PublicAPI.Shipped.txt`, change `PackageValidationBaselineName` to `Dijgrid.RazorLight`, and advance
+`PackageValidationBaselineVersion` to the latest stable version. Do this only in a reviewed change
+that also updates the changelog and migration guidance.
+
 ## Package inspection
 
 The baseline was produced from commit `75b1c346e64d62abbe84e44b150545347a196640` with:

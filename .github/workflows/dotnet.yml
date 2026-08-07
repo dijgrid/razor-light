@@ -63,13 +63,13 @@ jobs:
         shell: pwsh
         run: ./scripts/Test-DeterministicBuild.ps1
 
-      - name: Pack release-candidate artifacts
+      - name: Pack and validate release-candidate artifacts
         if: matrix.os == 'ubuntu-latest'
         run: |
-          dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages
-          dotnet pack src/RazorLight.Precompile/RazorLight.Precompile.csproj --configuration Release --no-build --output artifacts/packages
+          dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages --warnaserror
+          dotnet pack src/RazorLight.Precompile/RazorLight.Precompile.csproj --configuration Release --no-build --output artifacts/packages --warnaserror
 
-      - name: Validate package contents and Source Link metadata
+      - name: Validate package layout and Source Link metadata
         if: matrix.os == 'ubuntu-latest'
         shell: pwsh
         run: |
