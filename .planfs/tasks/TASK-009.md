@@ -4,7 +4,7 @@ title: Adopt nullable reference types incrementally
 status: todo
 priority: medium
 epic: EPIC-modernization
-milestone: MILESTONE-modernization-foundation
+milestone: MILESTONE-library-quality
 dependsOn:
   - TASK-006
 tags:
@@ -12,7 +12,7 @@ tags:
   - nullable
   - compatibility
 createdAt: 2026-08-07T00:35:00Z
-updatedAt: 2026-08-07T00:35:00Z
+updatedAt: 2026-08-07T00:29:26Z
 ---
 
 Enable nullable reference types project by project without obscuring compatibility changes in the

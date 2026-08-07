@@ -4,7 +4,7 @@ title: Define package identity and release automation
 status: todo
 priority: high
 epic: EPIC-modernization
-milestone: MILESTONE-modernization-foundation
+milestone: MILESTONE-release-readiness
 dependsOn:
   - TASK-004
   - TASK-005
@@ -15,7 +15,7 @@ tags:
   - nuget
   - supply-chain
 createdAt: 2026-08-06T00:00:00Z
-updatedAt: 2026-08-06T00:00:00Z
+updatedAt: 2026-08-07T00:29:26Z
 ---
 
 Decide how the independent continuation is named and versioned, then implement a controlled,
