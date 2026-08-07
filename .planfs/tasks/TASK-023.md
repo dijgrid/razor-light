@@ -88,4 +88,6 @@ failure modes and need separate test expectations.
   represented accurately.
 - Documented the observed matrix and known limitations in
   `docs/template-language-compatibility.md`, and linked the evidence from TASK-010.
+- Linked the compatibility matrix from `README.source.md`, cleaned up related usage guidance and
+  examples, and regenerated `README.md` with MarkdownSnippets.
 - No files under `src` and no public APIs were changed.

@@ -26,23 +26,33 @@ and [testing guidance](docs/testing.md) for the current maintenance baseline.
 ![Build Status](https://github.com/dijgrid/razor-light/actions/workflows/dotnet.yml/badge.svg)
 [![NuGet Pre Release](https://img.shields.io/nuget/vpre/RazorLight.svg?maxAge=2592000?style=flat-square)](https://www.nuget.org/packages/RazorLight/) [![NuGet downloads](https://img.shields.io/nuget/dt/RazorLight.svg)](https://www.nuget.org/packages/RazorLight/) [![Join the chat at https://gitter.im/gitterHQ/gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Razor-Light)
 
-# Solidarity with Ukraine 
-![ComeBackAlive](https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Come_Back_Alive_Logo_09.2022.svg/1200px-Come_Back_Alive_Logo_09.2022.svg.png)
-Dear friends, my name is Ivan, I am the guy who created this library. I live in Ukraine, and if you are reading this message - I really hope you and your family are safe and healthy. 24 February Russia invaded my country with a series of missle atacks across entire Ukraine, from East to West. They started with destroying military infrastructure, and so-called "special operation", as they call it, in fact is a full scale war against us. 
+# Solidarity with Ukraine
 
-*Update:* it's been a long time since I first posted this message. Thank you for your enormous support, I am removing my volunteer donation account and instead providing you with the largest and proven charity organization in Ukraine - [ComeBackAlive](https://savelife.in.ua/en/donate-en/). If you have the possibility and desire to help Ukraine - that is the right place for your valuable donations. Thank you. Be safe
+![ComeBackAlive](https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Come_Back_Alive_Logo_09.2022.svg/1200px-Come_Back_Alive_Logo_09.2022.svg.png)
+
+Dear friends, my name is Ivan, and I created this library. I live in Ukraine, and if you are reading
+this message, I sincerely hope you and your family are safe and healthy. On 24 February, Russia
+invaded my country with missile attacks across Ukraine, from east to west. They began by destroying
+military infrastructure. The so-called "special operation" is, in fact, a full-scale war against us.
+
+*Update:* It has been a long time since I first posted this message. Thank you for your enormous
+support. I have removed my volunteer donation account and instead recommend
+[Come Back Alive](https://savelife.in.ua/en/donate-en/), one of Ukraine's largest established
+charitable organizations. If you have the possibility and desire to help Ukraine, this is the right
+place for your valuable donations. Thank you. Be safe.
 
 # Table of contents
+
 - [Quickstart](#quickstart)
 - [Compatibility and support](#compatibility-and-support)
 - [Template sources](#template-sources)
-  * [Files](#file-source)
-  * [Embedded resources](#embeddedresource-source)
-  * [Database (custom)](#custom-source)
-- [Includes (aka Partial)](#includes-aka-partial-views)
+  - [Files](#file-source)
+  - [Embedded resources](#embedded-resource-source)
+  - [Custom sources](#custom-source)
+- [Includes and partial templates](#includes-and-partial-templates)
 - [Encoding](#encoding)
 - [Additional metadata references](#additional-metadata-references)
-- [Enable Intellisense support](#enable-intellisense-support)
+- [Enable IntelliSense support](#enable-intellisense-support)
 - [FAQ](#faq)
 - [Project maintenance](#project-maintenance)
 
@@ -94,6 +104,8 @@ if(cacheResult.Success)
   [`docs/framework-support.md`](docs/framework-support.md) before upgrading.
 - The public API and historical behavior baseline are recorded in
   [`docs/compatibility-baseline.md`](docs/compatibility-baseline.md).
+- Current model, import, LINQ, and template-cache behavior is recorded in the
+  [template language compatibility matrix](docs/template-language-compatibility.md).
 - Azure Functions v4 is build-validated by the maintained sample. AWS Lambda and other hosting
   environments are not part of CI and should be treated as community-supported until a focused
   integration fixture is added.
@@ -102,11 +114,18 @@ if(cacheResult.Success)
 
 # Template sources
 
-RazorLight can resolve templates from any source, but there are a built-in providers that resolve template source from filesystem and embedded resources.
+RazorLight has built-in providers for file-system and embedded-resource templates. Implement
+`RazorLightProject` to load templates from another source, such as a database.
+
+Project-backed templates receive RazorLight's built-in imports and namespaces configured with
+`AddDefaultNamespaces`. String templates currently require explicit `@using` directives. See the
+[template language compatibility matrix](docs/template-language-compatibility.md) for the tested
+behavior and known dynamic-model limitations.
 
 ## File source
 
-When resolving a template from filesystem, templateKey - is a relative path to the root folder, that you pass to RazorLightEngineBuilder.
+For a file-system project, the template key is a path relative to the root directory passed to
+`RazorLightEngineBuilder`.
 
 <!-- snippet: FileSource -->
 <a id='snippet-FileSource'></a>
@@ -122,12 +141,13 @@ string result = await engine.CompileRenderAsync("Subfolder/View.cshtml", model);
 <sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L47-L56' title='Snippet source file'>snippet source</a> | <a href='#snippet-FileSource' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
-## EmbeddedResource source
+## Embedded-resource source
 
-For embedded resource, the key is the namespace of the project where the template exists combined with the template's file name.
+For an embedded resource, the template key combines the resource namespace and template file name.
 
-The following examples are using this project structure:
-```
+The examples below use this project structure:
+
+```text
 Project/
   Model.cs
   Program.cs
@@ -137,7 +157,7 @@ Project.Core/
     Body.cshtml
   Project.Core.csproj
   SomeService.cs
-````
+```
 
 <!-- snippet: EmbeddedResourceSource -->
 <a id='snippet-EmbeddedResourceSource'></a>
@@ -153,7 +173,7 @@ string html = await engine.CompileRenderAsync("EmailTemplates.Body", model);
 <sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L61-L70' title='Snippet source file'>snippet source</a> | <a href='#snippet-EmbeddedResourceSource' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
-Setting the root namespace allows you to leave that piece off when providing the template name as the key:
+Setting the root namespace lets you omit that prefix from the template key:
 
 <!-- snippet: EmbeddedResourceSourceWithRootNamespace -->
 <a id='snippet-EmbeddedResourceSourceWithRootNamespace'></a>
@@ -171,60 +191,80 @@ string html = await engine.CompileRenderAsync("Body", model);
 
 ## Custom source
 
-If you store your templates in database - it is recommended to create custom RazorLightProject that is responsible for gettings templates source from it. The class will be used to get template source and ViewImports. RazorLight will use it to resolve Layouts, when you specify it inside the template.
+To store templates in a database or another custom location, implement `RazorLightProject`. The
+project resolves template content and imports, and RazorLight also uses it to find layouts and
+included templates.
 
-````CSharp
+```csharp
 var project = new EntityFrameworkRazorProject(new AppDbContext());
 var engine = new RazorLightEngineBuilder()
-              .UseProject(project)
-              .UseMemoryCachingProvider()
-              .Build();
+    .UseProject(project)
+    .UseMemoryCachingProvider()
+    .Build();
 
 // For key as a GUID
-string result = await engine.CompileRenderAsync("6cc277d5-253e-48e0-8a9a-8fe3cae17e5b", new { Name = "John Doe" });
+string guidResult = await engine.CompileRenderAsync(
+    "6cc277d5-253e-48e0-8a9a-8fe3cae17e5b",
+    new { Name = "John Doe" });
 
 // Or integer
 int templateKey = 322;
-string result = await engine.CompileRenderAsync(templateKey.ToString(), new { Name = "John Doe" });
-````
+string integerResult = await engine.CompileRenderAsync(
+    templateKey.ToString(),
+    new { Name = "John Doe" });
+```
 
-You can find a full sample [here](https://github.com/dijgrid/razor-light/tree/master/samples/RazorLight.Samples)
+See the [custom project sample](samples/RazorLight.Samples) for a complete implementation.
 
+# Includes and partial templates
 
-# Includes (aka Partial views)
+Includes let templates share smaller, reusable components. They reduce duplication and keep complex
+templates manageable.
 
-Include feature is useful when you have reusable parts of your templates you want to share between different views. Includes are an effective way of breaking up large templates into smaller components. They can reduce duplication of template content and allow elements to be reused. *This feature requires you to use the RazorLight Project system, otherwise there is no way to locate the partial.*
+**Includes require a RazorLight project** so the engine can locate the referenced template.
 
-````CSharp
+```csharp
 @model MyProject.TestViewModel
 <div>
     Hello @Model.Title
 </div>
 
 @{ await IncludeAsync("SomeView.cshtml", Model); }
-````
-First argument takes a key of the template to resolve, second argument is a model of the view (can be null)
+```
+
+The first argument is the template key; the second is the model passed to the included template and
+may be `null`.
 
 # Encoding
-By the default RazorLight encodes Model values as HTML, but sometimes you want to output them as is. You can disable encoding for specific value using @Raw() function
 
-````CSharp
+RazorLight HTML-encodes model values by default. Use `Raw` when a specific value is already safe to
+render without encoding.
+
+```csharp
 /* With encoding (default) */
 
-string template = "Render @Model.Tag";
-string result = await engine.CompileRenderAsync("templateKey", template, new { Tag = "<html>&" });
+string encodedTemplate = "Render @Model.Tag";
+string encodedResult = await engine.CompileRenderStringAsync(
+    "encoded",
+    encodedTemplate,
+    new { Tag = "<html>&" });
 
-Console.WriteLine(result); // Output: &lt;html&gt;&amp
+Console.WriteLine(encodedResult); // Output: &lt;html&gt;&amp;
 
 /* Without encoding */
 
-string template = "Render @Raw(Model.Tag)";
-string result = await engine.CompileRenderAsync("templateKey", template, new { Tag = "<html>&" });
+string rawTemplate = "Render @Raw(Model.Tag)";
+string rawResult = await engine.CompileRenderStringAsync(
+    "raw",
+    rawTemplate,
+    new { Tag = "<html>&" });
 
-Console.WriteLine(result); // Output: <html>&
-````
-In order to disable encoding for the entire document - just set ````"DisableEncoding"```` variable to true
-````html
+Console.WriteLine(rawResult); // Output: <html>&
+```
+
+To disable encoding for an entire template, set `DisableEncoding` to `true`:
+
+```html
 @model TestViewModel
 @{
     DisableEncoding = true;
@@ -233,20 +273,24 @@ In order to disable encoding for the entire document - just set ````"DisableEnco
 <html>
     Hello @Model.Tag
 </html>
-````
+```
 
-# Enable Intellisense support
-Visual Studio tooling knows nothing about RazorLight and assumes, that the view you are using - is a typical ASP.NET MVC template. In order to enable Intellisense for RazorLight templates, you should give Visual Studio a little hint about the base template class, that all your templates inherit implicitly
+# Enable IntelliSense support
 
-````CSharp
+Visual Studio assumes a Razor file is an ASP.NET MVC view. Add an explicit base class to help
+IntelliSense understand a RazorLight template:
+
+```csharp
 @using RazorLight
 @inherits TemplatePage<MyModel>
 
 <html>
     Your awesome template goes here, @Model.Name
 </html>
-````
-____
+```
+
+---
+
 ![Intellisense](github/autocomplete.png)
 
 # FAQ
@@ -258,7 +302,7 @@ ____
 String templates work without configuring a project. The builder supplies `NoRazorProject` by
 default, and the memory cache can store the compiled template:
 
-```c#
+```csharp
 var razorEngine = new RazorLightEngineBuilder()
                 .UseMemoryCachingProvider()
                 .Build();
@@ -274,27 +318,31 @@ project keys. This behavior is covered by the quickstart smoke tests.
 
 ### How to embed an image in an email?
 
-This isn't a RazorLight question, but please see [this StackOverflow answer](https://stackoverflow.com/a/32767496/1040437).
+This isn't a RazorLight question, but please see
+[this Stack Overflow answer](https://stackoverflow.com/a/32767496/1040437).
 
-### How to embed css in an email?
+### How to embed CSS in an email?
 
 This isn't a RazorLight question, but please look into PreMailer.Net.
 
 ## Compilation and Deployment Issues (FAQ)
 
-Most problems with RazorLight deal with deploying it on a new machine, in a docker container, etc.  If it works fine in your development environment, read this list of problems to see if it matches yours.
+Runtime compilation depends on metadata from the entry application. If rendering works during local
+development but fails after deployment, review the following common configuration issues.
 
 ### Additional metadata references
-When RazorLight compiles your template - it loads all the assemblies from your entry assembly and creates MetadataReference from it. This is a default strategy and it works in 99% of the time. But sometimes compilation crashes with an exception message like "Can not find assembly My.Super.Assembly2000". In order to solve this problem you can pass additional metadata references to RazorLight.
 
-````CSharp
-var metadataReference = MetadataReference.CreateFromFile("path-to-your-assembly")
+RazorLight normally discovers metadata references from the entry assembly. When a required assembly
+is not discoverable, pass its metadata reference explicitly:
 
- var engine = new RazorLightEngineBuilder()
-                .UseMemoryCachingProvider()
-                .AddMetadataReferences(metadataReference)
-                .Build();
-````
+```csharp
+var metadataReference = MetadataReference.CreateFromFile("path-to-your-assembly");
+
+var engine = new RazorLightEngineBuilder()
+    .UseMemoryCachingProvider()
+    .AddMetadataReferences(metadataReference)
+    .Build();
+```
 
 ### I'm getting "Cannot find compilation library" when I deploy this library on another server
 
@@ -302,22 +350,21 @@ RazorLight discovers metadata from the entry-point project's dependency context.
 to the entry-point project (for example, the web app, worker, or console app), not just a class
 library that wraps RazorLight:
 
-````XML
+```xml
 <PropertyGroup>
     <PreserveCompilationContext>true</PreserveCompilationContext>
 </PropertyGroup>
-````
+```
 
 ### I'm getting "Can't load metadata reference from the entry assembly" exception
 
-Set PreserveCompilationContext to true in your *.csproj file's PropertyGroup tag.
+Set `PreserveCompilationContext` to `true` in the entry-point project's `.csproj` file:
 
-````XML
+```xml
 <PropertyGroup>
-    ...
     <PreserveCompilationContext>true</PreserveCompilationContext>
 </PropertyGroup>
-````
+```
 
 Self-contained, trimmed, and single-file deployments can remove assemblies required by runtime
 compilation. Preserve the dependency context, avoid trimming template dependencies, and use
@@ -331,7 +378,7 @@ in CI, so they are community-supported rather than declared broken. Keep templat
 an application service when you need to substitute it in broader host tests, and open a reproducible
 issue for host-specific failures.
 
-## Project maintenance
+# Project maintenance
 
 - Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing or implementing changes.
 - Report vulnerabilities privately according to [SECURITY.md](SECURITY.md).
