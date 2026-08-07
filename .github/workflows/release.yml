@@ -1,0 +1,162 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+  NUGET_XMLDOC_MODE: skip
+
+jobs:
+  build-and-verify:
+    name: Build and verify release artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Validate release tag and version
+        id: version
+        shell: pwsh
+        run: |
+          $tag = '${{ github.ref_name }}'
+          if ($tag -notmatch '^v(?<version>[0-9]+[.][0-9]+[.][0-9]+)$') {
+              throw "Release tag '$tag' must use the v<major>.<minor>.<patch> form."
+          }
+
+          $version = $Matches.version
+          [xml] $props = Get-Content -Raw Directory.Build.props
+          $versionPrefix = $props.Project.PropertyGroup.VersionPrefix |
+              Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+              Select-Object -First 1
+          if ($version -ne $versionPrefix) {
+              throw "Release tag version '$version' does not match VersionPrefix '$versionPrefix'."
+          }
+
+          & git merge-base --is-ancestor $env:GITHUB_SHA origin/master
+          if ($LASTEXITCODE -ne 0) {
+              throw "Release tag '$tag' must point to a commit contained in origin/master."
+          }
+
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Restore
+        run: dotnet restore RazorLight.sln
+
+      - name: Restore repository tools
+        run: dotnet tool restore
+
+      - name: Build
+        run: dotnet build RazorLight.sln --configuration Release --no-restore --warnaserror -p:ContinuousIntegrationBuild=true
+
+      - name: Test RazorLight
+        run: dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net10.0 --configuration Release --no-build
+
+      - name: Test precompile tool
+        run: dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj --configuration Release --no-build
+
+      - name: Verify deterministic build outputs
+        shell: pwsh
+        run: ./scripts/Test-DeterministicBuild.ps1
+
+      - name: Pack reviewed artifacts
+        run: |
+          dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages -p:PackageVersion=${{ steps.version.outputs.version }}
+          dotnet pack src/RazorLight.Precompile/RazorLight.Precompile.csproj --configuration Release --no-build --output artifacts/packages -p:PackageVersion=${{ steps.version.outputs.version }}
+
+      - name: Validate package contents and Source Link metadata
+        shell: pwsh
+        run: ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version ${{ steps.version.outputs.version }}
+
+      - name: Resolve Source Link documents
+        run: |
+          dotnet sourcelink test src/RazorLight/bin/Release/net10.0/RazorLight.pdb
+          dotnet sourcelink test src/RazorLight.Precompile/bin/Release/net10.0/RazorLight.Precompile.pdb
+
+      - name: Upload artifacts for maintainer review
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-packages-${{ steps.version.outputs.version }}
+          path: |
+            artifacts/packages/*.nupkg
+            artifacts/packages/*.snupkg
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish approved artifacts
+    needs: build-and-verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: nuget
+      url: https://www.nuget.org/profiles/dijgrid
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Restore repository tools
+        run: dotnet tool restore
+
+      - name: Download reviewed artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-packages-${{ needs.build-and-verify.outputs.version }}
+          path: artifacts/packages
+
+      - name: Revalidate reviewed artifacts
+        shell: pwsh
+        run: ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version ${{ needs.build-and-verify.outputs.version }}
+
+      - name: Obtain short-lived NuGet credential
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1
+        with:
+          user: dijgrid
+
+      - name: Publish packages and symbols to NuGet.org
+        shell: pwsh
+        run: |
+          Get-ChildItem artifacts/packages -Filter *.nupkg | Sort-Object Name | ForEach-Object {
+              & dotnet nuget push $_.FullName `
+                  --api-key '${{ steps.login.outputs.NUGET_API_KEY }}' `
+                  --source https://api.nuget.org/v3/index.json
+              if ($LASTEXITCODE -ne 0) {
+                  throw "NuGet push failed for '$($_.Name)'."
+              }
+          }
+
+      - name: Create matching GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" artifacts/packages/* \
+            --verify-tag \
+            --title "RazorLight ${{ needs.build-and-verify.outputs.version }}" \
+            --generate-notes

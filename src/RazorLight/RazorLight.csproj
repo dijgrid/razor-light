@@ -4,15 +4,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>RazorLight</PackageId>
-    <Title>RazorLight</Title>
+    <PackageId>Dijgrid.RazorLight</PackageId>
+    <Title>Dijgrid RazorLight</Title>
     <Description>Use Razor to build templates from strings, files, embedded resources, and custom sources outside ASP.NET MVC on .NET 10.</Description>
-    <Authors>toddams</Authors>
-    <PackageTags>RazorLight, razor, render, dotnet-core, dotnet, core, template-engine, email, emails</PackageTags>
+    <PackageTags>RazorLight;razor;render;dotnet;template-engine;email</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/dijgrid/razor-light</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,14 +20,4 @@
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="..\..\README.md">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
 </Project>

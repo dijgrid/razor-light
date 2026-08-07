@@ -1,7 +1,7 @@
 ---
 id: TASK-008
 title: Define package identity and release automation
-status: todo
+status: review
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-release-readiness
@@ -14,10 +14,9 @@ tags:
   - release
   - nuget
   - supply-chain
-  - needs-maintainer-decision
 createdAt: 2026-08-06T00:00:00Z
-updatedAt: 2026-08-07T04:01:01.658Z
-refinementState: needs-refinement
+updatedAt: 2026-08-07T06:04:10.936Z
+refinementState: ready
 ---
 
 Decide how the independent continuation is named and versioned, then implement a controlled,
@@ -25,8 +24,9 @@ reproducible release process.
 
 ## Implementation readiness
 
-Needs maintainer decisions before implementation. The technical work is bounded, but package names,
-the first independent version, and NuGet ownership cannot be inferred safely from the repository.
+Maintainer decisions are recorded in DECISION-003. Repository automation and GitHub environment
+protection are implemented; final review requires activating the documented trusted-publishing
+policy in the `dijgrid` NuGet.org account.
 
 ## Maintainer decisions required
 
@@ -50,6 +50,21 @@ NuGet.org supports GitHub Actions OIDC through
 [trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing). Prefer that
 over a long-lived API key when it is available for the selected owner.
 
+## Recorded maintainer decisions
+
+DECISION-003 records the approved release identity and controls:
+
+1. The maintainer does not control the historical `RazorLightTeam` NuGet.org owner, so the existing
+   package IDs will not be retained.
+2. The independent packages are `Dijgrid.RazorLight` and `Dijgrid.RazorLight.Precompile`; existing
+   CLR namespaces and the tool command remain unchanged.
+3. The independent version line begins at `3.0.0` and uses `v<major>.<minor>.<patch>` release tags.
+4. NuGet.org is the public destination, and the same reviewed artifacts are attached to the matching
+   GitHub Release.
+5. The NuGet.org trusted-publishing owner is the `dijgrid` account. The policy is restricted to
+   `dijgrid/razor-light`, `release.yml`, and the protected `nuget` GitHub environment; the `dijgrid`
+   GitHub user is the required reviewer.
+
 ## Implementation plan
 
 1. Capture the approved package names, CLR namespace policy, first version, ownership, and
@@ -71,18 +86,35 @@ over a long-lived API key when it is available for the selected owner.
 
 ## Acceptance criteria
 
-- [ ] Ownership of the existing NuGet IDs is verified before retaining them.
-- [ ] Package identity, namespace compatibility, versioning, and deprecation policy are documented.
-- [ ] Package metadata clearly identifies the independent maintainer and upstream provenance.
-- [ ] Package contents, symbols, deterministic build, and Source Link are validated in CI.
-- [ ] Publishing requires an explicit version/tag, a protected GitHub environment, and maintainer
+- [x] Ownership of the existing NuGet IDs is verified before retaining them.
+- [x] Package identity, namespace compatibility, versioning, and deprecation policy are documented.
+- [x] Package metadata clearly identifies the independent maintainer and upstream provenance.
+- [x] Package contents, symbols, deterministic build, and Source Link are validated in CI.
+- [x] Publishing requires an explicit version/tag, a protected GitHub environment, and maintainer
       approval.
-- [ ] NuGet credentials are scoped minimally and supplied only through GitHub secrets or trusted
+- [x] NuGet credentials are scoped minimally and supplied only through GitHub secrets or trusted
       publishing.
-- [ ] A dry-run or package-artifact review occurs before the first independent release.
+- [x] A dry-run or package-artifact review occurs before the first independent release.
 
 ## Implementation notes
 
 Do not assume access to the existing `RazorLight` and `RazorLight.Precompile` package IDs. If ownership
 cannot be transferred or verified, choose distinct IDs while preserving namespaces only where legally
 and technically appropriate.
+
+- Verified that the historical packages are owned by `toddams` / `RazorLightTeam` and
+  `johnzabroski` / `RazorLightTeam`; the maintainer confirmed those owners are not controlled here.
+- Centralized version `3.0.0`, independent-maintainer metadata, provenance, license/readme, portable
+  symbols, and Source Link for both `Dijgrid.*` packages.
+- Added repeat-build hash checks and package/symbol validation scripts, then integrated them into CI
+  with reviewable artifacts for both the library and precompile tool.
+- Added a stable-tag-only release workflow that rebuilds and verifies artifacts before waiting for
+  the protected `nuget` environment, exchanges GitHub OIDC for a short-lived NuGet credential, and
+  creates a matching GitHub Release only after both packages publish.
+- Configured the repository's `nuget` environment with `dijgrid` as required reviewer and a
+  `v*.*.*` tag deployment policy. No packages, tags, or releases were published.
+- Built and inspected all four `3.0.0` artifacts locally, validated their contents and Source Link
+  metadata, restored the library package in a clean consumer, and installed the tool from the local
+  package source.
+- Documented package review, first-release, trusted-publishing, and rollback/unlisting procedures in
+  `docs/releasing.md`.

@@ -54,9 +54,44 @@ jobs:
       - name: Test precompile tool
         run: dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage;Format=cobertura" --results-directory artifacts/TestResults/Precompile --logger "console;verbosity=normal"
 
-      - name: Validate package
+      - name: Restore repository tools
         if: matrix.os == 'ubuntu-latest'
-        run: dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages
+        run: dotnet tool restore
+
+      - name: Verify deterministic build outputs
+        if: matrix.os == 'ubuntu-latest'
+        shell: pwsh
+        run: ./scripts/Test-DeterministicBuild.ps1
+
+      - name: Pack release-candidate artifacts
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages
+          dotnet pack src/RazorLight.Precompile/RazorLight.Precompile.csproj --configuration Release --no-build --output artifacts/packages
+
+      - name: Validate package contents and Source Link metadata
+        if: matrix.os == 'ubuntu-latest'
+        shell: pwsh
+        run: |
+          $version = (& dotnet msbuild src/RazorLight/RazorLight.csproj -getProperty:VersionPrefix).Trim()
+          ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version $version
+
+      - name: Resolve Source Link documents
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          dotnet sourcelink test src/RazorLight/bin/Release/net10.0/RazorLight.pdb
+          dotnet sourcelink test src/RazorLight.Precompile/bin/Release/net10.0/RazorLight.Precompile.pdb
+
+      - name: Upload release-candidate packages
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-candidate-packages
+          path: |
+            artifacts/packages/*.nupkg
+            artifacts/packages/*.snupkg
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Run Entity Framework sample
         if: matrix.os == 'ubuntu-latest'

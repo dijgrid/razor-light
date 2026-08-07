@@ -2,7 +2,8 @@
 
 The repository supports .NET 10 and runs the complete test suite on Windows, Linux, and macOS.
 The CI workflow restores once, performs a Release build, runs both test projects, validates the
-NuGet package, and uploads Cobertura coverage reports.
+NuGet library and tool packages, verifies deterministic DLL/PDB output and Source Link, and uploads
+Cobertura coverage reports plus reviewable release-candidate package artifacts.
 
 Run the same checks locally from the repository root:
 
@@ -11,7 +12,11 @@ dotnet restore RazorLight.sln
 dotnet build RazorLight.sln --configuration Release --no-restore
 dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --configuration Release --no-build
 dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj --configuration Release --no-build
+dotnet tool restore
+pwsh ./scripts/Test-DeterministicBuild.ps1
 dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages
+dotnet pack src/RazorLight.Precompile/RazorLight.Precompile.csproj --configuration Release --no-build --output artifacts/packages
+pwsh ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version 3.0.0
 ```
 
 ## Initial coverage baseline

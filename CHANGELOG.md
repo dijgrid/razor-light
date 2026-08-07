@@ -14,6 +14,11 @@ identity will be finalized before the first independent release.
 - PlanFS backlog for modernization work.
 - Cross-platform .NET 10 test coverage, package validation, and maintained sample checks.
 - Compatibility, framework support, dependency policy, testing, and code-quality documentation.
+- Independent `Dijgrid.RazorLight` and `Dijgrid.RazorLight.Precompile` package identities beginning
+  at version `3.0.0`.
+- Deterministic-output, package-content, symbol, and Source Link validation for both release
+  artifacts.
+- Protected tag-triggered release automation using GitHub OIDC and NuGet trusted publishing.
 
 ### Changed
 
@@ -23,6 +28,8 @@ identity will be finalized before the first independent release.
 - Dependencies are centrally managed, use HTTPS-only restore sources, and have no known NuGet
   advisories in the recorded audit.
 - README guidance and package metadata now describe the maintained framework and hosting baseline.
+- Package metadata identifies Dijgrid as the independent maintainer while preserving upstream
+  provenance and existing CLR namespaces.
 
 ### Removed
 

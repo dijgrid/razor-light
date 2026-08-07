@@ -7,9 +7,9 @@
 > for provenance and the upstream synchronization policy.
 
 > [!NOTE]
-> The maintained source targets .NET 10. Package ownership and the first independent release are
-> still being established in TASK-008, so the package currently published as `RazorLight 2.3.1`
-> represents the historical upstream build rather than this branch.
+> The maintained source targets .NET 10. The first independent release is planned as
+> `Dijgrid.RazorLight 3.0.0`; it has not been published yet. The package currently published as
+> `RazorLight 2.3.1` is the historical upstream build rather than this branch.
 
 Use Razor to build templates from files, embedded resources, strings, databases, or a custom source
 outside ASP.NET MVC. The maintained source and samples support **.NET 10**. See
@@ -17,7 +17,6 @@ outside ASP.NET MVC. The maintained source and samples support **.NET 10**. See
 and [testing guidance](docs/testing.md) for the current maintenance baseline.
 
 ![Build Status](https://github.com/dijgrid/razor-light/actions/workflows/dotnet.yml/badge.svg)
-[![NuGet Pre Release](https://img.shields.io/nuget/vpre/RazorLight.svg?maxAge=2592000?style=flat-square)](https://www.nuget.org/packages/RazorLight/) [![NuGet downloads](https://img.shields.io/nuget/dt/RazorLight.svg)](https://www.nuget.org/packages/RazorLight/) [![Join the chat at https://gitter.im/gitterHQ/gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Razor-Light)
 
 # Table of contents
 
@@ -36,10 +35,10 @@ and [testing guidance](docs/testing.md) for the current maintenance baseline.
 
 # Quickstart
 
-Install the .NET 10 SDK selected by [`global.json`](global.json). Until TASK-008 establishes the
-independent package identity and release process, consume this continuation from source with a
-project reference. Do not use the historical `2.3.1` NuGet package as evidence of the maintained
-branch's framework or dependency baseline.
+Install the .NET 10 SDK selected by [`global.json`](global.json). Until the first
+`Dijgrid.RazorLight` package is published, consume this continuation from source with a project
+reference. Do not use the historical `2.3.1` NuGet package as evidence of the maintained branch's
+framework or dependency baseline.
 
 The simplest scenario creates a template from a string. Each template has a `templateKey`, allowing
 RazorLight to cache and reuse its compiled form. String templates do not require a project; layouts,
@@ -302,6 +301,7 @@ issue for host-specific failures.
 - Report vulnerabilities privately according to [SECURITY.md](SECURITY.md).
 - Use [SUPPORT.md](SUPPORT.md) to choose the appropriate issue type and diagnostic information.
 - Review [CHANGELOG.md](CHANGELOG.md) for independent-maintenance changes.
+- Follow the protected [release process](docs/releasing.md) when preparing package artifacts or tags.
 - Track accepted roadmap work in [`.planfs`](.planfs), with working conventions documented in
   [AGENTS.md](AGENTS.md).
 

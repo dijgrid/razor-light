@@ -54,5 +54,5 @@ as part of the same pull request.
 - Add tests for behavior changes and update documentation for user-visible changes.
 - Run the relevant build and test commands plus `git diff --check`.
 - Link the PlanFS task in the pull request description when applicable.
-- Do not add or restore package-publishing automation until the package identity and release policy
-  task is complete.
+- Package publication occurs only through the protected process in [`docs/releasing.md`](docs/releasing.md).
+  Pull requests and local validation must never push packages.
