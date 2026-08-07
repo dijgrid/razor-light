@@ -1,5 +1,7 @@
 <Project>
   <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
     <Deterministic>true</Deterministic>
     <AnalysisLevel>latest</AnalysisLevel>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -12,7 +14,6 @@
 
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'RazorLight' Or '$(MSBuildProjectName)' == 'RazorLight.Precompile'">
     <VersionPrefix>3.0.0</VersionPrefix>
-    <Version>$(VersionPrefix)</Version>
     <Authors>Dijgrid; RazorLight contributors</Authors>
     <Company>Dijgrid</Company>
     <PackageProjectUrl>https://github.com/dijgrid/razor-light</PackageProjectUrl>
@@ -33,9 +34,6 @@
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'RazorLight' Or '$(MSBuildProjectName)' == 'RazorLight.Precompile'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
     <SourceRoot Include="$(NuGetPackageRoot)" Condition="'$(NuGetPackageRoot)' != ''" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(MSBuildProjectName)' == 'RazorLight' Or '$(MSBuildProjectName)' == 'RazorLight.Precompile'">
     <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="" />
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="" />
   </ItemGroup>
