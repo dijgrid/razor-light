@@ -1,7 +1,7 @@
 ---
 id: TASK-020
 title: Reconcile Dependabot with central package management
-status: todo
+status: review
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-release-readiness
@@ -14,7 +14,7 @@ tags:
   - github
   - ready-for-implementation
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T04:00:59.157Z
+updatedAt: 2026-08-07T06:35:50.543Z
 refinementState: ready
 ---
 
@@ -23,10 +23,9 @@ and ensure future updates modify the authoritative version declarations coherent
 
 ## Implementation readiness
 
-Ready for implementation. Central package management is on the default branch, the stale pull
-requests and alert are already reconciled, and the remaining work is CI and policy configuration.
-No maintainer decision is required unless a dependency family proves incompatible with grouped
-updates.
+Implementation and local validation are complete. Final review requires merging the configuration
+to the default branch and observing or manually triggering the next Dependabot NuGet update so its
+central-file edit can be recorded.
 
 ## Implementation plan
 
@@ -64,10 +63,10 @@ updates.
       dependency family rather than project-scoped duplicates.
 - [x] The default branch has no open Dependabot security alert after the merged dependency baseline is
       re-indexed.
-- [ ] Direct and transitive NuGet audits run in CI or an explicitly scheduled security workflow.
-- [ ] Dependency update pull requests run the same build, tests, package validation, and sample checks
+- [x] Direct and transitive NuGet audits run in CI or an explicitly scheduled security workflow.
+- [x] Dependency update pull requests run the same build, tests, package validation, and sample checks
       as maintainer branches.
-- [ ] Update cadence, grouping, and ignore rules are documented and contain no unexplained permanent
+- [x] Update cadence, grouping, and ignore rules are documented and contain no unexplained permanent
       version suppression.
 
 ## Baseline findings
@@ -77,3 +76,23 @@ versions are already present in the merged central package file. After pull requ
 closed the superseded Dependabot pull requests and marked the only recorded security alert,
 GHSA-qj66-m88j-hmgj, fixed. The remaining work is to verify that future updates originate from the
 central package declarations and run the complete security and CI policy.
+
+## Implementation notes
+
+- Replaced the broad Microsoft, build-tooling, and test-tooling groups with narrowly coupled Razor,
+  Roslyn, Entity Framework, Microsoft.Extensions, Azure Functions, xUnit, and NUnit families.
+  Unmatched NuGet packages and GitHub Actions update independently; no ignore rules were added.
+- Added repository-wide NuGet audit settings with direct and transitive coverage and a moderate
+  severity threshold. The dedicated audit pipeline also fails when vulnerability data cannot be
+  obtained.
+- Added a read-only `Dependency Audit` workflow for dependency-changing pull requests and default
+  branch pushes, weekly Tuesday execution, and manual dispatch. The existing CI workflow has an
+  unfiltered `pull_request` trigger and no Dependabot actor exclusions.
+- Updated `docs/dependency-policy.md` with the group rationale, schedules, local commands, alert
+  handling, and the required time-bounded decision record for any suppression.
+- The real solution and Azure Functions sample have no known direct or transitive vulnerabilities.
+  A temporary `Microsoft.Extensions.Caching.Memory` 6.0.1 probe verified that the audit pipeline
+  fails on the repository's previously fixed high-severity advisory (`NU1903`).
+- The latest available Dependabot update-job evidence predates central package management and is
+  project-scoped. The central-file acceptance criterion remains open until the new configuration is
+  on the default branch and a NuGet update job is observed.

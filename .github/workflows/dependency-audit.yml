@@ -1,0 +1,64 @@
+name: Dependency Audit
+
+on:
+  pull_request:
+    paths:
+      - '**/*.csproj'
+      - '.github/dependabot.yml'
+      - '.github/workflows/dependency-audit.yml'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'NuGet.config'
+      - 'global.json'
+  push:
+    branches:
+      - master
+    paths:
+      - '**/*.csproj'
+      - '.github/dependabot.yml'
+      - '.github/workflows/dependency-audit.yml'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'NuGet.config'
+      - 'global.json'
+  schedule:
+    - cron: '30 13 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+  NUGET_XMLDOC_MODE: skip
+
+jobs:
+  audit:
+    name: Direct and transitive NuGet audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Restore and audit solution
+        run: dotnet restore RazorLight.sln --force-evaluate -p:AuditPipeline=true
+
+      - name: Restore and audit Azure Functions sample
+        run: dotnet restore samples/FunctionApp-WebMvc-Sample/FunctionApp-WebMvc-Sample/FunctionApp-WebMvc-Sample.csproj --force-evaluate -p:AuditPipeline=true
+
+      - name: Report vulnerable dependencies
+        run: |
+          dotnet package list --project RazorLight.sln --vulnerable --include-transitive --no-restore
+          dotnet package list --project samples/FunctionApp-WebMvc-Sample/FunctionApp-WebMvc-Sample/FunctionApp-WebMvc-Sample.csproj --vulnerable --include-transitive --no-restore

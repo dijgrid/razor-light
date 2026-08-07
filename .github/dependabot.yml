@@ -9,27 +9,31 @@ updates:
       timezone: America/Denver
     open-pull-requests-limit: 10
     groups:
-      microsoft-runtime:
+      razor-compiler:
         patterns:
-          - Microsoft.AspNetCore.*
-          - Microsoft.CodeAnalysis.*
+          - Microsoft.AspNetCore.Mvc.Razor.Extensions
+          - Microsoft.CodeAnalysis.Razor
+      roslyn:
+        patterns:
+          - Microsoft.CodeAnalysis.Common
+          - Microsoft.CodeAnalysis.CSharp
+      entity-framework:
+        patterns:
           - Microsoft.EntityFrameworkCore*
+      microsoft-extensions:
+        patterns:
           - Microsoft.Extensions.*
-      build-tooling:
+      azure-functions:
         patterns:
-          - MarkdownSnippets.*
-          - Microsoft.SourceLink.*
-          - Mono.Cecil
-          - Newtonsoft.Json
-          - ZstdNet
-      test-tooling:
+          - Microsoft.Azure.Functions.Worker*
+      xunit:
         patterns:
-          - Microsoft.NET.Test.Sdk
-          - Moq
-          - NUnit*
-          - Verify.Xunit
-          - Xunit*
-          - xunit*
+          - xunit
+          - xunit.runner.visualstudio
+      nunit:
+        patterns:
+          - NUnit
+          - NUnit3TestAdapter
   - package-ecosystem: github-actions
     directory: /
     schedule:
