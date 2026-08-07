@@ -43,7 +43,9 @@ namespace RazorLight.Tests.DependencyInjection
 			propertyInjector.Inject(templatePage);
 
 			//Assert
-			var prop = templatePage.GetType().GetProperty("test").GetValue(templatePage);
+			var property = templatePage.GetType().GetProperty("test");
+			Assert.NotNull(property);
+			var prop = property.GetValue(templatePage);
 
 			Assert.NotNull(prop);
 			var model = Assert.IsAssignableFrom<TestViewModel>(prop);

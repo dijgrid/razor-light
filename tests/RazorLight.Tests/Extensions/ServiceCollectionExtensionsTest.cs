@@ -33,7 +33,7 @@ namespace RazorLight.Tests.Extensions
 		{
 			var services = GetServices();
 
-			Assert.Throws<ArgumentNullException>(() => { services.AddRazorLight(null); });
+			Assert.Throws<ArgumentNullException>(() => { services.AddRazorLight(null!); });
 		}
 
 		[Fact]
@@ -77,7 +77,7 @@ namespace RazorLight.Tests.Extensions
 		[Fact]
 		public void Ensure_Works_With_Generic_Host()
 		{
-			static IHostBuilder CreateHostBuilder(string[] args)
+			static IHostBuilder CreateHostBuilder(string[]? args)
 			{
 				return Host.CreateDefaultBuilder(args)
 					.ConfigureWebHostDefaults(webBuilder =>
@@ -98,7 +98,7 @@ namespace RazorLight.Tests.Extensions
 		[Fact]
 		public void Ensure_Works_With_Generic_Host_When_Resolving_IEngineHandler_Before_IRazorLightEngine()
 		{
-			static IHostBuilder CreateHostBuilder(string[] args)
+			static IHostBuilder CreateHostBuilder(string[]? args)
 			{
 				return Host.CreateDefaultBuilder(args)
 					.ConfigureWebHostDefaults(webBuilder =>
@@ -121,7 +121,7 @@ namespace RazorLight.Tests.Extensions
 		[Fact()]
 		public void Ensure_Works_With_Generic_Host_and_DefaultServiceProvider()
 		{
-			static IHostBuilder CreateHostBuilder(string[] args)
+			static IHostBuilder CreateHostBuilder(string[]? args)
 			{
 				return Host.CreateDefaultBuilder(args)
 					.UseDefaultServiceProvider((context, options) =>
@@ -147,7 +147,7 @@ namespace RazorLight.Tests.Extensions
 		[Fact()]
 		public void Ensure_Works_With_Generic_Host_and_DefaultServiceProvider_ValidateScopes_ValidateOnBuild()
 		{
-			static IHostBuilder CreateHostBuilder(string[] args)
+			static IHostBuilder CreateHostBuilder(string[]? args)
 			{
 				return Host.CreateDefaultBuilder(args)
 					.UseDefaultServiceProvider((context, options) =>
@@ -173,7 +173,7 @@ namespace RazorLight.Tests.Extensions
 		[Fact()]
 		public void Ensure_Works_With_Generic_Host_and_DefaultServiceProvider_ValidateOnBuild()
 		{
-			static IHostBuilder CreateHostBuilder(string[] args)
+			static IHostBuilder CreateHostBuilder(string[]? args)
 			{
 				return Host.CreateDefaultBuilder(args)
 					.UseDefaultServiceProvider((context, options) =>
@@ -199,7 +199,7 @@ namespace RazorLight.Tests.Extensions
 		[Fact()]
 		public void Ensure_Works_With_Generic_Host_and_DefaultServiceProvider_ValidateScopes()
 		{
-			static IHostBuilder CreateHostBuilder(string[] args)
+			static IHostBuilder CreateHostBuilder(string[]? args)
 			{
 				return Host.CreateDefaultBuilder(args)
 					.UseDefaultServiceProvider((context, options) =>
@@ -285,7 +285,7 @@ namespace RazorLight.Tests.Extensions
 		public class TestMetadataReferenceManager : IMetadataReferenceManager
 		{
 
-			private Action _resolveAction = null;
+			private readonly Action _resolveAction;
 			public TestMetadataReferenceManager(Action resolveAction)
 			{
 				_resolveAction = resolveAction;
@@ -308,7 +308,7 @@ namespace RazorLight.Tests.Extensions
 		public class TestRazorLightEngine : IRazorLightEngine
 		{
 
-			private Action _compileAction = null;
+			private readonly Action _compileAction;
 			public TestRazorLightEngine(Action compileAction)
 			{
 				_compileAction = compileAction;
@@ -318,17 +318,17 @@ namespace RazorLight.Tests.Extensions
 
 			public IEngineHandler Handler => throw new NotImplementedException();
 
-			public Task<string> CompileRenderAsync<T>(string key, T model, ExpandoObject viewBag = null)
+			public Task<string> CompileRenderAsync<T>(string key, T model, ExpandoObject? viewBag = null)
 			{
 				throw new NotImplementedException();
 			}
 
-			public Task<string> CompileRenderAsync(string key, object model, Type modelType, ExpandoObject viewBag = null)
+			public Task<string> CompileRenderAsync(string key, object model, Type modelType, ExpandoObject? viewBag = null)
 			{
 				throw new NotImplementedException();
 			}
 
-			public Task<string> CompileRenderStringAsync<T>(string key, string content, T model, ExpandoObject viewBag = null)
+			public Task<string> CompileRenderStringAsync<T>(string key, string content, T model, ExpandoObject? viewBag = null)
 			{
 				_compileAction();
 				var result = nameof(TestRazorLightEngine);
@@ -340,22 +340,22 @@ namespace RazorLight.Tests.Extensions
 				throw new NotImplementedException();
 			}
 
-			public Task<string> RenderTemplateAsync(ITemplatePage templatePage, object model, Type modelType, ExpandoObject viewBag = null)
+			public Task<string> RenderTemplateAsync(ITemplatePage templatePage, object model, Type modelType, ExpandoObject? viewBag = null)
 			{
 				throw new NotImplementedException();
 			}
 
-			public Task<string> RenderTemplateAsync<T>(ITemplatePage templatePage, T model, ExpandoObject viewBag = null)
+			public Task<string> RenderTemplateAsync<T>(ITemplatePage templatePage, T model, ExpandoObject? viewBag = null)
 			{
 				throw new NotImplementedException();
 			}
 
-			public Task RenderTemplateAsync(ITemplatePage templatePage, object model, Type modelType, TextWriter textWriter, ExpandoObject viewBag = null)
+			public Task RenderTemplateAsync(ITemplatePage templatePage, object model, Type modelType, TextWriter textWriter, ExpandoObject? viewBag = null)
 			{
 				throw new NotImplementedException();
 			}
 
-			public Task RenderTemplateAsync<T>(ITemplatePage templatePage, T model, TextWriter textWriter, ExpandoObject viewBag = null)
+			public Task RenderTemplateAsync<T>(ITemplatePage templatePage, T model, TextWriter textWriter, ExpandoObject? viewBag = null)
 			{
 				throw new NotImplementedException();
 			}
@@ -373,7 +373,7 @@ namespace RazorLight.Tests.Extensions
 
 			var provider = services.BuildServiceProvider();
 			var engine = provider.GetRequiredService<IRazorLightEngine>();
-			var result = await engine.CompileRenderAsync<object>("template1.cshtml", null);
+			var result = await engine.CompileRenderAsync<object?>("template1.cshtml", null);
 		}
 	}
 }

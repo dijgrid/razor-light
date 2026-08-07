@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 
 namespace RazorLight.Tests.Utils
@@ -8,7 +9,8 @@ namespace RazorLight.Tests.Utils
 		public static string GetViewsPath()
 		{
 			string assemblyLocation = typeof(PathUtility).GetTypeInfo().Assembly.Location;
-			string assemblyDir = Path.GetDirectoryName(assemblyLocation);
+			string assemblyDir = Path.GetDirectoryName(assemblyLocation)
+				?? throw new InvalidOperationException("Could not determine the test assembly directory.");
 
 			return Path.Combine(assemblyDir, "Assets");
 		}

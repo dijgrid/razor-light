@@ -141,7 +141,7 @@ namespace RazorLight.Tests.Compatibility
 		{
 			return string.Join(", ", parameters.Select(parameter =>
 			{
-				var parameterType = parameter.ParameterType;
+				Type? parameterType = parameter.ParameterType;
 				var modifier = parameter.GetCustomAttributes(typeof(ParamArrayAttribute), false).Any()
 					? "params "
 					: parameterType.IsByRef ? parameter.IsOut ? "out " : "ref " : string.Empty;
@@ -151,7 +151,7 @@ namespace RazorLight.Tests.Compatibility
 			}));
 		}
 
-		private static string FormatType(Type type)
+		private static string FormatType(Type? type)
 		{
 			if (type == null) return "null";
 			if (type.IsArray) return FormatType(type.GetElementType()) + "[]";
@@ -173,12 +173,12 @@ namespace RazorLight.Tests.Compatibility
 		{
 			if (type.IsEnum) return "enum";
 			if (type.IsInterface) return "interface";
-			if (typeof(MulticastDelegate).IsAssignableFrom(type.BaseType)) return "delegate";
+			if (type.BaseType != null && typeof(MulticastDelegate).IsAssignableFrom(type.BaseType)) return "delegate";
 			if (type.IsValueType) return "struct";
 			return type.IsAbstract && type.IsSealed ? "static class" : type.IsAbstract ? "abstract class" : "class";
 		}
 
-		private static bool IsVisible(MethodBase method)
+		private static bool IsVisible(MethodBase? method)
 		{
 			return method != null && (method.IsPublic || method.IsFamily || method.IsFamilyOrAssembly);
 		}
@@ -198,7 +198,7 @@ namespace RazorLight.Tests.Compatibility
 			return IsVisible(eventInfo.AddMethod) || IsVisible(eventInfo.RemoveMethod);
 		}
 
-		private static string FormatVisibility(MethodBase method)
+		private static string FormatVisibility(MethodBase? method)
 		{
 			if (method == null) return "public";
 			if (method.IsPublic) return "public";
@@ -213,13 +213,13 @@ namespace RazorLight.Tests.Compatibility
 			return "protected";
 		}
 
-		private static string FormatValue(object value)
+		private static string FormatValue(object? value)
 		{
 			if (value == null || value == DBNull.Value || value == Missing.Value) return "null";
-			if (value is string) return "\"" + value.ToString().Replace("\"", "\\\"") + "\"";
+			if (value is string stringValue) return "\"" + stringValue.Replace("\"", "\\\"") + "\"";
 			if (value is char) return "'" + value + "'";
 			if (value is bool) return (bool)value ? "true" : "false";
-			return Convert.ToString(value, CultureInfo.InvariantCulture);
+			return Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
 		}
 	}
 }

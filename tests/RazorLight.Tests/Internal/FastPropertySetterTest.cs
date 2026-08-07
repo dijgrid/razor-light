@@ -20,7 +20,8 @@ namespace RazorLight.Tests.Internal
 
 		public FastPropertySetterTest()
 		{
-			testPropertyInfo = testClass.GetType().GetTypeInfo().GetProperty("RefProperty");
+			testPropertyInfo = testClass.GetType().GetTypeInfo().GetProperty("RefProperty")
+				?? throw new InvalidOperationException("Could not find RefProperty on the test class.");
 		}
 
 		[Fact]

@@ -7,9 +7,9 @@ namespace RazorLight.Precompile
 {
 	public class JsonModel : DynamicObject
 	{
-		private readonly Dictionary<string, object> m_properties = new();
+		private readonly Dictionary<string, object?> m_properties = new();
 
-		public static object New(JToken jsonToken)
+		public static object? New(JToken? jsonToken)
 		{
 			return jsonToken switch
 			{
@@ -28,7 +28,7 @@ namespace RazorLight.Precompile
 			}
 		}
 
-		public override bool TryGetMember(GetMemberBinder binder, out object result)
+		public override bool TryGetMember(GetMemberBinder binder, out object? result)
 		{
 			if (!m_properties.TryGetValue(binder.Name, out result))
 			{

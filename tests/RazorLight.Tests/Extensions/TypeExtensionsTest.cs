@@ -28,7 +28,7 @@ namespace RazorLight.Tests.Extensions
 				Age = 18
 			};
 
-			IDictionary<string, object> expando = obj.ToExpando();
+			IDictionary<string, object?> expando = obj.ToExpando();
 
 			Assert.True(expando.ContainsKey("Name"));
 			Assert.True(expando.ContainsKey("Age"));

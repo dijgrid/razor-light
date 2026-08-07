@@ -134,7 +134,7 @@ namespace RazorLight.Tests.Generation
 		{
 			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, project: null);
 
-			Func<Task> action = () => generator.GenerateCodeAsync((RazorLightProjectItem)null);
+			Func<Task> action = () => generator.GenerateCodeAsync((RazorLightProjectItem)null!);
 
 			var exception = await Assert.ThrowsAsync<ArgumentNullException>(action);
 			Assert.Equal("projectItem", exception.ParamName);

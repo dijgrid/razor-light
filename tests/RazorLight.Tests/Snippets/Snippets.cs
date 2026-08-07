@@ -9,7 +9,7 @@ namespace RazorLight.Tests.Snippets
 	{
 		public class ViewModel
 		{
-			public string Name { get; set; }
+			public required string Name { get; set; }
 		}
 
 		[Fact]

@@ -19,11 +19,9 @@ namespace RazorLight.Tests.Text
 		[Fact]
 		public void TextWriter_Can_Not_Be_Null()
 		{
-			TextWriter writer = null;
-
 			var raw = new RawString("value");
 
-			Assert.Throws<ArgumentNullException>(() => { raw.WriteTo(writer); });
+			Assert.Throws<ArgumentNullException>(() => { raw.WriteTo(null!); });
 		}
 
 		[Fact]

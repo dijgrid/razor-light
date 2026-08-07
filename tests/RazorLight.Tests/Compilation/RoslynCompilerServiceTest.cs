@@ -280,7 +280,8 @@ namespace RazorLight.Tests.Compilation
 		{
 			private readonly DependencyContextCompilationOptions _options;
 
-			public TestCSharpCompiler(IMetadataReferenceManager referenceManager, DependencyContextCompilationOptions options, Assembly assembly = null) : base(referenceManager, assembly ?? Assembly.GetEntryAssembly())
+			public TestCSharpCompiler(IMetadataReferenceManager referenceManager, DependencyContextCompilationOptions options, Assembly? assembly = null)
+				: base(referenceManager, assembly ?? Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly())
 			{
 				_options = options;
 			}

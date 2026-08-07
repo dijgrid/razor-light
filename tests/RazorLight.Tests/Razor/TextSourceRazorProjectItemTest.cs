@@ -42,7 +42,7 @@ namespace RazorLight.Tests.Razor
 
 			var item = new TextSourceRazorProjectItem("key", content);
 
-			string projectContent = null;
+			string projectContent;
 			using (var stringWriter = new StreamReader(item.Read()))
 			{
 				projectContent = stringWriter.ReadToEnd();

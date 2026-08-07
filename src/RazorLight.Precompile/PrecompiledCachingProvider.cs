@@ -13,13 +13,17 @@ namespace RazorLight.Precompile
 		public readonly IReadOnlyDictionary<string, string> Map;
 		private readonly MemoryCachingProvider m_cache = new();
 
-		public PrecompiledCachingProvider(IEnumerable<string> precompiledTemplateFilePaths, StreamWriter log)
+		public PrecompiledCachingProvider(IEnumerable<string> precompiledTemplateFilePaths, StreamWriter? log)
 		{
 			var map = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-			foreach (var (templateKey, filePath) in precompiledTemplateFilePaths
-				.Select(filePath => (templateKey: GetPrecompiledTemplateKey(filePath, log), filePath))
-				.Where(o => o.templateKey != null))
+			foreach (var filePath in precompiledTemplateFilePaths)
 			{
+				var templateKey = GetPrecompiledTemplateKey(filePath, log);
+				if (templateKey == null)
+				{
+					continue;
+				}
+
 				if (map.TryGetValue(templateKey, out var dupe))
 				{
 					throw new RazorLightException($"The key {templateKey} is associated with at least two precompiled templates - {dupe} and {filePath}");
@@ -33,7 +37,7 @@ namespace RazorLight.Precompile
 			Map = map;
 		}
 
-		private static string GetPrecompiledTemplateKey(string filePath, StreamWriter log)
+		private static string? GetPrecompiledTemplateKey(string filePath, StreamWriter? log)
 		{
 			try
 			{
@@ -41,7 +45,11 @@ namespace RazorLight.Precompile
 				var razorLightAttr = asmDef.CustomAttributes.SingleOrDefault(o => o.AttributeType.FullName == "RazorLight.Razor.RazorLightTemplateAttribute");
 				if (razorLightAttr != null)
 				{
-					string templateKey = (string)razorLightAttr.ConstructorArguments[0].Value;
+					var templateKey = razorLightAttr.ConstructorArguments[0].Value as string;
+					if (templateKey == null)
+					{
+						return null;
+					}
 					log?.WriteLine("GetPrecompiledTemplateKey(\"{0}\") = \"{1}\"", filePath, templateKey);
 					return templateKey;
 				}

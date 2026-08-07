@@ -16,7 +16,7 @@ namespace RazorLight.Precompile
 		public static CommandLineArguments Parse(
 			string[] args,
 			IEnumerable<string> valueOptions,
-			IEnumerable<string> flagOptions = null)
+			IEnumerable<string>? flagOptions = null)
 		{
 			var allowedValues = new HashSet<string>(valueOptions, StringComparer.OrdinalIgnoreCase);
 			var allowedFlags = new HashSet<string>(flagOptions ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
@@ -76,7 +76,7 @@ namespace RazorLight.Precompile
 			return value;
 		}
 
-		public string GetValue(params string[] aliases)
+		public string? GetValue(params string[] aliases)
 		{
 			foreach (var alias in aliases)
 			{

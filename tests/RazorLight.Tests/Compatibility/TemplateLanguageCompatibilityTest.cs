@@ -18,15 +18,15 @@ namespace RazorLight.Tests.Compatibility
 	{
 		private const string FullyQualifiedModel = "RazorLight.Tests.Compatibility.CompatibilityModel";
 
-		public static IEnumerable<object[]> SourceAndImportCases()
+		public static IEnumerable<object?[]> SourceAndImportCases()
 		{
-			yield return new object[] { "string", "explicit-using", null };
-			yield return new object[] { "string", "no-import", "does not contain a definition for 'Any'" };
-			yield return new object[] { "string", "configured-namespace", "type or namespace name 'CompatibilityModel' could not be found" };
-			yield return new object[] { "file", "built-in", null };
-			yield return new object[] { "embedded-resource", "built-in", null };
-			yield return new object[] { "custom-project", "built-in", null };
-			yield return new object[] { "custom-project", "configured-namespace", null };
+			yield return new object?[] { "string", "explicit-using", null };
+			yield return new object?[] { "string", "no-import", "does not contain a definition for 'Any'" };
+			yield return new object?[] { "string", "configured-namespace", "type or namespace name 'CompatibilityModel' could not be found" };
+			yield return new object?[] { "file", "built-in", null };
+			yield return new object?[] { "embedded-resource", "built-in", null };
+			yield return new object?[] { "custom-project", "built-in", null };
+			yield return new object?[] { "custom-project", "configured-namespace", null };
 		}
 
 		[Theory]
@@ -34,7 +34,7 @@ namespace RazorLight.Tests.Compatibility
 		public async Task Characterizes_Source_And_Import_Matrix(
 			string source,
 			string import,
-			string expectedDiagnostic)
+			string? expectedDiagnostic)
 		{
 			if (expectedDiagnostic == null)
 			{
@@ -308,11 +308,11 @@ namespace RazorLight.Tests.Compatibility
 
 	public class CompatibilityModel
 	{
-		public string[] Items { get; set; }
+		public required string[] Items { get; set; }
 	}
 
 	public class AlternateCompatibilityModel
 	{
-		public string Value { get; set; }
+		public required string Value { get; set; }
 	}
 }

@@ -58,7 +58,7 @@ namespace RazorLight.Tests.Razor
 			string fileContent = File.ReadAllText(templatePath);
 
 			var item = new FileSystemRazorProjectItem(templateKey, new FileInfo(templatePath));
-			string itemContent = null;
+			string itemContent;
 
 			using (var reader = new StreamReader(item.Read()))
 			{

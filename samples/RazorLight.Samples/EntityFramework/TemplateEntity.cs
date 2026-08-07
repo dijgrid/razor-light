@@ -9,6 +9,6 @@ namespace Samples.EntityFrameworkProject.EntityFramework
 		public int Id { get; set; }
 
 		[Required]
-		public string Content { get; set; }
+		public required string Content { get; set; }
 	}
 }

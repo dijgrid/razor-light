@@ -12,70 +12,63 @@ namespace RazorLight.Precompile
 {
 	internal class RenderCmd
 	{
-		private string m_path;
-		private string m_modelFilePath;
-		private string m_jsonQuery;
-		private SearchOption m_searchOption = SearchOption.TopDirectoryOnly;
-		private string m_key;
-		private string m_logFilePath;
-
 		public int Run(string[] args)
 		{
 			var options = CommandLineArguments.Parse(
 				args,
 				new[] { "-p", "--path", "-m", "--model", "-k", "--key", "-q", "--jsonQuery", "-l", "--log" },
 				new[] { "-r", "--recurse" });
-			m_path = options.GetRequiredValue("-p", "--path");
-			m_modelFilePath = options.GetRequiredValue("-m", "--model");
-			m_key = options.GetValue("-k", "--key");
-			m_jsonQuery = options.GetValue("-q", "--jsonQuery");
-			m_logFilePath = options.GetValue("-l", "--log");
-			m_searchOption = options.HasFlag("-r", "--recurse")
+			var path = options.GetRequiredValue("-p", "--path");
+			var modelFilePath = options.GetRequiredValue("-m", "--model");
+			var key = options.GetValue("-k", "--key");
+			var jsonQuery = options.GetValue("-q", "--jsonQuery");
+			var logFilePath = options.GetValue("-l", "--log");
+			var searchOption = options.HasFlag("-r", "--recurse")
 				? SearchOption.AllDirectories
 				: SearchOption.TopDirectoryOnly;
 
-			var modelToken = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(m_modelFilePath));
-			if (m_jsonQuery != null)
+			var modelToken = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(modelFilePath));
+			if (jsonQuery != null)
 			{
-				modelToken = modelToken.SelectToken(m_jsonQuery);
+				modelToken = modelToken?.SelectToken(jsonQuery);
 			}
 
 			var model = JsonModel.New(modelToken);
 
-			using var log = m_logFilePath == null ? null : new StreamWriter(m_logFilePath);
-			var cachingProvider = new PrecompiledCachingProvider(YieldFiles(), log);
+			using var log = logFilePath == null ? null : new StreamWriter(logFilePath);
+			var cachingProvider = new PrecompiledCachingProvider(YieldFiles(path, searchOption), log);
 
-			if (m_key == null)
+			if (key == null)
 			{
 				if (cachingProvider.Map.Count > 1)
 				{
 					throw new RazorLightException($"Found {cachingProvider.Map.Count} precompiled templates and no --key argument was given.");
 				}
 
-				m_key = cachingProvider.Map.First().Key;
+				key = cachingProvider.Map.First().Key;
 			}
-			else if (m_key[0] != '/')
+			else if (key[0] != '/')
 			{
-				m_key = '/' + m_key;
+				key = '/' + key;
 			}
 
 			var engine = new RazorLightEngineBuilder()
 				.UseCachingProvider(cachingProvider)
 				.Build();
 
-			var templatePage = cachingProvider.RetrieveTemplate(m_key).Template.TemplatePageFactory();
+			var templatePage = cachingProvider.RetrieveTemplate(key).Template.TemplatePageFactory();
 			Program.ConsoleOut.WriteLine(engine.Handler.RenderTemplateAsync(templatePage, model).GetAwaiter().GetResult());
 			return 0;
 		}
 
-		private IEnumerable<string> YieldFiles()
+		private static IEnumerable<string> YieldFiles(string path, SearchOption searchOption)
 		{
-			if (m_path.Contains(','))
+			if (path.Contains(','))
 			{
-				return m_path.Split(',').SelectMany(DoYieldFiles);
+				return path.Split(',').SelectMany(DoYieldFiles);
 			}
 
-			return DoYieldFiles(m_path);
+			return DoYieldFiles(path);
 
 			IEnumerable<string> DoYieldFiles(string fileOrFolderPath)
 			{
@@ -98,7 +91,7 @@ namespace RazorLight.Precompile
 
 				if (Directory.Exists(fileOrFolderPath))
 				{
-					return Directory.EnumerateFiles(fileOrFolderPath, "*.dll", m_searchOption);
+					return Directory.EnumerateFiles(fileOrFolderPath, "*.dll", searchOption);
 				}
 
 				throw new RazorLightException($"{fileOrFolderPath} is not found.");

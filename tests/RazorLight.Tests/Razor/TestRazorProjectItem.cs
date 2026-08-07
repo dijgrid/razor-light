@@ -7,7 +7,7 @@ namespace RazorLight.Tests.Razor
 {
 	public class TestRazorProject : RazorLightProject
 	{
-		public RazorLightProjectItem Value { get; set; }
+		public required RazorLightProjectItem Value { get; set; }
 
 		public override Task<IEnumerable<RazorLightProjectItem>> GetImportsAsync(string templateKey)
 		{

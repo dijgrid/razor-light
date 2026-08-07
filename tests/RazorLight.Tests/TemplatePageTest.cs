@@ -60,11 +60,10 @@ namespace RazorLight.Tests
 		public async Task RenderSection_ThrowsIfPreviousSectionWritersIsNotSet()
 		{
 			// Arrange
-			Exception ex = null;
 			var page = CreatePage(v =>
 			{
 				v.Key = "/Views/TestPath/Test.cshtml";
-				ex = Assert.Throws<InvalidOperationException>(() => v.RenderSection("bar"));
+				Assert.Throws<InvalidOperationException>(() => v.RenderSection("bar"));
 			});
 
 			// Act & Assert
@@ -421,7 +420,7 @@ namespace RazorLight.Tests
 		public async Task FlushAsync_ReturnsEmptyHtmlString()
 		{
 			// Arrange
-			HtmlString actual = null;
+			HtmlString? actual = null;
 			var writer = new Mock<TextWriter>();
 			var context = CreateViewContext(writer.Object);
 			var page = CreatePage(async p =>
@@ -558,7 +557,7 @@ namespace RazorLight.Tests
 
 		public static TestableRazorPage CreatePage(
 			Action<TestableRazorPage> executeAction,
-			PageContext context = null)
+			PageContext? context = null)
 		{
 			return CreatePage(page =>
 			{
@@ -568,8 +567,8 @@ namespace RazorLight.Tests
 		}
 
 		public static TestableRazorPage CreatePage(
-			Func<TestableRazorPage, Task> executeAction,
-			PageContext context = null)
+			Func<TestableRazorPage, Task>? executeAction,
+			PageContext? context = null)
 		{
 			context = context ?? CreateViewContext();
 			var view = new Mock<TestableRazorPage> { CallBase = true };
@@ -587,9 +586,9 @@ namespace RazorLight.Tests
 		}
 
 		public static PageContext CreateViewContext(
-			TextWriter writer = null,
-			IViewBufferScope bufferScope = null,
-			string viewPath = null)
+			TextWriter? writer = null,
+			IViewBufferScope? bufferScope = null,
+			string? viewPath = null)
 		{
 			bufferScope = bufferScope ?? new TestViewBufferScope();
 			var buffer = new ViewBuffer(bufferScope, viewPath ?? "TEST", 32);
@@ -745,7 +744,7 @@ namespace RazorLight.Tests
 
 		public class HtmlContentUtilities
 		{
-			public static string HtmlContentToString(IHtmlContent content, HtmlEncoder encoder = null)
+			public static string HtmlContentToString(IHtmlContent content, HtmlEncoder? encoder = null)
 			{
 				if (encoder == null)
 				{

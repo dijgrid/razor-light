@@ -195,7 +195,7 @@ namespace RazorLight.Tests.Compilation
 			{
 			}
 
-			public static TestRazorTemplateCompiler Create(RazorLightOptions options = null, RazorLightProject project = null)
+			public static TestRazorTemplateCompiler Create(RazorLightOptions? options = null, RazorLightProject? project = null)
 			{
 				var razorOptions = options ?? new RazorLightOptions();
 				var metadataManager = new DefaultMetadataReferenceManager();

@@ -61,15 +61,17 @@ namespace RazorLight.Tests.Razor
 			string templateKey = "Assets.Embedded.Empty.cshtml";
 			string fullTemplateKey = rootType.Namespace + ".Assets.Embedded.Empty.cshtml";
 
-			string resourceContent = null;
-			using (var reader = new StreamReader(rootType.Assembly.GetManifestResourceStream(fullTemplateKey)))
+			var resourceStream = rootType.Assembly.GetManifestResourceStream(fullTemplateKey);
+			Assert.NotNull(resourceStream);
+			string resourceContent;
+			using (var reader = new StreamReader(resourceStream))
 			{
 				resourceContent = reader.ReadToEnd();
 			}
 
 			var item = new EmbeddedRazorProjectItem(typeof(Root), templateKey);
 
-			string projectContent = null;
+			string projectContent;
 			using (var reader = new StreamReader(item.Read()))
 			{
 				projectContent = reader.ReadToEnd();

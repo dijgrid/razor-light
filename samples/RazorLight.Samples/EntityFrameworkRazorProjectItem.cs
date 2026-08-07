@@ -1,4 +1,5 @@
 ﻿using RazorLight.Razor;
+using System;
 using System.IO;
 using System.Text;
 
@@ -6,9 +7,9 @@ namespace Samples.EntityFrameworkProject
 {
 	public class EntityFrameworkRazorProjectItem : RazorLightProjectItem
 	{
-		private string _content;
+		private readonly string? _content;
 
-		public EntityFrameworkRazorProjectItem(string key, string content)
+		public EntityFrameworkRazorProjectItem(string key, string? content)
 		{
 			Key = key;
 			_content = content;
@@ -20,7 +21,10 @@ namespace Samples.EntityFrameworkProject
 
 		public override Stream Read()
 		{
-			return new MemoryStream(Encoding.UTF8.GetBytes(_content));
+			var content = _content
+				?? throw new InvalidOperationException("Cannot read a template that does not exist.");
+
+			return new MemoryStream(Encoding.UTF8.GetBytes(content));
 		}
 	}
 }

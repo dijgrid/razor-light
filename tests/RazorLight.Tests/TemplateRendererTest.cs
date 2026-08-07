@@ -123,7 +123,7 @@ namespace RazorLight.Tests
 
 			string expected = "<strong>LocalFunction</strong>";
 
-			string result = await engine.CompileRenderAsync("LocalFunction", (object)null);
+			string result = await engine.CompileRenderAsync<object?>("LocalFunction", null);
 			result = result.Replace("\r", "").Replace("\n", "");
 
 			Assert.Equal(expected, result);
@@ -140,7 +140,7 @@ namespace RazorLight.Tests
 
 			string expected = "<strong>LocalFunctionUsingHelper</strong>";
 
-			string result = await engine.CompileRenderAsync("LocalFunctionUsingHelper", (object)null);
+			string result = await engine.CompileRenderAsync<object?>("LocalFunctionUsingHelper", null);
 			result = result.Replace("\r", "").Replace("\n", "");
 
 			Assert.Equal(expected, result);
@@ -163,7 +163,7 @@ namespace RazorLight.Tests
 
 		public class TestModel
 		{
-			public string Value { get; set; }
+			public required string Value { get; set; }
 		}
 	}
 }

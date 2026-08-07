@@ -1,7 +1,7 @@
 ---
 id: TASK-009
 title: Enable nullable reference types in non-public projects
-status: todo
+status: done
 priority: medium
 epic: EPIC-modernization
 milestone: MILESTONE-library-quality
@@ -12,7 +12,7 @@ tags:
   - nullable
   - ready-for-implementation
 createdAt: 2026-08-07T00:35:00Z
-updatedAt: 2026-08-07T04:00:47.403Z
+updatedAt: 2026-08-07T06:57:22.548Z
 refinementState: ready
 ---
 
@@ -27,13 +27,13 @@ library contracts, and no maintainer decision is required.
 ## Acceptance criteria
 
 - [x] Precompile test fixture nullability warnings are resolved and its temporary `NoWarn` is removed.
-- [ ] Nullable reference types are enabled in `src/RazorLight.Precompile`.
-- [ ] Nullable reference types are enabled in the sandbox and both maintained sample projects.
-- [ ] Nullable reference types are enabled in `tests/RazorLight.Tests` without changing test
+- [x] Nullable reference types are enabled in `src/RazorLight.Precompile`.
+- [x] Nullable reference types are enabled in the sandbox and both maintained sample projects.
+- [x] Nullable reference types are enabled in `tests/RazorLight.Tests` without changing test
       behavior.
-- [ ] Warnings are fixed with accurate annotations and control flow rather than broad `NoWarn`,
+- [x] Warnings are fixed with accurate annotations and control flow rather than broad `NoWarn`,
       `#nullable disable`, or unjustified null-forgiving operators.
-- [ ] The maintained build, test, sample, and precompile-tool baselines pass with warnings as errors.
+- [x] The maintained build, test, sample, and precompile-tool baselines pass with warnings as errors.
 
 ## Implementation plan
 
@@ -59,3 +59,14 @@ dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj
 dotnet run --project samples/RazorLight.Samples/Samples.EntityFrameworkProject.csproj --configuration Release --no-build
 dotnet build samples/FunctionApp-WebMvc-Sample/FunctionApp-WebMvc-Sample/FunctionApp-WebMvc-Sample.csproj --configuration Release --warnaserror
 ```
+
+## Implementation notes
+
+- Enabled nullable reference types in the precompile tool, sandbox, Entity Framework sample, and
+  legacy xUnit test project. The Function sample and precompile test project were already enabled.
+- Replaced nullable tool state with local command state, guarded filesystem and reflection results,
+  and annotated optional JSON, logging, model, and test-fixture values accurately.
+- Kept `src/RazorLight` unchanged; the only null-forgiving operators are intentional null-contract
+  test inputs.
+- Verified the warning-as-error solution build, 198 RazorLight tests, 118 precompile tests, the
+  running Entity Framework sample, and the warning-as-error Function sample build.

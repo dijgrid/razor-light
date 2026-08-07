@@ -21,13 +21,6 @@ namespace RazorLight.Precompile
 			[StrategyName.FileHash] = FileHashCachingStrategy.Instance
 		};
 
-		private string m_templateFile;
-		private string m_cacheDir;
-		private string m_baseDir;
-		private StrategyName m_strategyName = StrategyName.FileHash;
-		private string m_modelFilePath;
-		private string m_jsonQuery;
-
 		public int Run(string[] args)
 		{
 			var options = CommandLineArguments.Parse(args, new[]
@@ -35,75 +28,78 @@ namespace RazorLight.Precompile
 				"-t", "--template", "-c", "--cache", "-b", "--base", "-s", "--strategy",
 				"-m", "--model", "-q", "--jsonQuery"
 			});
-			m_templateFile = options.GetRequiredValue("-t", "--template");
-			m_cacheDir = options.GetValue("-c", "--cache");
-			m_baseDir = options.GetValue("-b", "--base");
-			m_modelFilePath = options.GetValue("-m", "--model");
-			m_jsonQuery = options.GetValue("-q", "--jsonQuery");
+			var templateFile = options.GetRequiredValue("-t", "--template");
+			var cacheDir = options.GetValue("-c", "--cache");
+			var baseDir = options.GetValue("-b", "--base");
+			var modelFilePath = options.GetValue("-m", "--model");
+			var jsonQuery = options.GetValue("-q", "--jsonQuery");
+			var strategyName = StrategyName.FileHash;
 
 			var strategy = options.GetValue("-s", "--strategy");
-			if (strategy != null && !Enum.TryParse(strategy, true, out m_strategyName))
+			if (strategy != null && !Enum.TryParse(strategy, true, out strategyName))
 			{
 				throw new RazorLightException("Unsupported strategy " + strategy);
 			}
 
 			string templateKey;
-			if (m_baseDir == null)
+			if (baseDir == null)
 			{
-				m_templateFile = Path.GetFullPath(m_templateFile);
-				m_baseDir = Path.GetDirectoryName(m_templateFile);
-				templateKey = Path.GetFileName(m_templateFile);
+				templateFile = Path.GetFullPath(templateFile);
+				baseDir = Path.GetDirectoryName(templateFile)
+					?? throw new RazorLightException($"Could not determine the base directory for {templateFile}.");
+				templateKey = Path.GetFileName(templateFile);
 			}
 			else
 			{
-				if (!Directory.Exists(m_baseDir))
+				if (!Directory.Exists(baseDir))
 				{
-					throw new RazorLightException($"The razor template base directory {m_baseDir} does not exist.");
+					throw new RazorLightException($"The razor template base directory {baseDir} does not exist.");
 				}
 
-				m_baseDir = Path.GetFullPath(m_baseDir);
-				if (Path.IsPathRooted(m_templateFile))
+				baseDir = Path.GetFullPath(baseDir);
+				if (Path.IsPathRooted(templateFile))
 				{
-					templateKey = Path.GetRelativePath(m_baseDir, m_templateFile);
+					templateKey = Path.GetRelativePath(baseDir, templateFile);
 				}
 				else
 				{
-					templateKey = m_templateFile;
-					m_templateFile = Path.GetFullPath(Path.Combine(m_baseDir, m_templateFile));
+					templateKey = templateFile;
+					templateFile = Path.GetFullPath(Path.Combine(baseDir, templateFile));
 				}
 			}
 
-			if (!File.Exists(m_templateFile))
+			if (!File.Exists(templateFile))
 			{
-				throw new RazorLightException($"The razor template file {m_templateFile} does not exist.");
+				throw new RazorLightException($"The razor template file {templateFile} does not exist.");
 			}
 
-			if (m_cacheDir == null)
+			if (cacheDir == null)
 			{
-				m_cacheDir = Path.GetDirectoryName(m_templateFile);
+				cacheDir = Path.GetDirectoryName(templateFile)
+					?? throw new RazorLightException($"Could not determine the cache directory for {templateFile}.");
 			}
-			else if (!Directory.Exists(m_cacheDir))
+			else if (!Directory.Exists(cacheDir))
 			{
-				Directory.CreateDirectory(m_cacheDir);
+				Directory.CreateDirectory(cacheDir);
 			}
 
-			var provider = new FileSystemCachingProvider(m_baseDir, m_cacheDir, s_strategyMap[m_strategyName]);
+			var provider = new FileSystemCachingProvider(baseDir, cacheDir, s_strategyMap[strategyName]);
 			var engine = new RazorLightEngineBuilder()
-				.UseFileSystemProject(m_baseDir, "")
+				.UseFileSystemProject(baseDir, "")
 				.UseCachingProvider(provider)
 				.Build();
 
-			if (m_modelFilePath == null)
+			if (modelFilePath == null)
 			{
 				engine.CompileTemplateAsync(templateKey).GetAwaiter().GetResult();
-				Program.ConsoleOut.WriteLine(provider.GetAssemblyFilePath(templateKey, m_templateFile));
+				Program.ConsoleOut.WriteLine(provider.GetAssemblyFilePath(templateKey, templateFile));
 			}
 			else
 			{
-				var modelToken = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(m_modelFilePath));
-				if (m_jsonQuery != null)
+				var modelToken = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(modelFilePath));
+				if (jsonQuery != null)
 				{
-					modelToken = modelToken.SelectToken(m_jsonQuery);
+					modelToken = modelToken?.SelectToken(jsonQuery);
 				}
 
 				var model = JsonModel.New(modelToken);
