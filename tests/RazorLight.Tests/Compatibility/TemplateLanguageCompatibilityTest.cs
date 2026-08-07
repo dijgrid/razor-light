@@ -104,7 +104,7 @@ namespace RazorLight.Tests.Compatibility
 		[Fact]
 		public async Task Dynamic_Lambda_Diagnostic_Explains_The_Typed_Model_Options()
 		{
-			var engine = NewStringEngine();
+			var engine = NewStringEngine(enableDebugMode: true);
 			string template =
 				"@using System.Linq\n@(Model.Items.Where(item => item.Length > 1).FirstOrDefault())";
 
@@ -351,12 +351,16 @@ namespace RazorLight.Tests.Compatibility
 				+ "@(Model.Items.Any())|@(filtered.FirstOrDefault())";
 		}
 
-		private static RazorLightEngine NewStringEngine(bool useMemoryCache = false)
+		private static RazorLightEngine NewStringEngine(bool useMemoryCache = false, bool enableDebugMode = false)
 		{
 			var builder = new RazorLightEngineBuilder().UseNoProject();
 			if (useMemoryCache)
 			{
 				builder.UseMemoryCachingProvider();
+			}
+			if (enableDebugMode)
+			{
+				builder.EnableDebugMode();
 			}
 
 			return builder.Build();

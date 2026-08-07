@@ -11,7 +11,18 @@ namespace RazorLight.Generation
 {
 	public class RazorSourceGenerator
 	{
+		private readonly bool includeDetailedDiagnostics;
+
 		public RazorSourceGenerator(RazorEngine projectEngine, RazorLightProject? project = null, ISet<string>? namespaces = null)
+			: this(projectEngine, project, namespaces, includeDetailedDiagnostics: false)
+		{
+		}
+
+		internal RazorSourceGenerator(
+			RazorEngine projectEngine,
+			RazorLightProject? project,
+			ISet<string>? namespaces,
+			bool includeDetailedDiagnostics)
 		{
 			if (projectEngine == null)
 			{
@@ -19,6 +30,7 @@ namespace RazorLight.Generation
 			}
 
 			Namespaces = namespaces ?? new HashSet<string>();
+			this.includeDetailedDiagnostics = includeDetailedDiagnostics;
 
 			ProjectEngine = projectEngine;
 			Project = project;
@@ -47,7 +59,8 @@ namespace RazorLight.Generation
 
 			if (Project == null)
 			{
-				string _message = $"Can not resolve a content for the template \"{key}\" as there is no project set. " +
+				string templateDescription = includeDetailedDiagnostics ? $" the template \"{key}\"" : " the requested template";
+				string _message = $"Can not resolve a content for{templateDescription} as there is no project set. " +
 					"You can only render a template by passing it's content directly via string using corresponding function overload";
 
 				throw new InvalidOperationException(_message);
@@ -78,8 +91,7 @@ namespace RazorLight.Generation
 
 			if (!projectItem.Exists)
 			{
-				throw new InvalidOperationException($"{nameof(RazorLightProjectItem)} of type " +
-					$"{projectItem.GetType().FullName} with key {projectItem.Key} does not exist.");
+				throw CreateMissingProjectItemException(projectItem);
 			}
 
 			RazorCodeDocument codeDocument = await CreateCodeDocumentAsync(projectItem, modelType);
@@ -93,10 +105,15 @@ namespace RazorLight.Generation
 
 				foreach (RazorDiagnostic d in document.Diagnostics)
 				{
-					builder.AppendLine($"- {d.GetMessage()}");
+					builder.AppendLine(includeDetailedDiagnostics
+						? $"- {d.GetMessage()}"
+						: $"- Razor diagnostic {d.Id} at line {d.Span.LineIndex}, character {d.Span.CharacterIndex}. " +
+						  $"Enable {nameof(RazorLightOptions)}.{nameof(RazorLightOptions.EnableDebugMode)} for details.");
 				}
 
-				throw new TemplateGenerationException(builder.ToString(), document.Diagnostics);
+				throw new TemplateGenerationException(
+					builder.ToString(),
+					includeDetailedDiagnostics ? document.Diagnostics : Array.Empty<RazorDiagnostic>());
 			}
 
 			return new GeneratedRazorTemplate(projectItem, document);
@@ -123,8 +140,7 @@ namespace RazorLight.Generation
 
 			if (!projectItem.Exists)
 			{
-				throw new InvalidOperationException($"{nameof(RazorLightProjectItem)} of type " +
-					$"{projectItem.GetType().FullName} with key {projectItem.Key} does not exist.");
+				throw CreateMissingProjectItemException(projectItem);
 			}
 
 			using (var stream = projectItem.Read())
@@ -138,6 +154,17 @@ namespace RazorLight.Generation
 
 				return RazorCodeDocument.Create(source, imports);
 			}
+		}
+
+		private InvalidOperationException CreateMissingProjectItemException(RazorLightProjectItem projectItem)
+		{
+			string message = $"{nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} does not exist.";
+			if (includeDetailedDiagnostics)
+			{
+				message = $"{nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} with key {projectItem.Key} does not exist.";
+			}
+
+			return new InvalidOperationException(message);
 		}
 
 		/// <summary>

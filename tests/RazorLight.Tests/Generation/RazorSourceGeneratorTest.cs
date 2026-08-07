@@ -132,7 +132,8 @@ namespace RazorLight.Tests.Generation
 			Func<Task> action = () => generator.GenerateCodeAsync("key");
 
 			var exception = await Assert.ThrowsAsync<InvalidOperationException>(action);
-			Assert.Equal("Can not resolve a content for the template \"key\" as there is no project set. You can only render a template by passing it's content directly via string using corresponding function overload", exception.Message);
+			Assert.Equal("Can not resolve a content for the requested template as there is no project set. You can only render a template by passing it's content directly via string using corresponding function overload", exception.Message);
+			Assert.DoesNotContain("key", exception.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]
@@ -160,7 +161,8 @@ namespace RazorLight.Tests.Generation
 			Func<Task> action = () => generator.GenerateCodeAsync(projectItem);
 
 			var exception = await Assert.ThrowsAsync<InvalidOperationException>(action);
-			Assert.Equal($"{ nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} with key {projectItem.Key} does not exist.", exception.Message);
+			Assert.Equal($"{ nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} does not exist.", exception.Message);
+			Assert.DoesNotContain(projectItem.Key, exception.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]
@@ -188,7 +190,8 @@ namespace RazorLight.Tests.Generation
 			Func<Task> action = () => generator.CreateCodeDocumentAsync(projectItem);
 
 			var exception = await Assert.ThrowsAsync<InvalidOperationException>(action);
-			Assert.Equal($"{ nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} with key {projectItem.Key} does not exist.", exception.Message);
+			Assert.Equal($"{ nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} does not exist.", exception.Message);
+			Assert.DoesNotContain(projectItem.Key, exception.Message, StringComparison.Ordinal);
 		}
 	}
 }

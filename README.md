@@ -38,6 +38,7 @@ and [testing guidance](docs/testing.md) for the current maintenance baseline.
 - [Includes and partial templates](#includes-and-partial-templates)
 - [Caching and invalidation](#caching-and-invalidation)
 - [Encoding](#encoding)
+- [Template security](#template-security)
 - [Additional metadata references](#additional-metadata-references)
 - [Enable IntelliSense support](#enable-intellisense-support)
 - [FAQ](#faq)
@@ -320,6 +321,18 @@ To disable encoding for an entire template, set `DisableEncoding` to `true`:
 </html>
 ```
 
+# Template security
+
+Razor templates compile to .NET assemblies and execute with the host process's permissions. Treat
+every in-process template as trusted code. HTML encoding protects output markup; it does not prevent
+a template from executing C#, accessing files or the network, using reflection, or resolving host
+services through `@inject`.
+
+User-authored or otherwise untrusted templates require a separately secured renderer process or
+service. Metadata reference filtering and limited dependency injection are useful least-privilege
+controls for trusted templates, but they are not a sandbox. See the complete
+[template security and trust-boundary guide](docs/template-security.md).
+
 # Enable IntelliSense support
 
 Visual Studio assumes a Razor file is an ASP.NET MVC view. Add an explicit base class to help
@@ -377,17 +390,26 @@ development but fails after deployment, review the following common configuratio
 
 ### Additional metadata references
 
-RazorLight normally discovers metadata references from the entry assembly. When a required assembly
-is not discoverable, pass its metadata reference explicitly:
+RazorLight's default discovery includes application project assemblies, the operating assembly, and
+RazorLight's runtime dependencies. It does not expose unrelated host NuGet packages automatically.
+Select a dependency-context assembly by exact name with `IncludeAssemblies`, or pass a specific
+metadata reference explicitly:
 
 ```csharp
 var metadataReference = MetadataReference.CreateFromFile("path-to-your-assembly");
 
 var engine = new RazorLightEngineBuilder()
     .UseMemoryCachingProvider()
+    .IncludeAssemblies("Application.TemplateContracts")
     .AddMetadataReferences(metadataReference)
     .Build();
 ```
+
+`ExcludeAssemblies` removes an automatically discovered exact assembly name. If migration from the
+historical broad behavior is temporarily necessary, call
+`UseAllDependencyContextMetadataReferences()`. Broad discovery exposes every compile-time host
+dependency and should be an explicit compatibility choice. These APIs control ordinary compilation
+references; they do not sandbox executable template code.
 
 ### I'm getting "Cannot find compilation library" when I deploy this library on another server
 

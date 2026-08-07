@@ -667,3 +667,14 @@ virtual RazorLight.TemplatePageBase.Write(string? value) -> void
 virtual RazorLight.TemplatePageBase.WriteLiteral(object? value) -> void
 virtual RazorLight.TemplatePageBase.WriteLiteral(string? value) -> void
 virtual RazorLight.TemplateRenderer.RenderAsync(RazorLight.ITemplatePage! page) -> System.Threading.Tasks.Task!
+RazorLight.Compilation.MetadataReferenceDiscoveryMode
+RazorLight.Compilation.MetadataReferenceDiscoveryMode.All = 1 -> RazorLight.Compilation.MetadataReferenceDiscoveryMode
+RazorLight.Compilation.MetadataReferenceDiscoveryMode.Minimal = 0 -> RazorLight.Compilation.MetadataReferenceDiscoveryMode
+RazorLight.RazorLightDependencyBuilder.IncludeAssemblies(params string![]! assemblyNames) -> RazorLight.RazorLightDependencyBuilder!
+RazorLight.RazorLightDependencyBuilder.UseAllDependencyContextMetadataReferences() -> RazorLight.RazorLightDependencyBuilder!
+RazorLight.RazorLightOptions.IncludedAssemblies.get -> System.Collections.Generic.HashSet<string!>!
+RazorLight.RazorLightOptions.IncludedAssemblies.set -> void
+RazorLight.RazorLightOptions.MetadataReferenceDiscovery.get -> RazorLight.Compilation.MetadataReferenceDiscoveryMode
+RazorLight.RazorLightOptions.MetadataReferenceDiscovery.set -> void
+virtual RazorLight.RazorLightEngineBuilder.IncludeAssemblies(params string![]! assemblyNames) -> RazorLight.RazorLightEngineBuilder!
+virtual RazorLight.RazorLightEngineBuilder.UseAllDependencyContextMetadataReferences() -> RazorLight.RazorLightEngineBuilder!

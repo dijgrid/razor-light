@@ -3,6 +3,8 @@ using Microsoft.Extensions.Options;
 using RazorLight.Compilation;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Xunit;
@@ -69,6 +71,69 @@ namespace RazorLight.Tests.Compilation
 
 			Assert.Equal(string.Empty, path);
 		}
+
+		[Fact]
+		public void Resolve_MinimalDiscovery_IncludesProjectAssemblies_ButNotUnrelatedPackages()
+		{
+			var manager = new DefaultMetadataReferenceManager();
+
+			IReadOnlyList<MetadataReference> references = manager.Resolve(typeof(DefaultMetadataReferenceManagerTest).Assembly);
+			var names = GetAssemblyNames(references);
+
+			Assert.Contains("RazorLight.Tests", names);
+			Assert.DoesNotContain("Moq", names);
+		}
+
+		[Fact]
+		public void Resolve_IncludeAssemblies_AllowsAnExactDependencyContextAssembly()
+		{
+			var options = Options.Create(new RazorLightOptions
+			{
+				IncludedAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Moq" }
+			});
+			var manager = new DefaultMetadataReferenceManager(options, new DefaultAssemblyPathFormatter());
+
+			var names = GetAssemblyNames(manager.Resolve(typeof(DefaultMetadataReferenceManagerTest).Assembly));
+
+			Assert.Contains("Moq", names);
+		}
+
+		[Fact]
+		public void Resolve_ExcludeAssemblies_UsesExactNames()
+		{
+			var options = Options.Create(new RazorLightOptions
+			{
+				ExcludedAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "M" },
+				MetadataReferenceDiscovery = MetadataReferenceDiscoveryMode.All
+			});
+			var manager = new DefaultMetadataReferenceManager(options, new DefaultAssemblyPathFormatter());
+
+			var names = GetAssemblyNames(manager.Resolve(typeof(DefaultMetadataReferenceManagerTest).Assembly));
+
+			Assert.Contains("Moq", names);
+		}
+
+		[Fact]
+		public void Resolve_AllDiscovery_CanBeSelectedExplicitly()
+		{
+			var options = Options.Create(new RazorLightOptions
+			{
+				MetadataReferenceDiscovery = MetadataReferenceDiscoveryMode.All
+			});
+			var manager = new DefaultMetadataReferenceManager(options, new DefaultAssemblyPathFormatter());
+
+			var names = GetAssemblyNames(manager.Resolve(typeof(DefaultMetadataReferenceManagerTest).Assembly));
+
+			Assert.Contains("Moq", names);
+		}
+
+		private static HashSet<string> GetAssemblyNames(IEnumerable<MetadataReference> references) =>
+			new HashSet<string>(
+				references
+					.Select(reference => reference.Display)
+					.Where(display => !string.IsNullOrEmpty(display))
+					.Select(display => Path.GetFileNameWithoutExtension(display!)),
+				StringComparer.OrdinalIgnoreCase);
 
 		private sealed class EmptyAssemblyPathFormatter : IAssemblyPathFormatter
 		{

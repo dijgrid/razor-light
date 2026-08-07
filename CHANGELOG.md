@@ -31,6 +31,13 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
   Windows PDB writer and its version-sensitive failures in single-file deployments.
 - Metadata discovery skips dynamic assemblies, empty assembly locations, and missing reference
   files, with actionable configuration guidance when no usable compilation references remain.
+- Metadata discovery now defaults to project assemblies and RazorLight's required runtime closure
+  instead of every host package. Exact include and exclude controls and an explicit broad-discovery
+  compatibility mode make template dependencies intentional.
+- Production compiler and Razor diagnostics now redact template-derived messages, mapped paths, and
+  missing-template key inventories by default. `EnableDebugMode` explicitly restores full details.
+- The documented trust boundary treats in-process Razor templates as executable trusted code and
+  requires external process isolation for untrusted template authors.
 - Windows and Linux CI now executes framework-dependent, self-contained, and extraction-based
   single-file deployment probes and guards the documented trim-warning inventory.
 

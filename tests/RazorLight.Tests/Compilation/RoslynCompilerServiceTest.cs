@@ -251,6 +251,51 @@ namespace RazorLight.Tests.Compilation
 		}
 
 		[Fact]
+		public void CompilationDiagnostics_RedactTemplateContentAndPathsByDefault()
+		{
+			const string secret = "DO_NOT_LOG_TEMPLATE_SECRET";
+			const string privatePath = "C:/private/templates/customer.cshtml";
+			var compiler = new RoslynCompilationService(
+				new DefaultMetadataReferenceManager(),
+				Assembly.GetEntryAssembly()!);
+			var template = new TestGeneratedRazorTemplate(
+				"private-template",
+				$"#line 1 \"{privatePath}\"\npublic class Test {{ void M() {{ {secret}; }} }}");
+
+			var exception = Assert.Throws<TemplateCompilationException>(() => compiler.CompileAndEmit(template));
+
+			Assert.DoesNotContain(secret, exception.Message, StringComparison.Ordinal);
+			Assert.DoesNotContain(privatePath, exception.Message, StringComparison.Ordinal);
+			Assert.All(exception.CompilationDiagnostics, diagnostic =>
+			{
+				Assert.DoesNotContain(secret, diagnostic.ErrorMessage, StringComparison.Ordinal);
+				Assert.Equal(string.Empty, diagnostic.LineSpan?.Path);
+			});
+		}
+
+		[Fact]
+		public void CompilationDiagnostics_IncludeDetailsOnlyWhenEnabled()
+		{
+			const string secret = "DO_NOT_LOG_TEMPLATE_SECRET";
+			const string privatePath = "C:/private/templates/customer.cshtml";
+			var compiler = new RoslynCompilationService(
+				new DefaultMetadataReferenceManager(),
+				Assembly.GetEntryAssembly()!,
+				includeDetailedDiagnostics: true);
+			var template = new TestGeneratedRazorTemplate(
+				"private-template",
+				$"#line 1 \"{privatePath}\"\npublic class Test {{ void M() {{ {secret}; }} }}");
+
+			var exception = Assert.Throws<TemplateCompilationException>(() => compiler.CompileAndEmit(template));
+
+			var diagnostic = Assert.Single(
+				exception.CompilationDiagnostics,
+				item => item.ErrorMessage.Contains(secret, StringComparison.Ordinal));
+			Assert.Contains(secret, diagnostic.ErrorMessage, StringComparison.Ordinal);
+			Assert.Equal(privatePath, diagnostic.LineSpan?.Path);
+		}
+
+		[Fact]
 		public void Throw_OnNullRazorTemplate_OnCompile()
 		{
 			var compiler = new RoslynCompilationService(new DefaultMetadataReferenceManager(), Assembly.GetEntryAssembly()!);

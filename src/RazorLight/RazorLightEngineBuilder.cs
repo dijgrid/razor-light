@@ -21,7 +21,11 @@ namespace RazorLight
 
 		protected HashSet<MetadataReference>? metadataReferences;
 
+		private HashSet<string>? includedAssemblies;
+
 		protected HashSet<string>? excludedAssemblies;
+
+		private MetadataReferenceDiscoveryMode? metadataReferenceDiscovery;
 
 		protected List<Action<ITemplatePage>>? prerenderCallbacks;
 
@@ -231,6 +235,32 @@ namespace RazorLight
 
 			return this;
 		}
+
+		/// <summary>
+		/// Adds named assemblies from the operating assembly's dependency context to minimal metadata
+		/// reference discovery. Assembly names are matched exactly and without regard to case.
+		/// </summary>
+		public virtual RazorLightEngineBuilder IncludeAssemblies(params string[] assemblyNames)
+		{
+			if (assemblyNames == null)
+			{
+				throw new ArgumentNullException(nameof(assemblyNames));
+			}
+
+			includedAssemblies = new HashSet<string>(assemblyNames, StringComparer.OrdinalIgnoreCase);
+			return this;
+		}
+
+		/// <summary>
+		/// Enables compatibility discovery of every compile-time library in the operating assembly's
+		/// dependency context. Templates can compile against all host dependencies in this mode.
+		/// </summary>
+		public virtual RazorLightEngineBuilder UseAllDependencyContextMetadataReferences()
+		{
+			metadataReferenceDiscovery = MetadataReferenceDiscoveryMode.All;
+			return this;
+		}
+
 		public virtual RazorLightEngineBuilder AddPrerenderCallbacks(params Action<ITemplatePage>[] callbacks)
 		{
 			if (callbacks == null)
@@ -311,6 +341,22 @@ namespace RazorLight
 				options.ExcludedAssemblies = excludedAssemblies;
 			}
 
+			if (includedAssemblies != null)
+			{
+				if(includedAssemblies.Count > 0 && options.IncludedAssemblies.Count > 0)
+					ThrowIfHasBeenSetExplicitly(nameof(includedAssemblies));
+
+				options.IncludedAssemblies = includedAssemblies;
+			}
+
+			if (metadataReferenceDiscovery.HasValue)
+			{
+				if (options.MetadataReferenceDiscovery != MetadataReferenceDiscoveryMode.Minimal)
+					ThrowIfHasBeenSetExplicitly(nameof(metadataReferenceDiscovery));
+
+				options.MetadataReferenceDiscovery = metadataReferenceDiscovery.Value;
+			}
+
 			if (prerenderCallbacks != null)
 			{
 				if(prerenderCallbacks.Count > 0 && options.PreRenderCallbacks.Count > 0)
@@ -349,12 +395,24 @@ namespace RazorLight
 				options.EnableDebugMode = options.EnableDebugMode ?? enableDebugMode ?? false;
 			}
 
-			var metadataReferenceManager = new DefaultMetadataReferenceManager(options.AdditionalMetadataReferences, options.ExcludedAssemblies);
+			var metadataReferenceManager = new DefaultMetadataReferenceManager(
+				options.AdditionalMetadataReferences,
+				options.IncludedAssemblies,
+				options.ExcludedAssemblies,
+				options.MetadataReferenceDiscovery);
 			var assembly = operatingAssembly ?? Assembly.GetEntryAssembly()
 				?? throw new InvalidOperationException("An operating assembly could not be determined. Configure one with SetOperatingAssembly.");
-			var compiler = new RoslynCompilationService(metadataReferenceManager, assembly, cachingProvider as IPrecompileCallback);
+			var compiler = new RoslynCompilationService(
+				metadataReferenceManager,
+				assembly,
+				options.EnableDebugMode ?? false,
+				cachingProvider as IPrecompileCallback);
 
-			var sourceGenerator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), project, options.Namespaces);
+			var sourceGenerator = new RazorSourceGenerator(
+				Razor6CompilerCompatibility.CreateEngine(),
+				project,
+				options.Namespaces,
+				options.EnableDebugMode ?? false);
 			var templateCompiler = new RazorTemplateCompiler(sourceGenerator, compiler, project, options);
 			var templateFactoryProvider = new TemplateFactoryProvider();
 

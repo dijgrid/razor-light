@@ -81,6 +81,25 @@ namespace RazorLight
 			return this;
 		}
 
+		public RazorLightDependencyBuilder IncludeAssemblies(params string[] assemblyNames)
+		{
+			if (assemblyNames == null)
+			{
+				throw new ArgumentNullException(nameof(assemblyNames));
+			}
+
+			var includedAssemblies = new HashSet<string>(assemblyNames, StringComparer.OrdinalIgnoreCase);
+			_services.Configure<RazorLightOptions>(x => x.IncludedAssemblies = includedAssemblies);
+			return this;
+		}
+
+		public RazorLightDependencyBuilder UseAllDependencyContextMetadataReferences()
+		{
+			_services.Configure<RazorLightOptions>(x =>
+				x.MetadataReferenceDiscovery = MetadataReferenceDiscoveryMode.All);
+			return this;
+		}
+
 		public RazorLightDependencyBuilder AddMetadataReferences(params MetadataReference[] metadata)
 		{
 			var metadataReferences = new HashSet<MetadataReference>();
