@@ -1,7 +1,7 @@
 ---
 id: TASK-008
 title: Define package identity and release automation
-status: review
+status: done
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-release-readiness
@@ -15,7 +15,7 @@ tags:
   - nuget
   - supply-chain
 createdAt: 2026-08-06T00:00:00Z
-updatedAt: 2026-08-07T06:04:10.936Z
+updatedAt: 2026-08-07T06:13:02.341Z
 refinementState: ready
 ---
 
@@ -24,9 +24,9 @@ reproducible release process.
 
 ## Implementation readiness
 
-Maintainer decisions are recorded in DECISION-003. Repository automation and GitHub environment
-protection are implemented; final review requires activating the documented trusted-publishing
-policy in the `dijgrid` NuGet.org account.
+Maintainer decisions are recorded in DECISION-003. Repository automation, GitHub environment
+protection, and the documented trusted-publishing policy in the `dijgrid` NuGet.org account are
+active.
 
 ## Maintainer decisions required
 
@@ -113,6 +113,8 @@ and technically appropriate.
   creates a matching GitHub Release only after both packages publish.
 - Configured the repository's `nuget` environment with `dijgrid` as required reviewer and a
   `v*.*.*` tag deployment policy. No packages, tags, or releases were published.
+- The maintainer confirmed on 2026-08-07 that the matching trusted-publishing policy was created in
+  the `dijgrid` NuGet.org account.
 - Built and inspected all four `3.0.0` artifacts locally, validated their contents and Source Link
   metadata, restored the library package in a clean consumer, and installed the tool from the local
   package source.
