@@ -19,21 +19,6 @@ and [testing guidance](docs/testing.md) for the current maintenance baseline.
 ![Build Status](https://github.com/dijgrid/razor-light/actions/workflows/dotnet.yml/badge.svg)
 [![NuGet Pre Release](https://img.shields.io/nuget/vpre/RazorLight.svg?maxAge=2592000?style=flat-square)](https://www.nuget.org/packages/RazorLight/) [![NuGet downloads](https://img.shields.io/nuget/dt/RazorLight.svg)](https://www.nuget.org/packages/RazorLight/) [![Join the chat at https://gitter.im/gitterHQ/gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Razor-Light)
 
-# Solidarity with Ukraine
-
-![ComeBackAlive](https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Come_Back_Alive_Logo_09.2022.svg/1200px-Come_Back_Alive_Logo_09.2022.svg.png)
-
-Dear friends, my name is Ivan, and I created this library. I live in Ukraine, and if you are reading
-this message, I sincerely hope you and your family are safe and healthy. On 24 February, Russia
-invaded my country with missile attacks across Ukraine, from east to west. They began by destroying
-military infrastructure. The so-called "special operation" is, in fact, a full-scale war against us.
-
-*Update:* It has been a long time since I first posted this message. Thank you for your enormous
-support. I have removed my volunteer donation account and instead recommend
-[Come Back Alive](https://savelife.in.ua/en/donate-en/), one of Ukraine's largest established
-charitable organizations. If you have the possibility and desire to help Ukraine, this is the right
-place for your valuable donations. Thank you. Be safe.
-
 # Table of contents
 
 - [Quickstart](#quickstart)
