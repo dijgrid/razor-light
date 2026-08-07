@@ -76,5 +76,25 @@ namespace RazorLight.Tests
 
 			Assert.Equal(info.TemplateTypeName, expectedTypeName);
 		}
+
+		[Fact]
+		public void Return_Correct_FriendlyName_On_Nested_Type()
+		{
+			var info = new ModelTypeInfo(typeof(NestedModel));
+
+			Assert.Equal("RazorLight.Tests.ModelTypeInfoTest.NestedModel", info.TemplateTypeName);
+		}
+
+		[Fact]
+		public void Return_Correct_FriendlyName_On_Array()
+		{
+			var info = new ModelTypeInfo(typeof(NestedModel[,]));
+
+			Assert.Equal("RazorLight.Tests.ModelTypeInfoTest.NestedModel[,]", info.TemplateTypeName);
+		}
+
+		public class NestedModel
+		{
+		}
 	}
 }

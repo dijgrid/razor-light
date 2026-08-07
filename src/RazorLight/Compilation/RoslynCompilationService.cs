@@ -137,6 +137,14 @@ namespace RazorLight.Compilation
 						builder.AppendLine(formattedMessage);
 					}
 
+					if (errorsDiagnostics.Any(diagnostic => diagnostic.Id == "CS1977"))
+					{
+						builder.AppendLine();
+						builder.AppendLine(
+							"A lambda cannot be bound to a dynamic model member. Declare @model in the template " +
+							"or use a CompileRender overload that accepts an explicit model Type. Adding System.Linq alone does not resolve dynamic dispatch.");
+					}
+
 					builder.AppendLine("\nSee CompilationErrors for detailed information");
 
 					throw new TemplateCompilationException(builder.ToString(),compilationDiagnostics);

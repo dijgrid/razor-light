@@ -12,6 +12,11 @@ namespace RazorLight.Tests.Snippets
 			public required string Name { get; set; }
 		}
 
+		public class LinqViewModel
+		{
+			public required string[] Items { get; set; }
+		}
+
 		[Fact]
 		public async Task Simple()
 		{
@@ -28,6 +33,26 @@ namespace RazorLight.Tests.Snippets
 			#endregion
 
 			Assert.Equal("Hello, John Doe. Welcome to RazorLight repository", result);
+			Assert.True(engine.Handler.Cache?.RetrieveTemplate("templateKey").Success);
+		}
+
+		[Fact]
+		public async Task TypedModelString()
+		{
+			#region TypedModelString
+			var engine = new RazorLightEngineBuilder().Build();
+			const string template =
+				"@(Model.Items.Where(item => item.Length > 3).Select(item => item.ToUpperInvariant()).FirstOrDefault())";
+			object model = new LinqViewModel { Items = new[] { "one", "three" } };
+
+			string result = await engine.CompileRenderStringAsync(
+				"typed-linq",
+				template,
+				model,
+				typeof(LinqViewModel));
+			#endregion
+
+			Assert.Equal("THREE", result);
 		}
 
 		async Task RenderCompiledTemplate(RazorLightEngine engine, object model)

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace RazorLight.Compilation
 {
@@ -7,5 +8,9 @@ namespace RazorLight.Compilation
 		ICompilationService CompilationService { get; }
 
 		Task<CompiledTemplateDescriptor> CompileAsync(string templateKey);
+
+		Task<CompiledTemplateDescriptor> CompileAsync(string templateKey, Type modelType);
+
+		Task<CompiledTemplateDescriptor> CompileAsync(string templateKey, string templateContent, Type? modelType = null);
 	}
 }

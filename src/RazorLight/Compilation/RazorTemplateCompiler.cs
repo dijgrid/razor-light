@@ -28,6 +28,7 @@ namespace RazorLight.Compilation
 		private readonly IMemoryCache _cache;
 		private readonly ConcurrentDictionary<string, string> _normalizedKeysCache;
 		private readonly Dictionary<string, CompiledTemplateDescriptor> _precompiledViews;
+		private readonly ConcurrentDictionary<string, string> _stringTemplateCacheKeys;
 
 		public RazorTemplateCompiler(
 			RazorSourceGenerator sourceGenerator,
@@ -46,6 +47,7 @@ namespace RazorLight.Compilation
 			_cache = new MemoryCache(cacheOptions);
 
 			_normalizedKeysCache = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+			_stringTemplateCacheKeys = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 
 			// We need to validate that the all of the precompiled views are unique by path (case-insensitive).
 			// We do this because there's no good way to canonicalize paths on windows, and it will create
@@ -75,26 +77,68 @@ namespace RazorLight.Compilation
 
 		public Task<CompiledTemplateDescriptor> CompileAsync(string templateKey)
 		{
-			if (templateKey == null)
+			return CompileAsync(TemplateCompilationRequest.ForProject(
+				templateKey,
+				modelType: null,
+				_razorLightOptions.Namespaces));
+		}
+
+		public Task<CompiledTemplateDescriptor> CompileAsync(string templateKey, Type modelType)
+		{
+			if (modelType == null)
 			{
-				throw new ArgumentNullException(nameof(templateKey));
+				throw new ArgumentNullException(nameof(modelType));
 			}
+
+			return CompileAsync(TemplateCompilationRequest.ForProject(
+				templateKey,
+				modelType,
+				_razorLightOptions.Namespaces));
+		}
+
+		public Task<CompiledTemplateDescriptor> CompileAsync(
+			string templateKey,
+			string templateContent,
+			Type? modelType = null)
+		{
+			if (templateContent == null)
+			{
+				throw new ArgumentNullException(nameof(templateContent));
+			}
+
+			return CompileAsync(TemplateCompilationRequest.ForString(
+				templateKey,
+				templateContent,
+				modelType,
+				_razorLightOptions.Namespaces));
+		}
+
+		private Task<CompiledTemplateDescriptor> CompileAsync(TemplateCompilationRequest request)
+		{
+			if (request.TemplateKey == null)
+			{
+				throw new ArgumentNullException("templateKey");
+			}
+
+			InvalidatePreviousStringTemplate(request);
 
 			// Attempt to lookup the cache entry using the passed in key. This will succeed if the key is already
 			// normalized and a cache entry exists.
-			if (_cache.TryGetValue(templateKey, out object? cachedValue) && cachedValue is Task<CompiledTemplateDescriptor> cachedResult)
+			if (_cache.TryGetValue(request.CacheKey, out object? cachedValue) && cachedValue is Task<CompiledTemplateDescriptor> cachedResult)
 			{
 				return cachedResult;
 			}
 
-			string normalizedPath = GetNormalizedKey(templateKey);
+			string normalizedPath = request.ModelType == null && !request.IsStringTemplate
+				? GetNormalizedKey(request.TemplateKey)
+				: request.CacheKey;
 			if (_cache.TryGetValue(normalizedPath, out cachedValue) && cachedValue is Task<CompiledTemplateDescriptor> normalizedResult)
 			{
 				return normalizedResult;
 			}
 
 			// Entry does not exist. Attempt to create one.
-			return OnCacheMissAsync(templateKey);
+			return OnCacheMissAsync(request);
 		}
 
 		/// <summary>
@@ -102,7 +146,7 @@ namespace RazorLight.Compilation
 		/// </summary>
 		internal Type ProjectType =>  _razorProject.GetType();
 
-		private async Task<CompiledTemplateDescriptor> OnCacheMissAsync(string templateKey)
+		private async Task<CompiledTemplateDescriptor> OnCacheMissAsync(TemplateCompilationRequest request)
 		{
 			ViewCompilerWorkItem item;
 			TaskCompletionSource<CompiledTemplateDescriptor> taskSource;
@@ -114,7 +158,9 @@ namespace RazorLight.Compilation
 			await _cacheLock.WaitAsync();
 			try
 			{
-				string normalizedKey = GetNormalizedKey(templateKey);
+				string normalizedKey = request.ModelType == null && !request.IsStringTemplate
+					? GetNormalizedKey(request.TemplateKey)
+					: request.CacheKey;
 
 				// Double-checked locking to handle a possible race.
 				if (_cache.TryGetValue(normalizedKey, out object? cachedValue) && cachedValue is Task<CompiledTemplateDescriptor> result)
@@ -122,7 +168,8 @@ namespace RazorLight.Compilation
 					return await result;
 				}
 
-				if (_precompiledViews.TryGetValue(normalizedKey, out var precompiledView))
+				if (request.ModelType == null && !request.IsStringTemplate &&
+					_precompiledViews.TryGetValue(normalizedKey, out var precompiledView))
 				{
 					item = new ViewCompilerWorkItem
 					{
@@ -133,7 +180,7 @@ namespace RazorLight.Compilation
 				}
 				else
 				{
-					item = await CreateRuntimeCompilationWorkItem(templateKey);
+					item = await CreateRuntimeCompilationWorkItem(request);
 				}
 
 				// At this point, we've decided what to do - but we should create the cache entry and
@@ -157,6 +204,10 @@ namespace RazorLight.Compilation
 				}
 
 				_ = _cache.Set(item.NormalizedKey, taskSource.Task, cacheEntryOptions);
+				if (request.IsStringTemplate)
+				{
+					_ = _cache.Set(request.TemplateKey, taskSource.Task, cacheEntryOptions);
+				}
 			}
 			finally
 			{
@@ -180,8 +231,11 @@ namespace RazorLight.Compilation
 
 				try
 				{
-					CompiledTemplateDescriptor descriptor = await CompileAndEmitAsync(
-						item.ProjectItem ?? throw new InvalidOperationException("The compilation work item has no project item."));
+					var projectItem = item.ProjectItem
+						?? throw new InvalidOperationException("The compilation work item has no project item.");
+					CompiledTemplateDescriptor descriptor = request.ModelType == null
+						? await CompileAndEmitAsync(projectItem)
+						: await CompileAndEmitAsync(projectItem, request.ModelType);
 					descriptor.ExpirationToken = cacheEntryOptions.ExpirationTokens.FirstOrDefault();
 					taskSource.SetResult(descriptor);
 				}
@@ -194,17 +248,21 @@ namespace RazorLight.Compilation
 			return await taskSource.Task;
 		}
 
-		private async Task<ViewCompilerWorkItem> CreateRuntimeCompilationWorkItem(string templateKey)
+		private async Task<ViewCompilerWorkItem> CreateRuntimeCompilationWorkItem(TemplateCompilationRequest request)
 		{
 			RazorLightProjectItem projectItem;
 
-			if (_razorLightOptions.DynamicTemplates.TryGetValue(templateKey, out string? templateContent) && templateContent != null)
+			if (request.TemplateContent != null)
 			{
-				projectItem = new TextSourceRazorProjectItem(templateKey, templateContent);
+				projectItem = new TextSourceRazorProjectItem(request.TemplateKey, request.TemplateContent);
+			}
+			else if (_razorLightOptions.DynamicTemplates.TryGetValue(request.TemplateKey, out string? templateContent) && templateContent != null)
+			{
+				projectItem = new TextSourceRazorProjectItem(request.TemplateKey, templateContent);
 			}
 			else
 			{
-				string normalizedKey = GetNormalizedKey(templateKey);
+				string normalizedKey = GetNormalizedKey(request.TemplateKey);
 				projectItem = await _razorProject.GetItemAsync(normalizedKey);
 			}
 
@@ -219,7 +277,9 @@ namespace RazorLight.Compilation
 				SupportsCompilation = true,
 
 				ProjectItem = projectItem,
-				NormalizedKey = projectItem.Key,
+				NormalizedKey = request.ModelType == null && !request.IsStringTemplate
+					? projectItem.Key
+					: request.CacheKey,
 				ExpirationToken = projectItem.ExpirationToken,
 			};
 		}
@@ -227,6 +287,21 @@ namespace RazorLight.Compilation
 		protected virtual async Task<CompiledTemplateDescriptor> CompileAndEmitAsync(RazorLightProjectItem projectItem)
 		{
 			IGeneratedRazorTemplate generatedTemplate = await _razorSourceGenerator.GenerateCodeAsync(projectItem);
+			return CompileAndEmit(projectItem, generatedTemplate);
+		}
+
+		private async Task<CompiledTemplateDescriptor> CompileAndEmitAsync(
+			RazorLightProjectItem projectItem,
+			Type modelType)
+		{
+			IGeneratedRazorTemplate generatedTemplate = await _razorSourceGenerator.GenerateCodeAsync(projectItem, modelType);
+			return CompileAndEmit(projectItem, generatedTemplate);
+		}
+
+		private CompiledTemplateDescriptor CompileAndEmit(
+			RazorLightProjectItem projectItem,
+			IGeneratedRazorTemplate generatedTemplate)
+		{
 			Assembly assembly = _compiler.CompileAndEmit(generatedTemplate);
 
 			// Anything we compile from source will use Razor 2.1 and so should have the new metadata.
@@ -240,6 +315,32 @@ namespace RazorLight.Compilation
 				TemplateKey = projectItem.Key,
 				TemplateAttribute = attribute
 			};
+		}
+
+		private void InvalidatePreviousStringTemplate(TemplateCompilationRequest request)
+		{
+			if (!request.IsStringTemplate)
+			{
+				return;
+			}
+
+			_stringTemplateCacheKeys.AddOrUpdate(
+				request.TemplateKey,
+				_ =>
+				{
+					_cache.Remove(request.TemplateKey);
+					return request.CacheKey;
+				},
+				(_, previousCacheKey) =>
+				{
+					if (!string.Equals(previousCacheKey, request.CacheKey, StringComparison.Ordinal))
+					{
+						_cache.Remove(request.TemplateKey);
+						_cache.Remove(previousCacheKey);
+					}
+
+					return request.CacheKey;
+				});
 		}
 
 		#region helpers

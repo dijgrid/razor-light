@@ -24,6 +24,11 @@ lifecycle, configuration, descriptor, and caching contracts. The inherited optio
 shape is excluded from the analyzer's design-only RS0026 and RS0027 rules; TASK-018 owns any redesign,
 while the API inventory and package validator continue to enforce the binary surface.
 
+TASK-010 intentionally made the inherited `CompileRenderAsync(key, model, modelType)` entry point
+usable and added the corresponding string-content overload. These APIs select a compile-time model
+type without changing the generic overload's dynamic default. The addition and the resulting API
+fingerprint are covered by the same inventories and package validator.
+
 ## Independent package validation
 
 `Dijgrid.RazorLight` enables the .NET SDK package validator during every pack. Until the first stable

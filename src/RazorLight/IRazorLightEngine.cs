@@ -27,7 +27,10 @@ namespace RazorLight
 		/// <returns>Rendered template as a string result</returns>
 		Task<string> CompileRenderAsync<T>(string key, T model, ExpandoObject? viewBag = null);
 
-		[Obsolete("Please, use generic version of CompileRenderAsync", true)]
+		/// <summary>
+		/// Compiles and renders a project template using <paramref name="modelType"/> when the template
+		/// does not declare an explicit <c>@model</c> directive.
+		/// </summary>
 		Task<string> CompileRenderAsync(string key, object? model, Type modelType, ExpandoObject? viewBag = null);
 
 		/// <summary>
@@ -39,6 +42,17 @@ namespace RazorLight
 		/// <param name="model">Template model</param>
 		/// <param name="viewBag">Dynamic ViewBag</param>
 		Task<string> CompileRenderStringAsync<T>(string key, string content, T model, ExpandoObject? viewBag = null);
+
+		/// <summary>
+		/// Compiles and renders string content using <paramref name="modelType"/> when the template does
+		/// not declare an explicit <c>@model</c> directive.
+		/// </summary>
+		Task<string> CompileRenderStringAsync(
+			string key,
+			string content,
+			object? model,
+			Type modelType,
+			ExpandoObject? viewBag = null);
 
 		/// <summary>
 		/// Search and compile a template with a given key

@@ -21,8 +21,8 @@ namespace RazorLight.Tests.Compatibility
 		public static IEnumerable<object?[]> SourceAndImportCases()
 		{
 			yield return new object?[] { "string", "explicit-using", null };
-			yield return new object?[] { "string", "no-import", "does not contain a definition for 'Any'" };
-			yield return new object?[] { "string", "configured-namespace", "type or namespace name 'CompatibilityModel' could not be found" };
+			yield return new object?[] { "string", "no-import", null };
+			yield return new object?[] { "string", "configured-namespace", null };
 			yield return new object?[] { "file", "built-in", null };
 			yield return new object?[] { "embedded-resource", "built-in", null };
 			yield return new object?[] { "custom-project", "built-in", null };
@@ -31,7 +31,7 @@ namespace RazorLight.Tests.Compatibility
 
 		[Theory]
 		[MemberData(nameof(SourceAndImportCases))]
-		public async Task Characterizes_Source_And_Import_Matrix(
+		public async Task Applies_Intentional_Source_And_Import_Policy(
 			string source,
 			string import,
 			string? expectedDiagnostic)
@@ -101,7 +101,7 @@ namespace RazorLight.Tests.Compatibility
 		}
 
 		[Fact]
-		public async Task Captures_Dynamic_Lambda_Extension_Method_Diagnostic()
+		public async Task Dynamic_Lambda_Diagnostic_Explains_The_Typed_Model_Options()
 		{
 			var engine = NewStringEngine();
 			string template =
@@ -114,6 +114,7 @@ namespace RazorLight.Tests.Compatibility
 				exception.CompilationDiagnostics,
 				diagnostic => diagnostic.ErrorMessage.Contains(
 					"Cannot use a lambda expression as an argument to a dynamically dispatched operation"));
+			Assert.Contains("Adding System.Linq alone does not resolve dynamic dispatch", exception.Message);
 		}
 
 		[Fact]
@@ -131,14 +132,14 @@ namespace RazorLight.Tests.Compatibility
 		}
 
 		[Fact]
-		public async Task Reused_String_Key_Keeps_First_Content_Model_Type_And_Imports()
+		public async Task Reused_String_Key_Recompiles_Content_Model_Type_And_Imports()
 		{
-			var contentEngine = NewStringEngine();
+			var contentEngine = NewStringEngine(useMemoryCache: true);
 			Assert.Equal(
 				"first",
 				await contentEngine.CompileRenderStringAsync("same-content", "first", NewModel()));
 			Assert.Equal(
-				"first",
+				"second",
 				await contentEngine.CompileRenderStringAsync("same-content", "second", NewModel()));
 
 			var modelEngine = NewStringEngine();
@@ -149,11 +150,12 @@ namespace RazorLight.Tests.Compatibility
 					"same-model",
 					firstModelTemplate,
 					NewModel())).Trim());
-			await Assert.ThrowsAsync<System.InvalidCastException>(() =>
-				modelEngine.CompileRenderStringAsync(
+			Assert.Equal(
+				"alternate",
+				(await modelEngine.CompileRenderStringAsync(
 					"same-model",
 					"@model RazorLight.Tests.Compatibility.AlternateCompatibilityModel\n@Model.Value",
-					new AlternateCompatibilityModel { Value = "alternate" }));
+					new AlternateCompatibilityModel { Value = "alternate" })).Trim());
 
 			var importEngine = NewStringEngine();
 			string withImport = $"@using System.Linq\n@model {FullyQualifiedModel}\n@(Model.Items.Any())";
@@ -164,11 +166,122 @@ namespace RazorLight.Tests.Compatibility
 					withImport,
 					NewModel())).Trim());
 			Assert.Equal(
-				"True",
+				"missing-import:True",
 				(await importEngine.CompileRenderStringAsync(
 					"same-imports",
 					$"@model {FullyQualifiedModel}\nmissing-import:@(Model.Items.Any())",
 					NewModel())).Trim());
+		}
+
+		[Fact]
+		public async Task Explicit_Model_Type_Enables_Linq_Without_A_Model_Directive_For_String_Content()
+		{
+			var engine = NewStringEngine();
+			string template =
+				"@{ var filtered = Model.Items.Where(item => item.Length > 1).Select(item => item.ToUpperInvariant()); }\n" +
+				"@(Model.Items.Any())|@(filtered.FirstOrDefault())";
+
+			string rendered = await engine.CompileRenderStringAsync(
+				"typed-string",
+				template,
+				NewModel(),
+				typeof(CompatibilityModel));
+
+			Assert.Equal("True|BB", rendered.Trim());
+		}
+
+		[Fact]
+		public async Task Explicit_Model_Type_Enables_Linq_Without_A_Model_Directive_For_Project_Content()
+		{
+			var project = new InMemoryRazorProject(
+				"typed-project",
+				"@(Model.Items.Where(item => item.Length > 1).Select(item => item.ToUpperInvariant()).FirstOrDefault())");
+			var engine = new RazorLightEngineBuilder().UseProject(project).Build();
+
+			string rendered = await engine.CompileRenderAsync(
+				"typed-project",
+				NewModel(),
+				typeof(CompatibilityModel));
+
+			Assert.Equal("BB", rendered.Trim());
+		}
+
+		[Fact]
+		public async Task Explicit_Model_Type_Is_Part_Of_String_Cache_Identity()
+		{
+			const string template = "@Model.Items[0]";
+			var engine = NewStringEngine(useMemoryCache: true);
+
+			Assert.Equal(
+				"a",
+				(await engine.CompileRenderStringAsync(
+					"model-type-identity",
+					template,
+					NewModel(),
+					typeof(CompatibilityModel))).Trim());
+			Assert.Equal(
+				"different",
+				(await engine.CompileRenderStringAsync(
+					"model-type-identity",
+					template,
+					new AlternateItemsCompatibilityModel { Items = new[] { "different" } },
+					typeof(AlternateItemsCompatibilityModel))).Trim());
+		}
+
+		[Fact]
+		public async Task Explicit_Model_Directive_Remains_Authoritative()
+		{
+			var engine = NewStringEngine();
+			string template =
+				"@model RazorLight.Tests.Compatibility.AlternateCompatibilityModel\n@Model.Value";
+
+			string rendered = await engine.CompileRenderStringAsync(
+				"explicit-model-wins",
+				template,
+				new AlternateCompatibilityModel { Value = "explicit" },
+				typeof(CompatibilityModel));
+
+			Assert.Equal("explicit", rendered.Trim());
+		}
+
+		[Fact]
+		public async Task Replacing_String_Content_Invalidates_Include_Cache()
+		{
+			var engine = new RazorLightEngineBuilder()
+				.UseNoProject()
+				.UseMemoryCachingProvider()
+				.AddDynamicTemplates(new Dictionary<string, string> { ["partial"] = "first" })
+				.Build();
+			const string parent = "@{ await IncludeAsync(\"partial\"); }";
+
+			Assert.Equal(
+				"first",
+				(await engine.CompileRenderStringAsync("parent", parent, NewModel())).Trim());
+			Assert.Equal(
+				"second",
+				(await engine.CompileRenderStringAsync("partial", "second", NewModel())).Trim());
+			Assert.Equal(
+				"second",
+				(await engine.CompileRenderStringAsync("parent", parent, NewModel())).Trim());
+		}
+
+		[Fact]
+		public async Task Configured_Namespaces_Participate_In_String_Cache_Identity()
+		{
+			const string template = "@model CompatibilityModel\n@Model.Items[0]";
+			var engine = new RazorLightEngineBuilder()
+				.UseNoProject()
+				.UseMemoryCachingProvider()
+				.AddDefaultNamespaces("RazorLight.Tests.Compatibility")
+				.Build();
+
+			Assert.Equal(
+				"a",
+				(await engine.CompileRenderStringAsync("namespace-identity", template, NewModel())).Trim());
+
+			engine.Options.Namespaces.Clear();
+			await Assert.ThrowsAsync<TemplateCompilationException>(() =>
+				engine.CompileRenderStringAsync("namespace-identity", template, NewModel()));
 		}
 
 		private static async Task<string> RenderMatrixCaseAsync(string source, string import)
@@ -237,11 +350,15 @@ namespace RazorLight.Tests.Compatibility
 				+ "@(Model.Items.Any())|@(filtered.FirstOrDefault())";
 		}
 
-		private static RazorLightEngine NewStringEngine()
+		private static RazorLightEngine NewStringEngine(bool useMemoryCache = false)
 		{
-			return new RazorLightEngineBuilder()
-				.UseNoProject()
-				.Build();
+			var builder = new RazorLightEngineBuilder().UseNoProject();
+			if (useMemoryCache)
+			{
+				builder.UseMemoryCachingProvider();
+			}
+
+			return builder.Build();
 		}
 
 		private static CompatibilityModel NewModel()
@@ -314,5 +431,10 @@ namespace RazorLight.Tests.Compatibility
 	public class AlternateCompatibilityModel
 	{
 		public required string Value { get; set; }
+	}
+
+	public class AlternateItemsCompatibilityModel
+	{
+		public required string[] Items { get; set; }
 	}
 }

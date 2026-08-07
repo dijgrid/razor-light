@@ -57,15 +57,34 @@ namespace RazorLight
 
 		public static string GetFriendlyName(Type type)
 		{
-			if (IsGenericType(type))
+			if (type.IsArray)
 			{
-				return type.Namespace + "." + type.Name.Split('`')[0] + "<" + string.Join(", ", type.GetGenericArguments()
-																										.Select(x => GetFriendlyName(x)).ToArray()) + ">";
+				return GetFriendlyName(type.GetElementType()
+					?? throw new ArgumentException("The array type has no element type.", nameof(type)))
+					+ "[" + new string(',', type.GetArrayRank() - 1) + "]";
 			}
-			else
+
+			if (type.IsGenericParameter)
 			{
-				return $"{type.Namespace}.{type.Name}";
+				return type.Name;
 			}
+
+			string name = type.Name.Split('`')[0];
+			string prefix = type.IsNested
+				? GetFriendlyName(type.DeclaringType
+					?? throw new ArgumentException("The nested type has no declaring type.", nameof(type))) + "." + name
+				: string.IsNullOrEmpty(type.Namespace) ? name : type.Namespace + "." + name;
+
+			if (!IsGenericType(type))
+			{
+				return prefix;
+			}
+
+			int declaringArgumentCount = type.DeclaringType?.GetGenericArguments().Length ?? 0;
+			Type[] ownArguments = type.GetGenericArguments().Skip(declaringArgumentCount).ToArray();
+			return ownArguments.Length == 0
+				? prefix
+				: prefix + "<" + string.Join(", ", ownArguments.Select(GetFriendlyName)) + ">";
 		}
 
 		private static bool IsGenericType(Type type)

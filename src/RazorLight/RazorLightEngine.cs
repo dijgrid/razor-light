@@ -18,10 +18,9 @@ namespace RazorLight
 
 		public IEngineHandler Handler => _handler;
 
-		[Obsolete("Please, use generic version of CompileRenderAsync", true)]
 		public Task<string> CompileRenderAsync(string key, object? model, Type modelType, ExpandoObject? viewBag = null)
 		{
-			throw new NotImplementedException();
+			return _handler.CompileRenderAsync(key, model, modelType, viewBag);
 		}
 
 		[Obsolete("Please, use CompileRenderStringAsync", true)]
@@ -61,6 +60,17 @@ namespace RazorLight
 			ExpandoObject? viewBag = null)
 		{
 			return _handler.CompileRenderStringAsync(key, content, model, viewBag);
+		}
+
+		/// <inheritdoc cref="IRazorLightEngine"/>
+		public Task<string> CompileRenderStringAsync(
+			string key,
+			string content,
+			object? model,
+			Type modelType,
+			ExpandoObject? viewBag = null)
+		{
+			return _handler.CompileRenderStringAsync(key, content, model, modelType, viewBag);
 		}
 
 		/// <inheritdoc cref="IRazorLightEngine"/>

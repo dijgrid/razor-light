@@ -23,6 +23,7 @@ and [testing guidance](docs/testing.md) for the current maintenance baseline.
 
 - [Quickstart](#quickstart)
 - [Compatibility and support](#compatibility-and-support)
+- [Models, imports, and LINQ](#models-imports-and-linq)
 - [Template sources](#template-sources)
   - [Files](#file-source)
   - [Embedded resources](#embedded-resource-source)
@@ -73,15 +74,33 @@ snippet: RenderCompiledTemplate
 - For support and security reporting, follow [`SUPPORT.md`](SUPPORT.md) and
   [`SECURITY.md`](SECURITY.md).
 
+# Models, imports, and LINQ
+
+An explicit `@model` directive is the clearest way to make a template strongly typed. When a
+template cannot declare `@model`, use the overload that accepts a model `Type`:
+
+snippet: TypedModelString
+
+The generic render overload intentionally keeps the historical dynamic model when `@model` is
+absent. Simple member access works dynamically, but C# cannot bind lambda expressions such as
+`item => item.Active` to a dynamically dispatched LINQ call. For `Where`, `Select`, and similar
+methods, declare `@model` or use the explicit model-type overload; adding `System.Linq` alone does
+not make a dynamic receiver strongly typed.
+
+String-template cache identity includes the content, explicit model type, and configured imports.
+Reusing a key with changed input replaces the active compiled template instead of silently running
+the first version. Keys should still identify one logical template; TASK-014 tracks the broader
+cache-provider and invalidation contract.
+
 # Template sources
 
 RazorLight has built-in providers for file-system and embedded-resource templates. Implement
 `RazorLightProject` to load templates from another source, such as a database.
 
-Project-backed templates receive RazorLight's built-in imports and namespaces configured with
-`AddDefaultNamespaces`. String templates currently require explicit `@using` directives. See the
-[template language compatibility matrix](docs/template-language-compatibility.md) for the tested
-behavior and known dynamic-model limitations.
+String, file, embedded-resource, and custom-project templates all receive RazorLight's built-in
+imports, including `System.Linq`, plus namespaces configured with `AddDefaultNamespaces`. See the
+[template language compatibility policy](docs/template-language-compatibility.md) for the tested
+behavior.
 
 ## File source
 

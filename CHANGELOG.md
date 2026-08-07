@@ -12,6 +12,13 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 - The `RazorLight` public API now publishes nullable reference annotations. Runtime behavior is
   unchanged, but nullable-enabled consumers may receive new diagnostics; see
   [`docs/nullability.md`](docs/nullability.md).
+- String templates now receive the same built-in imports and `AddDefaultNamespaces` values as
+  project-backed templates.
+- Generic rendering without `@model` remains dynamic. New explicit model-type overloads support
+  strongly typed compilation, including LINQ lambda expressions, when templates cannot declare
+  `@model` themselves.
+- Reusing a string-template key with changed content, selected model type, or configured imports
+  replaces the active compilation across the compiler and configured template cache.
 
 ## 3.0.0 - 2026-08-07
 

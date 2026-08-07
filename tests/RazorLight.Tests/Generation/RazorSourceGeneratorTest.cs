@@ -90,7 +90,7 @@ namespace RazorLight.Tests.Generation
 		}
 
 		[Fact]
-		public async Task Return_Empty_Imports_ForTextSource_ProjectItem()
+		public async Task TextSource_ProjectItem_Receives_Default_Imports()
 		{
 			//Assign
 			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, new EmbeddedRazorProject(typeof(Root)));
@@ -101,21 +101,26 @@ namespace RazorLight.Tests.Generation
 
 			//Assert
 			Assert.NotNull(result);
-			Assert.Empty(result);
+			Assert.Single(result);
+			Assert.Contains(generator.DefaultImports, result);
 		}
 
 		[Fact]
-		public async Task GetImports_Returns_EmptyCollection_On_Empty_Project_WhenResolving_Content_ByKey()
+		public async Task TextSource_ProjectItem_Receives_Configured_Namespaces()
 		{
 			//Assign
-			var generator = new RazorSourceGenerator(DefaultRazorEngine.Instance, new EmbeddedRazorProject(typeof(Root)));
+			var generator = new RazorSourceGenerator(
+				DefaultRazorEngine.Instance,
+				new EmbeddedRazorProject(typeof(Root)),
+				new HashSet<string> { "System.Diagnostics" });
 
 			//Act
 			var projectItem = new TextSourceRazorProjectItem("key", "some content");
 			var result = await generator.GetImportsAsync(projectItem);
 
 			Assert.NotNull(result);
-			Assert.Empty(result);
+			Assert.Equal(2, result.Count());
+			Assert.Contains(generator.DefaultImports, result);
 		}
 
 		[Fact]

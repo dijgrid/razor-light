@@ -64,6 +64,13 @@ namespace RazorLight.Generation
 		/// <returns>The <see cref="IGeneratedRazorTemplate"/>.</returns>
 		public async Task<IGeneratedRazorTemplate> GenerateCodeAsync(RazorLightProjectItem projectItem)
 		{
+			return await GenerateCodeAsync(projectItem, modelType: null);
+		}
+
+		internal async Task<IGeneratedRazorTemplate> GenerateCodeAsync(
+			RazorLightProjectItem projectItem,
+			Type? modelType)
+		{
 			if (projectItem == null)
 			{
 				throw new ArgumentNullException(nameof(projectItem));
@@ -75,7 +82,7 @@ namespace RazorLight.Generation
 					$"{projectItem.GetType().FullName} with key {projectItem.Key} does not exist.");
 			}
 
-			RazorCodeDocument codeDocument = await CreateCodeDocumentAsync(projectItem);
+			RazorCodeDocument codeDocument = await CreateCodeDocumentAsync(projectItem, modelType);
 			ProjectEngine.Process(codeDocument);
 
 			RazorCSharpDocument document = codeDocument.GetCSharpDocument();
@@ -102,6 +109,13 @@ namespace RazorLight.Generation
 		/// <returns>The created <see cref="RazorCodeDocument"/>.</returns>
 		public virtual async Task<RazorCodeDocument> CreateCodeDocumentAsync(RazorLightProjectItem projectItem)
 		{
+			return await CreateCodeDocumentAsync(projectItem, modelType: null);
+		}
+
+		internal async Task<RazorCodeDocument> CreateCodeDocumentAsync(
+			RazorLightProjectItem projectItem,
+			Type? modelType)
+		{
 			if (projectItem == null)
 			{
 				throw new ArgumentNullException(nameof(projectItem));
@@ -116,7 +130,11 @@ namespace RazorLight.Generation
 			using (var stream = projectItem.Read())
 			{
 				RazorSourceDocument source = RazorSourceDocument.ReadFrom(stream, projectItem.Key);
-				IEnumerable<RazorSourceDocument> imports = await GetImportsAsync(projectItem);
+				var imports = (await GetImportsAsync(projectItem)).ToList();
+				if (modelType != null)
+				{
+					imports.Add(GetModelImport(modelType));
+				}
 
 				return RazorCodeDocument.Create(source, imports);
 			}
@@ -134,27 +152,24 @@ namespace RazorLight.Generation
 				throw new ArgumentNullException(nameof(projectItem));
 			}
 
-			if (projectItem is TextSourceRazorProjectItem)
-			{
-				return Enumerable.Empty<RazorSourceDocument>();
-			}
-
 			var result = new List<RazorSourceDocument>();
 
-			var project = Project ?? throw new InvalidOperationException("A project is required to resolve imports.");
-			IEnumerable<RazorLightProjectItem> importProjectItems = await project.GetImportsAsync(projectItem.Key);
-			foreach (var importItem in importProjectItems)
+			if (Project != null && projectItem is not TextSourceRazorProjectItem)
 			{
-				if (importItem.Exists)
+				IEnumerable<RazorLightProjectItem> importProjectItems = await Project.GetImportsAsync(projectItem.Key);
+				foreach (var importItem in importProjectItems)
 				{
-					using (var stream = importItem.Read())
+					if (importItem.Exists)
 					{
-						result.Insert(0, RazorSourceDocument.ReadFrom(stream, null));
+						using (var stream = importItem.Read())
+						{
+							result.Insert(0, RazorSourceDocument.ReadFrom(stream, null));
+						}
 					}
 				}
 			}
 
-			if (Namespaces != null)
+			if (Namespaces.Count > 0)
 			{
 				RazorSourceDocument namespacesImports = GetNamespacesImports();
 				if (namespacesImports != null)
@@ -169,6 +184,20 @@ namespace RazorLight.Generation
 			}
 
 			return result;
+		}
+
+		private static RazorSourceDocument GetModelImport(Type modelType)
+		{
+			var modelTypeInfo = new ModelTypeInfo(modelType);
+			if (!modelTypeInfo.IsStrongType || !modelType.IsVisible || modelType.ContainsGenericParameters)
+			{
+				throw new ArgumentException(
+					$"The explicit model type '{modelType}' must be a visible, closed, non-anonymous type.",
+					nameof(modelType));
+			}
+
+			string content = $"@model {modelTypeInfo.TemplateTypeName}";
+			return RazorSourceDocument.Create(content, fileName: null, encoding: Encoding.UTF8);
 		}
 
 		internal protected RazorSourceDocument GetDefaultImports()

@@ -335,6 +335,12 @@ namespace RazorLight.Tests.Extensions
 				return Task.FromResult(result);
 			}
 
+			public Task<string> CompileRenderStringAsync(string key, string content, object? model, Type modelType, ExpandoObject? viewBag = null)
+			{
+				_compileAction();
+				return Task.FromResult(nameof(TestRazorLightEngine));
+			}
+
 			public Task<ITemplatePage> CompileTemplateAsync(string key)
 			{
 				throw new NotImplementedException();

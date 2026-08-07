@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.IO;
@@ -13,6 +14,9 @@ namespace RazorLight
 {
 	public class EngineHandler : IEngineHandler
 	{
+		private readonly ConcurrentDictionary<string, string> _stringTemplateCacheKeys =
+			new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+
 		public EngineHandler(
 			RazorLightOptions options,
 			IRazorTemplateCompiler compiler,
@@ -55,10 +59,20 @@ namespace RazorLight
 		/// <returns>An instance of a template</returns>
 		public async Task<ITemplatePage> CompileTemplateAsync(string key)
 		{
+			return await CompileTemplateAsync(TemplateCompilationRequest.ForProject(
+				key,
+				modelType: null,
+				Options.Namespaces));
+		}
+
+		private async Task<ITemplatePage> CompileTemplateAsync(TemplateCompilationRequest request)
+		{
+			InvalidatePreviousStringTemplate(request);
+
 			ITemplatePage? templatePage = null;
 			if (Cache != null)
 			{
-				var cacheLookupResult = Cache.RetrieveTemplate(key);
+				var cacheLookupResult = Cache.RetrieveTemplate(request.CacheKey);
 				if (cacheLookupResult.Success)
 				{
 					templatePage = cacheLookupResult.Template.TemplatePageFactory();
@@ -67,14 +81,38 @@ namespace RazorLight
 
 			if(templatePage == null)
 			{
-				CompiledTemplateDescriptor templateDescriptor = await Compiler.CompileAsync(key);
+				CompiledTemplateDescriptor templateDescriptor;
+				if (request.TemplateContent != null)
+				{
+					templateDescriptor = await Compiler.CompileAsync(
+						request.TemplateKey,
+						request.TemplateContent,
+						request.ModelType);
+				}
+				else if (request.ModelType != null)
+				{
+					templateDescriptor = await Compiler.CompileAsync(request.TemplateKey, request.ModelType);
+				}
+				else
+				{
+					templateDescriptor = await Compiler.CompileAsync(request.TemplateKey);
+				}
+
 				Func<ITemplatePage> templateFactory = FactoryProvider.CreateFactory(templateDescriptor);
 
 				if(Cache != null) {
 					Cache.CacheTemplate(
-					key,
+					request.CacheKey,
 					templateFactory,
 					templateDescriptor.ExpirationToken);
+
+					if (request.IsStringTemplate)
+					{
+						Cache.CacheTemplate(
+							request.TemplateKey,
+							templateFactory,
+							templateDescriptor.ExpirationToken);
+					}
 				}
 
 				templatePage = templateFactory();
@@ -148,6 +186,25 @@ namespace RazorLight
 			return await RenderTemplateAsync(template, model, viewBag).ConfigureAwait(false);
 		}
 
+		public async Task<string> CompileRenderAsync(
+			string key,
+			object? model,
+			Type modelType,
+			ExpandoObject? viewBag = null)
+		{
+			if (modelType == null)
+			{
+				throw new ArgumentNullException(nameof(modelType));
+			}
+
+			ITemplatePage template = await CompileTemplateAsync(TemplateCompilationRequest.ForProject(
+				key,
+				modelType,
+				Options.Namespaces)).ConfigureAwait(false);
+
+			return await RenderTemplateAsync(template, model, modelType, viewBag).ConfigureAwait(false);
+		}
+
 		/// <summary>
 		/// Compiles and renders a template. Template content is taken directly from <paramref name="content"/> parameter
 		/// </summary>
@@ -172,7 +229,72 @@ namespace RazorLight
 			}
 
 			Options.DynamicTemplates[key] = content;
-			return CompileRenderAsync(key, model, viewBag);
+			return CompileRenderStringCoreAsync(key, content, model, modelType: null, viewBag);
+		}
+
+		public Task<string> CompileRenderStringAsync(
+			string key,
+			string content,
+			object? model,
+			Type modelType,
+			ExpandoObject? viewBag = null)
+		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException(nameof(key));
+			}
+
+			if (string.IsNullOrEmpty(content))
+			{
+				throw new ArgumentNullException(nameof(content));
+			}
+
+			if (modelType == null)
+			{
+				throw new ArgumentNullException(nameof(modelType));
+			}
+
+			Options.DynamicTemplates[key] = content;
+			return CompileRenderStringCoreAsync(key, content, model, modelType, viewBag);
+		}
+
+		private async Task<string> CompileRenderStringCoreAsync(
+			string key,
+			string content,
+			object? model,
+			Type? modelType,
+			ExpandoObject? viewBag)
+		{
+			ITemplatePage template = await CompileTemplateAsync(TemplateCompilationRequest.ForString(
+				key,
+				content,
+				modelType,
+				Options.Namespaces)).ConfigureAwait(false);
+
+			return modelType == null
+				? await RenderTemplateAsync(template, model, viewBag).ConfigureAwait(false)
+				: await RenderTemplateAsync(template, model, modelType, viewBag).ConfigureAwait(false);
+		}
+
+		private async Task<string> RenderTemplateAsync(
+			ITemplatePage templatePage,
+			object? model,
+			Type modelType,
+			ExpandoObject? viewBag)
+		{
+			using (var writer = new StringWriter())
+			{
+				Type effectiveModelType = GetDeclaredModelType(templatePage) ?? modelType;
+				SetModelContext(templatePage, writer, model, viewBag, effectiveModelType);
+
+				using (var scope = new MemoryPoolViewBufferScope())
+				{
+					var renderer = new TemplateRenderer(this, HtmlEncoder.Default, scope);
+					await renderer.RenderAsync(templatePage).ConfigureAwait(false);
+				}
+
+				return writer.ToString();
+			}
 		}
 
 		private void SetModelContext<T>(
@@ -203,6 +325,78 @@ namespace RazorLight
 			}
 
 			templatePage.PageContext = pageContext;
+		}
+
+		private void SetModelContext(
+			ITemplatePage templatePage,
+			TextWriter textWriter,
+			object? model,
+			ExpandoObject? viewBag,
+			Type modelType)
+		{
+			if (textWriter == null)
+			{
+				throw new ArgumentNullException(nameof(textWriter));
+			}
+
+			if (model != null && !modelType.IsInstanceOfType(model))
+			{
+				throw new ArgumentException(
+					$"The supplied model of type '{model.GetType()}' is not assignable to '{modelType}'.",
+					nameof(model));
+			}
+
+			var modelTypeInfo = new ModelTypeInfo(modelType);
+			object? pageModel = model == null ? null : modelTypeInfo.CreateTemplateModel(model);
+			templatePage.SetModel(pageModel);
+
+			templatePage.PageContext = new PageContext(viewBag)
+			{
+				ExecutingPageKey = templatePage.Key,
+				Writer = textWriter,
+				ModelTypeInfo = modelTypeInfo,
+				Model = pageModel
+			};
+		}
+
+		private void InvalidatePreviousStringTemplate(TemplateCompilationRequest request)
+		{
+			if (!request.IsStringTemplate || Cache == null)
+			{
+				return;
+			}
+
+			_stringTemplateCacheKeys.AddOrUpdate(
+				request.TemplateKey,
+				_ =>
+				{
+					Cache.Remove(request.TemplateKey);
+					return request.CacheKey;
+				},
+				(_, previousCacheKey) =>
+				{
+					if (!string.Equals(previousCacheKey, request.CacheKey, StringComparison.Ordinal))
+					{
+						Cache.Remove(request.TemplateKey);
+						Cache.Remove(previousCacheKey);
+					}
+
+					return request.CacheKey;
+				});
+		}
+
+		private static Type? GetDeclaredModelType(ITemplatePage templatePage)
+		{
+			for (Type? type = templatePage.GetType(); type != null; type = type.BaseType)
+			{
+				if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(TemplatePage<>))
+				{
+					Type declaredType = type.GetGenericArguments()[0];
+					return declaredType == typeof(object) ? null : declaredType;
+				}
+			}
+
+			return null;
 		}
 	}
 }

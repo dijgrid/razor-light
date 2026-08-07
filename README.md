@@ -30,6 +30,7 @@ and [testing guidance](docs/testing.md) for the current maintenance baseline.
 
 - [Quickstart](#quickstart)
 - [Compatibility and support](#compatibility-and-support)
+- [Models, imports, and LINQ](#models-imports-and-linq)
 - [Template sources](#template-sources)
   - [Files](#file-source)
   - [Embedded resources](#embedded-resource-source)
@@ -69,7 +70,7 @@ ViewModel model = new ViewModel {Name = "John Doe"};
 
 string result = await engine.CompileRenderStringAsync("templateKey", template, model);
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L18-L28' title='Snippet source file'>snippet source</a> | <a href='#snippet-simple' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L23-L33' title='Snippet source file'>snippet source</a> | <a href='#snippet-simple' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 To render a compiled template:
@@ -85,7 +86,7 @@ if(cacheResult.Success)
 	string result = await engine.RenderTemplateAsync(templatePage, model);
 }
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L35-L43' title='Snippet source file'>snippet source</a> | <a href='#snippet-RenderCompiledTemplate' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L60-L68' title='Snippet source file'>snippet source</a> | <a href='#snippet-RenderCompiledTemplate' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 # Compatibility and support
@@ -105,15 +106,48 @@ if(cacheResult.Success)
 - For support and security reporting, follow [`SUPPORT.md`](SUPPORT.md) and
   [`SECURITY.md`](SECURITY.md).
 
+# Models, imports, and LINQ
+
+An explicit `@model` directive is the clearest way to make a template strongly typed. When a
+template cannot declare `@model`, use the overload that accepts a model `Type`:
+
+<!-- snippet: TypedModelString -->
+<a id='snippet-TypedModelString'></a>
+```cs
+var engine = new RazorLightEngineBuilder().Build();
+const string template =
+	"@(Model.Items.Where(item => item.Length > 3).Select(item => item.ToUpperInvariant()).FirstOrDefault())";
+object model = new LinqViewModel { Items = new[] { "one", "three" } };
+
+string result = await engine.CompileRenderStringAsync(
+	"typed-linq",
+	template,
+	model,
+	typeof(LinqViewModel));
+```
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L42-L53' title='Snippet source file'>snippet source</a> | <a href='#snippet-TypedModelString' title='Start of snippet'>anchor</a></sup>
+<!-- endSnippet -->
+
+The generic render overload intentionally keeps the historical dynamic model when `@model` is
+absent. Simple member access works dynamically, but C# cannot bind lambda expressions such as
+`item => item.Active` to a dynamically dispatched LINQ call. For `Where`, `Select`, and similar
+methods, declare `@model` or use the explicit model-type overload; adding `System.Linq` alone does
+not make a dynamic receiver strongly typed.
+
+String-template cache identity includes the content, explicit model type, and configured imports.
+Reusing a key with changed input replaces the active compiled template instead of silently running
+the first version. Keys should still identify one logical template; TASK-014 tracks the broader
+cache-provider and invalidation contract.
+
 # Template sources
 
 RazorLight has built-in providers for file-system and embedded-resource templates. Implement
 `RazorLightProject` to load templates from another source, such as a database.
 
-Project-backed templates receive RazorLight's built-in imports and namespaces configured with
-`AddDefaultNamespaces`. String templates currently require explicit `@using` directives. See the
-[template language compatibility matrix](docs/template-language-compatibility.md) for the tested
-behavior and known dynamic-model limitations.
+String, file, embedded-resource, and custom-project templates all receive RazorLight's built-in
+imports, including `System.Linq`, plus namespaces configured with `AddDefaultNamespaces`. See the
+[template language compatibility policy](docs/template-language-compatibility.md) for the tested
+behavior.
 
 ## File source
 
@@ -131,7 +165,7 @@ var engine = new RazorLightEngineBuilder()
 var model = new {Name = "John Doe"};
 string result = await engine.CompileRenderAsync("Subfolder/View.cshtml", model);
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L48-L57' title='Snippet source file'>snippet source</a> | <a href='#snippet-FileSource' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L73-L82' title='Snippet source file'>snippet source</a> | <a href='#snippet-FileSource' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 ## Embedded-resource source
@@ -163,7 +197,7 @@ var engine = new RazorLightEngineBuilder()
 var model = new Model();
 string html = await engine.CompileRenderAsync("EmailTemplates.Body", model);
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L62-L71' title='Snippet source file'>snippet source</a> | <a href='#snippet-EmbeddedResourceSource' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L87-L96' title='Snippet source file'>snippet source</a> | <a href='#snippet-EmbeddedResourceSource' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 Setting the root namespace lets you omit that prefix from the template key:
@@ -179,7 +213,7 @@ var engine = new RazorLightEngineBuilder()
 var model = new Model();
 string html = await engine.CompileRenderAsync("Body", model);
 ```
-<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L76-L85' title='Snippet source file'>snippet source</a> | <a href='#snippet-EmbeddedResourceSourceWithRootNamespace' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/tests/RazorLight.Tests/Snippets/Snippets.cs#L101-L110' title='Snippet source file'>snippet source</a> | <a href='#snippet-EmbeddedResourceSourceWithRootNamespace' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 ## Custom source
