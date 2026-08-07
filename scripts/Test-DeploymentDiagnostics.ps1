@@ -65,6 +65,7 @@ function Assert-ConsumerDiagnostic {
     }
 
     $output | Where-Object { $_ -match $Diagnostic } | Select-Object -First 1
+    $global:LASTEXITCODE = 0
 }
 
 Assert-ConsumerDiagnostic `

@@ -32,11 +32,7 @@ namespace RazorLight.Compilation
 			this.precompileCallback = precompileCallback;
 
 			isDevelopment = AssemblyDebugModeUtility.IsAssemblyDebugBuild(OperatingAssembly);
-			var pdbFormat = SymbolsUtility.SupportsFullPdbGeneration() ?
-				DebugInformationFormat.Pdb :
-				DebugInformationFormat.PortablePdb;
-
-			EmitOptions = new EmitOptions(debugInformationFormat: pdbFormat);
+			EmitOptions = new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb);
 		}
 
 		public RoslynCompilationService(IMetadataReferenceManager referenceManager, IOptions<RazorLightOptions> options, IPrecompileCallback? precompileCallback = null) :

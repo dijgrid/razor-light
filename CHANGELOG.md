@@ -27,6 +27,8 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
   version-checked Razor 6 compatibility adapter.
 - Runtime compilation now declares trimming and dynamic-code requirements so consumers receive
   `IL2026` and `IL3050` diagnostics for unsupported trimmed and Native AOT deployments.
+- Runtime-compiled templates now emit portable PDBs on every platform, avoiding the legacy native
+  Windows PDB writer and its version-sensitive failures in single-file deployments.
 - Metadata discovery skips dynamic assemblies, empty assembly locations, and missing reference
   files, with actionable configuration guidance when no usable compilation references remain.
 - Windows and Linux CI now executes framework-dependent, self-contained, and extraction-based
