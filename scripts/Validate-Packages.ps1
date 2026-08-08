@@ -3,7 +3,9 @@ param(
     [string] $PackageDirectory,
 
     [Parameter(Mandatory = $true)]
-    [string] $Version
+    [string] $Version,
+
+    [switch] $SkipBuildOutputValidation
 )
 
 $ErrorActionPreference = "Stop"
@@ -237,7 +239,7 @@ try {
             Assert-ArchiveEntries -Archive $primaryArchive -ExpectedEntries $package.PrimaryEntries
             Assert-AssetDirectories -Archive $primaryArchive -ExpectedDirectories $package.AssetDirectories
             Assert-Nuspec -Archive $primaryArchive -PackageId $package.Id -PackageVersion $Version
-            if ($package.Id -eq "Dijgrid.RazorLight") {
+            if ($package.Id -eq "Dijgrid.RazorLight" -and -not $SkipBuildOutputValidation) {
                 Assert-LibraryAssemblies -Archive $primaryArchive -TemporaryDirectory $temporaryRoot
             }
         }
