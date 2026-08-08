@@ -6,22 +6,32 @@ priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-release-readiness
 dependsOn:
+  - TASK-017
+  - TASK-022
   - TASK-021
   - TASK-027
   - TASK-028
   - TASK-029
+  - TASK-032
+  - TASK-033
+  - TASK-034
+  - TASK-035
+  - TASK-036
+  - TASK-037
+  - TASK-038
 tags:
   - release
   - nuget
   - beta
   - compatibility
 createdAt: 2026-08-08T04:17:59.721Z
-updatedAt: 2026-08-08T04:17:59.721Z
-refinementState: ready
+updatedAt: 2026-08-08T16:22:29.674Z
+refinementState: deferred
 ---
 
 Publish the first independently maintained prerelease after the generic-core and public-API cleanup
-is complete.
+is complete. This task is intentionally deferred until the 2026-08-08 pre-release safety,
+performance, lifecycle, precompiled-runtime, and maintainability findings are complete.
 
 ## Acceptance criteria
 

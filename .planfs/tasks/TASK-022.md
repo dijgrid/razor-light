@@ -9,14 +9,17 @@ dependsOn:
   - TASK-011
   - TASK-012
   - TASK-014
+  - TASK-035
+  - TASK-036
+  - TASK-037
 tags:
   - precompile
   - msbuild
   - deployment
   - tooling
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-07T04:01:10.919Z
-refinementState: needs-refinement
+updatedAt: 2026-08-08T16:22:29.473Z
+refinementState: ready
 ---
 
 Turn the precompile tool into a supported build-time path that can render known templates without
@@ -38,10 +41,15 @@ shipping Roslyn or performing runtime compilation.
 - [ ] The runtime package does not silently fall back to compilation when precompiled-only mode is
       selected.
 - [ ] Package boundaries and release artifacts follow TASK-008's identity decision.
+- [ ] The precompiled runtime path constructs no Razor language engine, Roslyn compilation service,
+      metadata-reference manager, or runtime compiler cache.
+- [ ] CLI entry points and file/model reads are asynchronous and propagate cancellation without
+      blocking through `GetAwaiter().GetResult()`.
 
 ## Baseline findings
 
-The repository contains a precompile CLI and a `PrecompiledCachingProvider`, but the main compiler's
-precompiled-view path is marked as work in progress and the provider leaves public cache methods
-unimplemented. A complete build-time path is the most plausible route to smaller deployments and to
-any future AOT-adjacent scenario, but it must not overstate platform support.
+The repository contains a precompile CLI and a `PrecompiledCachingProvider`, but rendering a
+precompiled page still constructs the full runtime Razor/Roslyn engine graph. The provider's runtime
+cache methods now exist, but artifact identity and compatibility validation remain incomplete. A
+complete build-time path is the most plausible route to smaller deployments and to any future
+AOT-adjacent scenario, but it must not overstate platform support.
