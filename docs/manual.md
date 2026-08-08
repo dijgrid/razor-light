@@ -25,7 +25,7 @@ package. For a short project overview, start with the [README](../README.md).
 Install the .NET 10 SDK selected by [`global.json`](../global.json), then add the core package:
 
 ```shell
-dotnet add package Dijgrid.RazorLight --version 3.0.0
+dotnet add package Dijgrid.RazorLight --version 3.0.0-beta.1
 ```
 
 The `RazorLight 2.3.1` package is the historical upstream build. The independently maintained 3.x
@@ -277,6 +277,11 @@ template's directory; a leading slash starts from the configured project root:
 Multiple directives are allowed, and duplicate normalized paths are compiled once. Sources must
 end in `.cs` and cannot traverse outside a file-system project root.
 
+File template keys are logical project paths. A leading slash means “from the project root,” including
+on Unix where the same spelling resembles an operating-system absolute path; it never grants access
+outside the configured project. C# source keys are likewise logical paths and reject fully qualified
+operating-system paths explicitly.
+
 Imported sources are normal C# 14 compilation units and receive standard mapped compiler
 diagnostics. Top-level executable statements are rejected. Prefer `internal` helper types: the same
 source is compiled separately into each consuming template assembly, so its types do not have
@@ -424,7 +429,7 @@ string result = await engine.CompileRenderStringAsync(
 Install the optional package:
 
 ```shell
-dotnet add package Dijgrid.RazorLight.Html --version 3.0.0
+dotnet add package Dijgrid.RazorLight.Html --version 3.0.0-beta.1
 ```
 
 Then opt in explicitly:
@@ -478,7 +483,7 @@ isolation; it is not a security sandbox.
 Install the tool package using the version aligned with the core library:
 
 ```shell
-dotnet tool install --global Dijgrid.RazorLight.Precompile --version 3.0.0
+dotnet tool install --global Dijgrid.RazorLight.Precompile --version 3.0.0-beta.1
 ```
 
 Precompile a template:

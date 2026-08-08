@@ -1,7 +1,7 @@
 ---
 id: TASK-030
 title: Prepare and publish the 3.0.0-beta.1 release
-status: todo
+status: review
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-release-readiness
@@ -25,8 +25,8 @@ tags:
   - beta
   - compatibility
 createdAt: 2026-08-08T04:17:59.721Z
-updatedAt: 2026-08-08T16:22:29.674Z
-refinementState: deferred
+updatedAt: 2026-08-08T20:03:31.616Z
+refinementState: ready
 ---
 
 Publish the first independently maintained prerelease after the generic-core and public-API cleanup
@@ -51,3 +51,20 @@ performance, lifecycle, precompiled-runtime, and maintainability findings are co
       2.3.1 until the first stable `Dijgrid.RazorLight` release.
 - [ ] NuGet.org and GitHub artifacts have matching hashes and the release is not promoted to stable
       without explicit maintainer approval.
+
+## Implementation notes
+
+- Configured the package projects to evaluate to `3.0.0-beta.1` and updated release automation to
+  require an exact SemVer prerelease tag, publish Core, optional HTML, and precompile packages plus
+  symbols, verify artifact hashes after the protected deployment approval, and create a GitHub
+  prerelease with versioned notes.
+- Added `docs/migration-3.0.md`, linked it from the README and package metadata, and added beta
+  release notes covering the framework, package, rendering-default, tag-helper, and API changes.
+- Added a clean-consumer smoke test that restores locally packed Core and optional HTML packages,
+  verifies plain and encoded rendering, and installs the precompile tool from the same package source.
+- Fixed the macOS CI regression in file-system project tests: Unix-leading-slash template keys retain
+  their documented project-root-relative meaning, while fully qualified C# source paths are rejected.
+- Local release-candidate validation passed on Windows: warning-as-error build; 318 Core and 134
+  precompile tests with coverage floors; deployment-mode and deployment-diagnostic checks; dependency
+  audit; deterministic builds; package/symbol validation; and clean-consumer smoke test. Source Link
+  and the multi-OS suite remain to be verified by CI for the committed branch.

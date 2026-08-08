@@ -83,13 +83,25 @@ namespace RazorLight.Tests.Razor
 		}
 
 		[Fact]
-		public async Task GetItemAsync_Rejects_Absolute_Path_Outside_Project_Root()
+		public async Task GetItemAsync_Confines_Absolute_Style_Path_To_Project_Root()
 		{
 			string root = Path.Combine(DirectoryUtils.RootDirectory, "Assets", "Files");
 			string outside = Path.Combine(DirectoryUtils.RootDirectory, "Assets", "Embedded", "Empty.cshtml");
 			var project = new FileSystemRazorProject(root);
 
-			await Assert.ThrowsAsync<InvalidOperationException>(() => project.GetItemAsync(outside));
+			if (OperatingSystem.IsWindows())
+			{
+				await Assert.ThrowsAsync<InvalidOperationException>(() => project.GetItemAsync(outside));
+				return;
+			}
+
+			var item = Assert.IsType<FileSystemRazorProjectItem>(await project.GetItemAsync(outside));
+			Assert.False(item.Exists);
+			Assert.StartsWith(
+				Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)) + Path.DirectorySeparatorChar,
+				item.File.FullName,
+				StringComparison.Ordinal);
+			Assert.NotEqual(Path.GetFullPath(outside), item.File.FullName);
 		}
 
 		[Theory]

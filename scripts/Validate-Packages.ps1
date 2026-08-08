@@ -18,6 +18,7 @@ $expectedPackages = @(
         PrimaryEntries = @(
             "LICENSE",
             "README.md",
+            "buildTransitive/Dijgrid.RazorLight.targets",
             "lib/net10.0/RazorLight.dll",
             "lib/net10.0/RazorLight.pdb",
             "lib/net10.0/RazorLight.xml"

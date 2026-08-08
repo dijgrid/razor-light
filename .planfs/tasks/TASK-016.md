@@ -22,7 +22,7 @@ publishing the independent release line.
 
 ## Implementation readiness
 
-Ready for implementation. TASK-008 selected `Dijgrid.RazorLight` 3.0.0 as the independent package
+Ready for implementation. TASK-008 selected `Dijgrid.RazorLight` 3.0.0-beta.1 as the independent package
 and `RazorLight` 2.3.1 as the inherited compatibility baseline. The .NET 10 SDK cannot validate the
 retired baseline frameworks directly, so those framework removals must be explicit suppressions while
 the source API inventory protects the inherited member surface.
