@@ -1,7 +1,7 @@
-﻿using RazorLight.Razor;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using RazorLight.Razor;
 using Xunit;
 
 namespace RazorLight.Tests.Razor

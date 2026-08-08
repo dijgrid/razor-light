@@ -1,13 +1,13 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace RazorLight.Precompile.Tests
 {
 	public class Render1Tests : TestWithCulture
 	{
-		private static TestCaseData T(string templateFilePath, string? jsonQuery, string expected) =>
-			new(templateFilePath, jsonQuery, expected) { TestName = "{m}({0},{1})" };
+		private static object[] T(string templateFilePath, string? jsonQuery, string expected) =>
+			new object[] { templateFilePath, jsonQuery!, expected };
 
-		private static readonly TestCaseData[] s_testCases = new TestCaseData[]
+		public static IEnumerable<object[]> TestCases => new object[][]
 		{
 			T("WorkItemFields.json", "[0]", @"{
     ""Title"": ""Veracode Issue 123"",
@@ -69,7 +69,8 @@ Approved per rationale provided and John Smith' review and approval on 3/30.
 " + Environment.NewLine)
 		};
 
-		[TestCaseSource(nameof(s_testCases))]
+		[Theory]
+		[MemberData(nameof(TestCases))]
 		public void Render(string templateFilePath, string jsonQuery, string expected)
 		{
 			templateFilePath = "Samples/" + templateFilePath;
@@ -90,10 +91,11 @@ Approved per rationale provided and John Smith' review and approval on 3/30.
 			}
 
 			var actual = Helper.RunCommand(commandLineArgs.ToArray()).ToString();
-			Assert.AreEqual(NormalizeLineEndings(expected), NormalizeLineEndings(actual));
+			Assert.Equal(NormalizeLineEndings(expected), NormalizeLineEndings(actual));
 		}
 
-		[TestCaseSource(nameof(s_testCases))]
+		[Theory]
+		[MemberData(nameof(TestCases))]
 		public void PrecompileAndRender(string templateFilePath, string jsonQuery, string expected)
 		{
 			templateFilePath = "Samples/" + templateFilePath;
@@ -112,7 +114,7 @@ Approved per rationale provided and John Smith' review and approval on 3/30.
 			}
 
 			var actual = Helper.RunCommand(commandLineArgs.ToArray()).ToString();
-			Assert.AreEqual(NormalizeLineEndings(expected), NormalizeLineEndings(actual));
+			Assert.Equal(NormalizeLineEndings(expected), NormalizeLineEndings(actual));
 		}
 
 		private static string NormalizeLineEndings(string value) =>

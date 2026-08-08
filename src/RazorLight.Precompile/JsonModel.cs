@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace RazorLight.Precompile
 {

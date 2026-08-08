@@ -1,8 +1,8 @@
-﻿using RazorLight.Razor;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using RazorLight.Razor;
 using Samples.EntityFrameworkProject.EntityFramework;
 
 namespace Samples.EntityFrameworkProject

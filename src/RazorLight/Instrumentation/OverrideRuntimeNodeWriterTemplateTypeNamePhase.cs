@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace RazorLight.Instrumentation
 {
@@ -8,7 +8,8 @@ namespace RazorLight.Instrumentation
 	{
 		public static void Register(RazorProjectEngineBuilder builder)
 		{
-			var defaultRazorCSharpLoweringPhase = builder.Phases.SingleOrDefault(x => {
+			var defaultRazorCSharpLoweringPhase = builder.Phases.SingleOrDefault(x =>
+			{
 				var type = x.GetType();
 				// This type is not public, so we can't use typeof() operator to match to x.GetType() value.
 				// Additionally, we can't use Type.GetType("Microsoft.AspNetCore.Razor.Language.DefaultRazorCSharpLoweringPhase, Microsoft.AspNetCore.Razor.Language")

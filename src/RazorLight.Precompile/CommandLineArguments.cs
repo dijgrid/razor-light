@@ -1,6 +1,6 @@
-using RazorLight;
 using System;
 using System.Collections.Generic;
+using RazorLight;
 
 namespace RazorLight.Precompile
 {

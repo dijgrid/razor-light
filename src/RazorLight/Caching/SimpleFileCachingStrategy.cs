@@ -1,5 +1,5 @@
-using RazorLight.Razor;
 using System.IO;
+using RazorLight.Razor;
 
 namespace RazorLight.Caching
 {

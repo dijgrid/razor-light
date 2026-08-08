@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -105,23 +105,23 @@ namespace RazorLight.Tests
 			Func<RazorLightEngineBuilder> GetEngine = () => new RazorLightEngineBuilder().UseEmbeddedResourcesProject(typeof(Root));
 
 			var engine = GetEngine().AddDefaultNamespaces("123")
-				.UseOptions(new RazorLightOptions{Namespaces = new HashSet<string>{"123"}});
+				.UseOptions(new RazorLightOptions { Namespaces = new HashSet<string> { "123" } });
 			Assert.Throws<RazorLightException>(() => engine.Build());
 
-			engine = GetEngine().AddDynamicTemplates(new Dictionary<string, string>{ {"abc", "123"} })
-				.UseOptions(new RazorLightOptions {DynamicTemplates = new Dictionary<string, string> { { "abc", "123" } } });
+			engine = GetEngine().AddDynamicTemplates(new Dictionary<string, string> { { "abc", "123" } })
+				.UseOptions(new RazorLightOptions { DynamicTemplates = new Dictionary<string, string> { { "abc", "123" } } });
 			Assert.Throws<RazorLightException>(() => engine.Build());
 
 			engine = GetEngine().AddMetadataReferences(MetadataReference.CreateFromStream(new MemoryStream()))
-				.UseOptions(new RazorLightOptions {AdditionalMetadataReferences = new HashSet<MetadataReference>{ MetadataReference.CreateFromStream(new MemoryStream()) } });
+				.UseOptions(new RazorLightOptions { AdditionalMetadataReferences = new HashSet<MetadataReference> { MetadataReference.CreateFromStream(new MemoryStream()) } });
 			Assert.Throws<RazorLightException>(() => engine.Build());
 
 			engine = GetEngine().ExcludeAssemblies("123")
-                .UseOptions(new RazorLightOptions{ ExcludedAssemblies = new HashSet<string>{ "123"}});
+				.UseOptions(new RazorLightOptions { ExcludedAssemblies = new HashSet<string> { "123" } });
 			Assert.Throws<RazorLightException>(() => engine.Build());
 
 			engine = GetEngine().UseMemoryCachingProvider()
-				.UseOptions(new RazorLightOptions{CachingProvider = new MemoryCachingProvider()});
+				.UseOptions(new RazorLightOptions { CachingProvider = new MemoryCachingProvider() });
 			Assert.Throws<RazorLightException>(() => engine.Build());
 
 			engine = GetEngine().UseOutputEncoder(new TemplatePageTest.TestOutputEncoder())
@@ -156,7 +156,7 @@ namespace RazorLight.Tests
 				.UseMemoryCachingProvider()
 				.UseEmbeddedResourcesProject(typeof(Root))
 				.Build();
-			
+
 			Assert.Same(PlainTextEncoder.Default, GetOptions(engine).OutputEncoder);
 		}
 
@@ -225,7 +225,7 @@ namespace RazorLight.Tests
 			Func<RazorLightEngineBuilder> GetEngine = () => new RazorLightEngineBuilder()
 				.UseEmbeddedResourcesProject(typeof(Root));
 
-			var namespaces = new [] { "abc", "def" };
+			var namespaces = new[] { "abc", "def" };
 
 			// Set namespaces with AddDefaultNamespaces
 			var engine = GetEngine()
@@ -236,7 +236,7 @@ namespace RazorLight.Tests
 
 			// Set namespaces with UseOptions
 			engine = GetEngine()
-				.UseOptions(new RazorLightOptions { Namespaces = namespaces.ToHashSet()})
+				.UseOptions(new RazorLightOptions { Namespaces = namespaces.ToHashSet() })
 				.Build();
 
 			Assert.Equal(namespaces, GetOptions(engine).Namespaces);
@@ -280,13 +280,5 @@ namespace RazorLight.Tests
 		{
 			return Assert.IsType<RazorLightEngine>(engine).Options;
 		}
-
-		//[Fact]
-		//public void Compiler_OperatingAssembly_IsSetTo_EntryAssembly_If_Not_Specified()
-		//{
-		//    var engine = new RazorLightEngineBuilder().Build();
-
-		//    Assert.Equal(engine.TemplateFactoryProvider.Compiler.OperatingAssembly, Assembly.GetEntryAssembly());
-		//}
 	}
 }

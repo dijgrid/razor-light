@@ -1,16 +1,15 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Dynamic;
+using System.Threading.Tasks;
 using RazorLight.Compilation;
 using RazorLight.Html;
 using RazorLight.Razor;
 using RazorLight.Tests.Razor;
 using RazorLight.Tests.Utils;
+using Xunit;
 
 namespace RazorLight.Tests
 {
-	using System.Threading.Tasks;
-	using Xunit;
-
 	public class RazorLightEngineTest
 	{
 		[Fact]
@@ -72,7 +71,7 @@ namespace RazorLight.Tests
 
 			const string key = "key";
 			const string content = "content";
-			var project = new TestRazorProject {Value = new TextSourceRazorProjectItem(key, content)};
+			var project = new TestRazorProject { Value = new TextSourceRazorProjectItem(key, content) };
 
 			var engine = new RazorLightEngineBuilder()
 				.UseProject(project)

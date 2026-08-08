@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RazorLight;
 using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using RazorLight;
 using Samples.EntityFrameworkProject.EntityFramework;
 
 namespace Samples.EntityFrameworkProject

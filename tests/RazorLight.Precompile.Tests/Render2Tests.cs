@@ -1,12 +1,12 @@
-using NUnit.Framework;
 using RazorLight.Caching;
+using Xunit;
 
 namespace RazorLight.Precompile.Tests
 {
 	public class Render2Tests : TestWithCulture
 	{
-		private static TestCaseData T(string templateFilePath, string templateFilePath2, IFileSystemCachingStrategy s, string expected) =>
-			new(templateFilePath, templateFilePath2, s, expected) { TestName = "{m}({0},{1},{2})" };
+		private static object[] T(string templateFilePath, string templateFilePath2, IFileSystemCachingStrategy s, string expected) =>
+			new object[] { templateFilePath, templateFilePath2, s, expected };
 
 		private static readonly string s_expected = @"Count of issues with the source information: 2
 
@@ -52,19 +52,19 @@ First Found Date: 7/10/2020 7:00:28 PM
     </p>
 " + Environment.NewLine;
 
-		private static readonly TestCaseData[] s_testCases = new TestCaseData[]
+		public static IEnumerable<object[]> TestCases => new object[][]
 		{
 			T("FullMessage.cshtml", "folder/MessageItem.cshtml", FileHashCachingStrategy.Instance, s_expected),
 			T("FullMessage.cshtml", "folder/MessageItem.cshtml", SimpleFileCachingStrategy.Instance, s_expected),
 		};
 
-		[SetUp]
-		public void Cleanup()
+		public Render2Tests()
 		{
 			PrecompileTestCases.CleanupDlls("Samples");
 		}
 
-		[TestCaseSource(nameof(s_testCases))]
+		[Theory]
+		[MemberData(nameof(TestCases))]
 		public void RenderOrder1(string key, string key2, IFileSystemCachingStrategy s, string expected)
 		{
 			var (a1, a2) = Precompile(key, key2, s);
@@ -72,7 +72,8 @@ First Found Date: 7/10/2020 7:00:28 PM
 			Run(key, expected, a1 + ',' + a2);
 		}
 
-		[TestCaseSource(nameof(s_testCases))]
+		[Theory]
+		[MemberData(nameof(TestCases))]
 		public void RenderOrder2(string key, string key2, IFileSystemCachingStrategy s, string expected)
 		{
 			var (a1, a2) = Precompile(key, key2, s);
@@ -80,7 +81,8 @@ First Found Date: 7/10/2020 7:00:28 PM
 			Run(key, expected, a2 + ',' + a1);
 		}
 
-		[TestCaseSource(nameof(s_testCases))]
+		[Theory]
+		[MemberData(nameof(TestCases))]
 		public void RenderGlobRecursive(string key, string key2, IFileSystemCachingStrategy s, string expected)
 		{
 			Precompile(key, key2, s);
@@ -88,7 +90,8 @@ First Found Date: 7/10/2020 7:00:28 PM
 			Run(key, expected, "**/*.dll");
 		}
 
-		[TestCaseSource(nameof(s_testCases))]
+		[Theory]
+		[MemberData(nameof(TestCases))]
 		public void RenderFolderRecursive(string key, string key2, IFileSystemCachingStrategy s, string expected)
 		{
 			Precompile(key, key2, s);
@@ -96,22 +99,24 @@ First Found Date: 7/10/2020 7:00:28 PM
 			Run(key, expected, "Samples", "-r");
 		}
 
-		[TestCaseSource(nameof(s_testCases))]
+		[Theory]
+		[MemberData(nameof(TestCases))]
 		public void RenderFolderNonRecursive(string key, string key2, IFileSystemCachingStrategy s, string expected)
 		{
 			Precompile(key, key2, s);
 
 			var exc = Assert.Throws<RazorLightException>(() => Run(key, expected, "Samples"))!;
-			Assert.AreEqual("No precompiled template found for the key /folder/MessageItem.cshtml", exc.Message);
+			Assert.Equal("No precompiled template found for the key /folder/MessageItem.cshtml", exc.Message);
 		}
 
-		[TestCaseSource(nameof(s_testCases))]
+		[Theory]
+		[MemberData(nameof(TestCases))]
 		public void RenderGlobNonRecursive(string key, string key2, IFileSystemCachingStrategy s, string expected)
 		{
 			Precompile(key, key2, s);
 
 			var exc = Assert.Throws<RazorLightException>(() => Run(key, expected, "Samples/*.dll"))!;
-			Assert.AreEqual("No precompiled template found for the key /folder/MessageItem.cshtml", exc.Message);
+			Assert.Equal("No precompiled template found for the key /folder/MessageItem.cshtml", exc.Message);
 		}
 
 		private static (string, string) Precompile(string key, string key2, IFileSystemCachingStrategy s) => (
@@ -134,10 +139,11 @@ First Found Date: 7/10/2020 7:00:28 PM
 			commandLineArgs.AddRange(args);
 
 			var actual = Helper.RunCommand(commandLineArgs.ToArray()).ToString();
-			Assert.AreEqual(NormalizeLineEndings(expected), NormalizeLineEndings(actual));
+			Assert.Equal(NormalizeLineEndings(expected), NormalizeLineEndings(actual));
 		}
 
-		[TestCaseSource(nameof(s_testCases))]
+		[Theory]
+		[MemberData(nameof(TestCases))]
 		public void PrecompileAndRender(string templateFilePath, string _, IFileSystemCachingStrategy s, string expected)
 		{
 			var commandLineArgs = new List<string>
@@ -154,7 +160,7 @@ First Found Date: 7/10/2020 7:00:28 PM
 			};
 
 			var actual = Helper.RunCommand(commandLineArgs.ToArray()).ToString();
-			Assert.AreEqual(NormalizeLineEndings(expected), NormalizeLineEndings(actual));
+			Assert.Equal(NormalizeLineEndings(expected), NormalizeLineEndings(actual));
 		}
 
 		private static string NormalizeLineEndings(string value) =>

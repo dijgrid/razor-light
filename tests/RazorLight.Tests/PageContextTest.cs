@@ -1,4 +1,4 @@
-﻿using System.Dynamic;
+using System.Dynamic;
 using Xunit;
 
 namespace RazorLight.Tests

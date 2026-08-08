@@ -1,18 +1,17 @@
-﻿using RazorLight.Text;
-using Moq;
-using RazorLight.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Threading;
 using System.Threading.Tasks;
+using Moq;
+using RazorLight.Internal;
 using RazorLight.Internal.Buffering;
 using RazorLight.Tests.Utils;
+using RazorLight.Text;
 using Xunit;
-
-using System.Threading;
 
 namespace RazorLight.Tests
 {

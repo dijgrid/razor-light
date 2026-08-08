@@ -1,49 +1,51 @@
-﻿using NUnit.Framework;
 using System.Diagnostics;
+using Xunit;
 
 namespace RazorLight.Precompile.Tests
 {
 	public class PrecompileTests : TestWithCulture
 	{
-		[TestCaseSource(typeof(PrecompileTestCases), nameof(PrecompileTestCases.TestCases))]
+		[Theory]
+		[MemberData(nameof(PrecompileTestCases.TestCases), MemberType = typeof(PrecompileTestCases))]
 		public void PrecompileFromScratch(string templateFilePath, TestScenario scenario)
 		{
 			scenario.Cleanup();
 
 			var expectedPrecompiledFilePath = GetExpectedPrecompiledFilePath(templateFilePath, scenario);
-			Assert.That(File.Exists(expectedPrecompiledFilePath), Is.False);
+			Assert.False(File.Exists(expectedPrecompiledFilePath));
 
 			Precompile(templateFilePath, scenario, expectedPrecompiledFilePath);
 
 			scenario.Cleanup();
-			Assert.That(File.Exists(expectedPrecompiledFilePath), Is.False);
+			Assert.False(File.Exists(expectedPrecompiledFilePath));
 		}
 
-		[TestCaseSource(typeof(PrecompileTestCases), nameof(PrecompileTestCases.TestCases))]
+		[Theory]
+		[MemberData(nameof(PrecompileTestCases.TestCases), MemberType = typeof(PrecompileTestCases))]
 		public void PrecompileCached(string templateFilePath, TestScenario scenario)
 		{
 			scenario.Cleanup();
 
 			var expectedPrecompiledFilePath = GetExpectedPrecompiledFilePath(templateFilePath, scenario);
-			Assert.That(File.Exists(expectedPrecompiledFilePath), Is.False);
+			Assert.False(File.Exists(expectedPrecompiledFilePath));
 
 			var sw1 = Stopwatch.StartNew();
 			Precompile(templateFilePath, scenario, expectedPrecompiledFilePath);
 			sw1.Stop();
 
-			Assert.That(File.Exists(expectedPrecompiledFilePath), Is.True);
+			Assert.True(File.Exists(expectedPrecompiledFilePath));
 
 			var sw2 = Stopwatch.StartNew();
 			Precompile(templateFilePath, scenario, expectedPrecompiledFilePath);
 			sw2.Stop();
 
-			TestContext.WriteLine($"TS1 = {sw1.Elapsed}, TS2 = {sw2.Elapsed}");
+			Debug.WriteLine($"TS1 = {sw1.Elapsed}, TS2 = {sw2.Elapsed}");
 
 			scenario.Cleanup();
-			Assert.That(File.Exists(expectedPrecompiledFilePath), Is.False);
+			Assert.False(File.Exists(expectedPrecompiledFilePath));
 		}
 
-		[Test]
+		[Fact]
 		public void Precompile_Rejects_Template_Outside_Explicit_Base_Directory()
 		{
 			var command = new PrecompileCmd();
@@ -55,7 +57,7 @@ namespace RazorLight.Precompile.Tests
 			}));
 		}
 
-		[Test]
+		[Fact]
 		public void Precompile_Produces_Repeatable_Assembly_Bytes()
 		{
 			PrecompileTestCases.WithCache.Cleanup();
@@ -70,8 +72,8 @@ namespace RazorLight.Precompile.Tests
 					"precompile", "-t", "Samples/FullMessage.cshtml", "-c", PrecompileTestCases.CACHE_DIR);
 				byte[] second = File.ReadAllBytes(secondPath);
 
-				Assert.That(secondPath, Is.EqualTo(firstPath));
-				Assert.That(second, Is.EqualTo(first));
+				Assert.Equal(firstPath, secondPath);
+				Assert.Equal(first, second);
 			}
 			finally
 			{
@@ -87,7 +89,7 @@ namespace RazorLight.Precompile.Tests
 			return scenario.GetExpectedPrecompiledFilePath(cacheFileInfo.AssemblyFilePath);
 		}
 
-		public static void Precompile(string templateFilePath, TestScenario scenario, string? expectedPrecompiledFilePath)
+		private static void Precompile(string templateFilePath, TestScenario scenario, string? expectedPrecompiledFilePath)
 		{
 			var commandLineArgs = new List<string>
 			{
@@ -98,8 +100,8 @@ namespace RazorLight.Precompile.Tests
 			commandLineArgs.AddRange(scenario.ExtraCommandLineArgs);
 
 			var precompiledFilePath = Helper.RunCommandTrimNewline(commandLineArgs.ToArray());
-			Assert.AreEqual(expectedPrecompiledFilePath, precompiledFilePath);
-			Assert.That(File.Exists(precompiledFilePath), Is.True);
+			Assert.Equal(expectedPrecompiledFilePath, precompiledFilePath);
+			Assert.True(File.Exists(precompiledFilePath));
 		}
 	}
 }

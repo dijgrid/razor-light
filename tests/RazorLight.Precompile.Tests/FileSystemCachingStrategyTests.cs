@@ -1,15 +1,15 @@
-﻿using NUnit.Framework;
-using RazorLight.Caching;
 using System.Runtime.InteropServices;
+using RazorLight.Caching;
+using Xunit;
 
 namespace RazorLight.Precompile.Tests
 {
 	public class FileSystemCachingStrategyTests
 	{
-		private static readonly object[] s_testCases = new object[]
+		public static IEnumerable<object[]> TestCases => new[]
 		{
-			FileHashCachingStrategy.Instance,
-			SimpleFileCachingStrategy.Instance,
+			new object[] { FileHashCachingStrategy.Instance },
+			new object[] { SimpleFileCachingStrategy.Instance },
 		};
 
 		private static readonly string[] s_firstSepOptionsWindows = { "", "/", "\\" };
@@ -17,7 +17,8 @@ namespace RazorLight.Precompile.Tests
 		private static readonly string[] s_firstSepOptionsUnix = { "", "/" };
 		private static readonly string[] s_secondSepOptionsUnix = { "/" };
 
-		private static readonly IEnumerable<string[]> s_sepCombinations = GetSeparatorCombinations();
+		public static IEnumerable<object[]> SeparatorCombinations =>
+			GetSeparatorCombinations().Select(value => new object[] { value });
 
 		private static IEnumerable<string[]> GetSeparatorCombinations()
 		{
@@ -51,23 +52,26 @@ namespace RazorLight.Precompile.Tests
 			}
 		}
 
-		[TestCaseSource(nameof(s_testCases))]
+		[Theory]
+		[MemberData(nameof(TestCases))]
 		public void DifferentKey(IFileSystemCachingStrategy s)
 		{
 			var templateFilePath = "Samples/folder/MessageItem.cshtml";
 			var o1 = s.GetCachedFileInfo("folder/MessageItem.cshtml", templateFilePath, "X:/");
 			var o2 = s.GetCachedFileInfo("MessageItem.cshtml", templateFilePath, "X:/");
-			Assert.AreNotEqual(o1.AssemblyFilePath, o2.AssemblyFilePath);
+			Assert.NotEqual(o1.AssemblyFilePath, o2.AssemblyFilePath);
 		}
 
-		[TestCaseSource(nameof(s_sepCombinations))]
+		[Theory]
+		[MemberData(nameof(SeparatorCombinations))]
 		public void EquivalentKeyFileHashCachingStrategy(string[] sepCombination)
 		{
 			var (asmFilePath1, asmFilePath2) = GetAsmFilePaths(FileHashCachingStrategy.Instance, sepCombination);
-			Assert.AreEqual(asmFilePath1, asmFilePath2);
+			Assert.Equal(asmFilePath1, asmFilePath2);
 		}
 
-		[TestCaseSource(nameof(s_sepCombinations))]
+		[Theory]
+		[MemberData(nameof(SeparatorCombinations))]
 		public void EquivalentKeySimpleFileCachingStrategy(string[] sepCombination)
 		{
 			var (asmFilePath1, asmFilePath2) = GetAsmFilePaths(SimpleFileCachingStrategy.Instance, sepCombination);
@@ -76,24 +80,25 @@ namespace RazorLight.Precompile.Tests
 				asmFilePath1 = Path.GetFullPath(asmFilePath1);
 				asmFilePath2 = Path.GetFullPath(asmFilePath2);
 			}
-			Assert.AreEqual(asmFilePath1, asmFilePath2);
+			Assert.Equal(asmFilePath1, asmFilePath2);
 		}
 
-		[TestCase("../outside")]
-		[TestCase("nested/../../outside")]
-		[TestCase("..\\outside")]
+		[Theory]
+		[InlineData("../outside")]
+		[InlineData("nested/../../outside")]
+		[InlineData("..\\outside")]
 		public void SimpleStrategy_Rejects_Keys_Outside_Cache_Root(string key)
 		{
-			string cacheRoot = Path.Combine(TestContext.CurrentContext.WorkDirectory, "cache-root");
+			string cacheRoot = Path.Combine(AppContext.BaseDirectory, "cache-root");
 
 			Assert.Throws<InvalidOperationException>(() =>
 				SimpleFileCachingStrategy.Instance.GetCachedFileInfo(key, "template.cshtml", cacheRoot));
 		}
 
-		[Test]
+		[Fact]
 		public void FileHash_Changes_With_Dependencies_And_Is_Stable_When_Inputs_Are_Unchanged()
 		{
-			string root = Path.Combine(TestContext.CurrentContext.WorkDirectory, Guid.NewGuid().ToString("N"));
+			string root = Path.Combine(AppContext.BaseDirectory, Guid.NewGuid().ToString("N"));
 			Directory.CreateDirectory(root);
 			try
 			{
@@ -116,10 +121,10 @@ namespace RazorLight.Precompile.Tests
 				string importsChanged = FileHashCachingStrategy.Instance
 					.GetCachedFileInfo("template.cshtml", templatePath, root).AssemblyFilePath;
 
-				Assert.That(repeat, Is.EqualTo(first));
-				Assert.That(changed, Is.Not.EqualTo(first));
-				Assert.That(importsChanged, Is.Not.EqualTo(first));
-				Assert.That(Path.GetFileNameWithoutExtension(first), Has.Length.EqualTo(64));
+				Assert.Equal(first, repeat);
+				Assert.NotEqual(first, changed);
+				Assert.NotEqual(first, importsChanged);
+				Assert.Equal(64, Path.GetFileNameWithoutExtension(first).Length);
 			}
 			finally
 			{
@@ -127,20 +132,20 @@ namespace RazorLight.Precompile.Tests
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void FileSystemProvider_Missing_Source_Is_A_Normal_Cache_Miss()
 		{
-			string root = Path.Combine(TestContext.CurrentContext.WorkDirectory, Guid.NewGuid().ToString("N"));
+			string root = Path.Combine(AppContext.BaseDirectory, Guid.NewGuid().ToString("N"));
 			string cacheRoot = Path.Combine(root, "cache");
 			Directory.CreateDirectory(cacheRoot);
 			try
 			{
 				using var provider = new FileSystemCachingProvider(root, cacheRoot, FileHashCachingStrategy.Instance);
 
-				Assert.That(provider.Contains("missing.cshtml"), Is.False);
-				Assert.That(provider.TryGetTemplate("missing.cshtml", out var factory), Is.False);
-				Assert.That((object?)factory, Is.Null);
-				Assert.DoesNotThrow(() => provider.Remove("missing.cshtml"));
+				Assert.False(provider.Contains("missing.cshtml"));
+				Assert.False(provider.TryGetTemplate("missing.cshtml", out var factory));
+				Assert.Null(factory);
+				provider.Remove("missing.cshtml");
 			}
 			finally
 			{
@@ -153,7 +158,7 @@ namespace RazorLight.Precompile.Tests
 			var templateFilePath = "Samples/folder/MessageItem.cshtml";
 			string key1 = $"{sepCombination[0]}folder{sepCombination[1]}MessageItem.cshtml";
 			string key2 = $"{sepCombination[2]}folder{sepCombination[3]}MessageItem.cshtml";
-			Assert.AreNotEqual(key1, key2);
+			Assert.NotEqual(key1, key2);
 			var asmFilePath1 = s.GetCachedFileInfo(key1, templateFilePath, "X:/").AssemblyFilePath;
 			var asmFilePath2 = s.GetCachedFileInfo(key2, templateFilePath, "X:/").AssemblyFilePath;
 			return (asmFilePath1, asmFilePath2);

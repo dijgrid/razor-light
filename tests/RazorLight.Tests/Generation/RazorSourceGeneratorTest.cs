@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -194,7 +194,7 @@ namespace RazorLight.Tests.Generation
 			Func<Task> action = () => generator.GenerateCodeAsync(projectItem);
 
 			var exception = await Assert.ThrowsAsync<InvalidOperationException>(action);
-			Assert.Equal($"{ nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} does not exist.", exception.Message);
+			Assert.Equal($"{nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} does not exist.", exception.Message);
 			Assert.DoesNotContain(projectItem.Key, exception.Message, StringComparison.Ordinal);
 		}
 
@@ -223,7 +223,7 @@ namespace RazorLight.Tests.Generation
 			Func<Task> action = () => generator.CreateCodeDocumentAsync(projectItem);
 
 			var exception = await Assert.ThrowsAsync<InvalidOperationException>(action);
-			Assert.Equal($"{ nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} does not exist.", exception.Message);
+			Assert.Equal($"{nameof(RazorLightProjectItem)} of type {projectItem.GetType().FullName} does not exist.", exception.Message);
 			Assert.DoesNotContain(projectItem.Key, exception.Message, StringComparison.Ordinal);
 		}
 	}

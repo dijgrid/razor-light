@@ -5,8 +5,8 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 using RazorLight.Caching;
 using RazorLight.Compilation;
 using RazorLight.DependencyInjection;
@@ -112,64 +112,64 @@ namespace RazorLight
 
 			try
 			{
-			ITemplatePage? templatePage = null;
-			if (Cache != null)
-			{
-				cancellationToken.ThrowIfCancellationRequested();
-				if (Cache.TryGetTemplate(request.CacheKey, out Func<ITemplatePage>? pageFactory))
-				{
-					templatePage = pageFactory();
-				}
-			}
-
-			if (templatePage == null)
-			{
-				cancellationToken.ThrowIfCancellationRequested();
-				CompiledTemplateDescriptor templateDescriptor;
-				if (request.TemplateContent != null)
-				{
-					templateDescriptor = await Compiler.CompileAsync(
-						request.TemplateKey,
-						request.TemplateContent,
-						request.ModelType,
-						cancellationToken).ConfigureAwait(false);
-				}
-				else if (request.ModelType != null)
-				{
-					templateDescriptor = await Compiler.CompileAsync(request.TemplateKey, request.ModelType, cancellationToken).ConfigureAwait(false);
-				}
-				else
-				{
-					templateDescriptor = await Compiler.CompileAsync(request.TemplateKey, cancellationToken).ConfigureAwait(false);
-				}
-
-				Func<ITemplatePage> templateFactory = FactoryProvider.CreateFactory(templateDescriptor);
-
+				ITemplatePage? templatePage = null;
 				if (Cache != null)
 				{
-					StoreCompiledTemplate(
-						request.TemplateKey,
-						request.CacheKey,
-						templateFactory,
-						templateDescriptor.ExpirationToken,
-						cacheVersion);
-
-					if (request.IsStringTemplate)
+					cancellationToken.ThrowIfCancellationRequested();
+					if (Cache.TryGetTemplate(request.CacheKey, out Func<ITemplatePage>? pageFactory))
 					{
-						StoreCompiledTemplate(
-							request.TemplateKey,
-							request.TemplateKey,
-							templateFactory,
-							templateDescriptor.ExpirationToken,
-							cacheVersion);
+						templatePage = pageFactory();
 					}
 				}
 
-				templatePage = templateFactory();
-			}
+				if (templatePage == null)
+				{
+					cancellationToken.ThrowIfCancellationRequested();
+					CompiledTemplateDescriptor templateDescriptor;
+					if (request.TemplateContent != null)
+					{
+						templateDescriptor = await Compiler.CompileAsync(
+							request.TemplateKey,
+							request.TemplateContent,
+							request.ModelType,
+							cancellationToken).ConfigureAwait(false);
+					}
+					else if (request.ModelType != null)
+					{
+						templateDescriptor = await Compiler.CompileAsync(request.TemplateKey, request.ModelType, cancellationToken).ConfigureAwait(false);
+					}
+					else
+					{
+						templateDescriptor = await Compiler.CompileAsync(request.TemplateKey, cancellationToken).ConfigureAwait(false);
+					}
 
-			templatePage.OutputEncoder = Options.OutputEncoder;
-			return templatePage;
+					Func<ITemplatePage> templateFactory = FactoryProvider.CreateFactory(templateDescriptor);
+
+					if (Cache != null)
+					{
+						StoreCompiledTemplate(
+							request.TemplateKey,
+							request.CacheKey,
+							templateFactory,
+							templateDescriptor.ExpirationToken,
+							cacheVersion);
+
+						if (request.IsStringTemplate)
+						{
+							StoreCompiledTemplate(
+								request.TemplateKey,
+								request.TemplateKey,
+								templateFactory,
+								templateDescriptor.ExpirationToken,
+								cacheVersion);
+						}
+					}
+
+					templatePage = templateFactory();
+				}
+
+				templatePage.OutputEncoder = Options.OutputEncoder;
+				return templatePage;
 			}
 			finally
 			{

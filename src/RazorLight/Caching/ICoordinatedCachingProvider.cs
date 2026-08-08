@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Primitives;
 using System;
+using Microsoft.Extensions.Primitives;
 
 namespace RazorLight.Caching
 {

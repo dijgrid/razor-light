@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
-using System.Reflection;
-using Microsoft.Extensions.DependencyModel;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Reflection.PortableExecutable;
+using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Options;
 
 namespace RazorLight.Compilation
@@ -205,6 +205,6 @@ namespace RazorLight.Compilation
 			}
 		}
 
-	
+
 	}
 }

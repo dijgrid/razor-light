@@ -1,12 +1,12 @@
-using RazorLight.Tests.Utils;
-using RazorLight.Compilation;
-using RazorLight.Razor;
-using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Primitives;
+using RazorLight.Compilation;
+using RazorLight.Razor;
+using RazorLight.Tests.Utils;
 using Xunit;
 
 namespace RazorLight.Tests

@@ -1,4 +1,4 @@
-﻿namespace Samples.EntityFrameworkProject
+namespace Samples.EntityFrameworkProject
 {
 	public class TestViewModel
 	{

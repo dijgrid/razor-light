@@ -1,8 +1,8 @@
-﻿using RazorLight.Extensions;
 using System;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
+using RazorLight.Extensions;
 
 namespace RazorLight
 {

@@ -1,4 +1,4 @@
-﻿namespace RazorLight.Caching
+namespace RazorLight.Caching
 {
 	public struct CachedFileInfo
 	{

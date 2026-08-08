@@ -1,11 +1,11 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using RazorLight.Caching;
-using RazorLight.Razor;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RazorLight.Caching;
+using RazorLight.Razor;
 
 namespace RazorLight.Precompile
 {

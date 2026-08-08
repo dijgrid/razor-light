@@ -1,8 +1,8 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
-using RazorLight.Generation;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
+using RazorLight.Generation;
 
 namespace RazorLight.Compilation
 {

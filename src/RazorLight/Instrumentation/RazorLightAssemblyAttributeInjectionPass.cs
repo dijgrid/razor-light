@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace RazorLight.Instrumentation
 {

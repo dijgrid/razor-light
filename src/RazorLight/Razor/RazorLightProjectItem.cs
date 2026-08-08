@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Primitives;
 using System.IO;
+using Microsoft.Extensions.Primitives;
 
 namespace RazorLight.Razor
 {

@@ -1,7 +1,7 @@
-using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 
 namespace RazorLight
 {

@@ -1,21 +1,21 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Xunit;
-using RazorLight.Extensions;
 using System;
-using Microsoft.Extensions.Hosting;
-using RazorLight.Compilation;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
-using System.Reflection;
-using System.Threading.Tasks;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using Moq;
+using RazorLight.Compilation;
+using RazorLight.Extensions;
 using RazorLight.Razor;
 using RazorLight.Tests.Utils;
-using Microsoft.Extensions.Options;
+using Xunit;
 
 namespace RazorLight.Tests.Extensions
 {

@@ -1,12 +1,12 @@
-﻿using Microsoft.CodeAnalysis;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using RazorLight.Caching;
 using RazorLight.Compilation;
 using RazorLight.Razor;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 
 namespace RazorLight
 {

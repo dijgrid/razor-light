@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Razor.Language;
-using RazorLight.Razor;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
 using RazorLight.Compilation;
 using RazorLight.Instrumentation;
-using System.Threading;
+using RazorLight.Razor;
 
 namespace RazorLight.Generation
 {

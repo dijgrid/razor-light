@@ -1,12 +1,12 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Options;
-using RazorLight.Compilation;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Options;
+using RazorLight.Compilation;
 using Xunit;
 
 namespace RazorLight.Tests.Compilation

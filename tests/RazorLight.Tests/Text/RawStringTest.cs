@@ -1,6 +1,6 @@
-﻿using RazorLight.Text;
 using System;
 using System.IO;
+using RazorLight.Text;
 using Xunit;
 
 namespace RazorLight.Tests.Text

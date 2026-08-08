@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RazorLight.Compilation;
 using RazorLight.Compatibility;
+using RazorLight.Compilation;
 using RazorLight.Generation;
 using RazorLight.Razor;
 using RazorLight.Tests.Integration;

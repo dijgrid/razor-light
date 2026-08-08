@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Primitives;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Primitives;
 
 namespace RazorLight.Caching
 {

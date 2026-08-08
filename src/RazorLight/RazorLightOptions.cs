@@ -1,10 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System;
+using System.Reflection;
+using Microsoft.CodeAnalysis;
 using RazorLight.Caching;
 using RazorLight.Compilation;
-using System.Reflection;
 using RazorLight.Text;
 
 namespace RazorLight

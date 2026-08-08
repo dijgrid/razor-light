@@ -1,4 +1,3 @@
-using RazorLight.Razor;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using RazorLight.Razor;
 
 namespace RazorLight.Caching
 {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,7 +8,7 @@ using RazorLight.Internal.Buffering;
 
 namespace RazorLight
 {
-	internal class TemplateRenderer
+	internal sealed class TemplateRenderer
 	{
 		private readonly IEngineHandler _engineHandler;
 		private readonly IViewBufferScope _bufferScope;
@@ -31,28 +31,22 @@ namespace RazorLight
 			_pageInitializer = pageInitializer;
 		}
 
-		///// <summary>
-		///// Gets the sequence of _ViewStart <see cref="ITemplatePage"/> instances that are executed by this view.
-		///// </summary>
-		//public IReadOnlyList<ITemplatePage> ViewStartPages { get; }
-
-		public virtual Task RenderAsync(ITemplatePage page) =>
+		public Task RenderAsync(ITemplatePage page) =>
 			RenderAsync(page, page.PageContext?.CancellationToken ?? CancellationToken.None);
 
-		public virtual async Task RenderAsync(ITemplatePage page, CancellationToken cancellationToken)
+		public async Task RenderAsync(ITemplatePage page, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			var context = page.PageContext ?? throw new InvalidOperationException("The template page has no PageContext.");
 			context.CancellationToken = cancellationToken;
 
-			var bodyWriter = await RenderPageAsync(page, context, invokeViewStarts: false, cancellationToken).ConfigureAwait(false);
+			var bodyWriter = await RenderPageAsync(page, context, cancellationToken).ConfigureAwait(false);
 			await RenderLayoutAsync(page, context, bodyWriter, cancellationToken).ConfigureAwait(false);
 		}
 
 		private async Task<ViewBufferTextWriter> RenderPageAsync(
 			ITemplatePage page,
 			PageContext context,
-			bool invokeViewStarts,
 			CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -89,13 +83,6 @@ namespace RazorLight
 					_pageInitializer?.Invoke(page);
 				}
 
-				if (invokeViewStarts)
-				{
-					// Execute view starts using the same context + writer as the page to render.
-					await RenderViewStartsAsync(context).ConfigureAwait(false);
-					cancellationToken.ThrowIfCancellationRequested();
-				}
-
 				await RenderPageCoreAsync(page, context, cancellationToken).ConfigureAwait(false);
 				return writer;
 			}
@@ -124,49 +111,8 @@ namespace RazorLight
 					includeCancellationToken).ConfigureAwait(false);
 			};
 
-			//_pageActivator.Activate(page, context);
-
 			await page.ExecuteAsync().ConfigureAwait(false);
 			cancellationToken.ThrowIfCancellationRequested();
-		}
-
-		private Task RenderViewStartsAsync(PageContext context)
-		{
-			return Task.CompletedTask;
-
-			//string layout = null;
-			//string oldPageKey = context.ExecutingPageKey;
-			//try
-			//{
-			//    for (var i = 0; i < ViewStartPages.Count; i++)
-			//    {
-			//        var viewStart = ViewStartPages[i];
-			//        context.ExecutingPageKey = viewStart.Key;
-
-			//        // If non-null, copy the layout value from the previous view start to the current. Otherwise leave
-			//        // Layout default alone.
-			//        if (layout != null)
-			//        {
-			//            viewStart.Layout = layout;
-			//        }
-
-			//        await RenderPageCoreAsync(viewStart, context);
-
-			//        // Pass correct absolute path to next layout or the entry page if this view start set Layout to a
-			//        // relative path.
-			//        layout = _viewEngine.GetAbsolutePath(viewStart.Key, viewStart.Layout);
-			//    }
-			//}
-			//finally
-			//{
-			//    context.ExecutingPageKey = oldPageKey;
-			//}
-
-			//// If non-null, copy the layout value from the view start page(s) to the entry page.
-			//if (layout != null)
-			//{
-			//    RazorPage.Layout = layout;
-			//}
 		}
 
 		private async Task RenderLayoutAsync(
@@ -212,7 +158,7 @@ namespace RazorLight
 				previousPage.IsLayoutBeingRendered = true;
 				layoutPage.PreviousSectionWriters = previousPage.SectionWriters;
 				layoutPage.BodyContent = bodyWriter.Buffer;
-				bodyWriter = await RenderPageAsync(layoutPage, context, invokeViewStarts: false, cancellationToken).ConfigureAwait(false);
+				bodyWriter = await RenderPageAsync(layoutPage, context, cancellationToken).ConfigureAwait(false);
 
 				renderedLayouts.Add(layoutPage);
 				previousPage = layoutPage;

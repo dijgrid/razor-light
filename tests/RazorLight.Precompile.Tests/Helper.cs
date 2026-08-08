@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
 using System.Text;
+using Xunit;
 
 namespace RazorLight.Precompile.Tests
 {
@@ -17,7 +17,7 @@ namespace RazorLight.Precompile.Tests
 			var sw = new StringWriter();
 			Program.ConsoleOut = sw;
 			var exitCode = Program.DoRun(args);
-			Assert.Zero(exitCode);
+			Assert.Equal(0, exitCode);
 			sw.Close();
 
 			return sw.GetStringBuilder();

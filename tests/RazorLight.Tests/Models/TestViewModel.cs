@@ -1,4 +1,4 @@
-﻿namespace RazorLight.Tests.Models
+namespace RazorLight.Tests.Models
 {
 	public class TestViewModel
 	{

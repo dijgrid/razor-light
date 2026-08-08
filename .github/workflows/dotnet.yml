@@ -48,6 +48,11 @@ jobs:
       - name: Build
         run: dotnet build RazorLight.sln --configuration Release --no-restore --warnaserror
 
+      - name: Verify formatting
+        run: |
+          dotnet format RazorLight.sln whitespace --no-restore --verify-no-changes
+          dotnet format RazorLight.sln style --no-restore --verify-no-changes --diagnostics IDE0005 IDE0065
+
       - name: Test RazorLight
         run: dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net10.0 --configuration Release --no-build --collect:"XPlat Code Coverage;Format=cobertura" --results-directory artifacts/TestResults/RazorLight --logger "console;verbosity=normal"
 

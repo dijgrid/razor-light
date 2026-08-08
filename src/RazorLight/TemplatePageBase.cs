@@ -1,14 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.IO;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using RazorLight.Internal;
 using RazorLight.Internal.Buffering;
 using RazorLight.Text;
-
-using System.Threading;
 
 namespace RazorLight
 {

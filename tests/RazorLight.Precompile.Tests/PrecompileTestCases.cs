@@ -1,4 +1,3 @@
-﻿using NUnit.Framework;
 using RazorLight.Caching;
 
 namespace RazorLight.Precompile.Tests
@@ -102,26 +101,26 @@ namespace RazorLight.Precompile.Tests
 			new[] { "-s", "Simple", "-c", CACHE_DIR, "-b", "." },
 			WithCache.Cleanup);
 
-		public static readonly TestCaseData[] TestCases = new TestCaseData[]
+		public static IEnumerable<object[]> TestCases => new object[][]
 		{
-			new("Samples/WorkItemFields.json", AllDefaults) { TestName = AllDefaults.Name },
-			new("Samples/FullMessage.cshtml", AllDefaults) { TestName = AllDefaults.Name },
-			new("Samples/folder/MessageItem.cshtml", AllDefaults) { TestName = AllDefaults.Name },
-			new("Samples/WorkItemComment.cshtml", AllDefaults) { TestName = AllDefaults.Name },
-			new("Samples/CSharpComposition.cshtml", AllDefaults) { TestName = "CSharp source composition" },
-			new("Samples/FullMessage.cshtml", WithCache) { TestName = WithCache.Name },
-			new("Samples/folder/MessageItem.cshtml", WithCache) { TestName = WithCache.Name },
-			new("Samples/FullMessage.cshtml", WithStrategyFileHash) { TestName = WithStrategyFileHash.Name },
-			new("Samples/folder/MessageItem.cshtml", WithStrategyFileHash) { TestName = WithStrategyFileHash.Name },
-			new("Samples/FullMessage.cshtml", WithStrategySimple) { TestName = WithStrategySimple.Name },
-			new("Samples/folder/MessageItem.cshtml", WithStrategySimple) { TestName = WithStrategySimple.Name },
-			new("Samples/FullMessage.cshtml", WithCacheAndStrategyFileHash) { TestName = WithCacheAndStrategyFileHash.Name },
-			new("Samples/folder/MessageItem.cshtml", WithCacheAndStrategySimple) { TestName = WithCacheAndStrategySimple.Name },
-			new("SamplesWithBaseDir/FullMessage.cshtml", WithBase) { TestName = WithBase.Name },
-			new("SamplesWithBaseDir/MessageItem.cshtml", WithBase) { TestName = WithBase.Name },
-			new("SamplesWithBaseDir/FullMessage.cshtml", WithCacheAndBase) { TestName = WithCacheAndBase.Name },
-			new("SamplesWithBaseDir/MessageItem.cshtml", WithCacheAndBase) { TestName = WithCacheAndBase.Name },
-			new("SamplesWithBaseDir/FullMessage.cshtml", WithCacheAndBaseAndStrategySimple) { TestName = WithCacheAndBaseAndStrategySimple.Name },
+			new object[] { "Samples/WorkItemFields.json", AllDefaults },
+			new object[] { "Samples/FullMessage.cshtml", AllDefaults },
+			new object[] { "Samples/folder/MessageItem.cshtml", AllDefaults },
+			new object[] { "Samples/WorkItemComment.cshtml", AllDefaults },
+			new object[] { "Samples/CSharpComposition.cshtml", AllDefaults },
+			new object[] { "Samples/FullMessage.cshtml", WithCache },
+			new object[] { "Samples/folder/MessageItem.cshtml", WithCache },
+			new object[] { "Samples/FullMessage.cshtml", WithStrategyFileHash },
+			new object[] { "Samples/folder/MessageItem.cshtml", WithStrategyFileHash },
+			new object[] { "Samples/FullMessage.cshtml", WithStrategySimple },
+			new object[] { "Samples/folder/MessageItem.cshtml", WithStrategySimple },
+			new object[] { "Samples/FullMessage.cshtml", WithCacheAndStrategyFileHash },
+			new object[] { "Samples/folder/MessageItem.cshtml", WithCacheAndStrategySimple },
+			new object[] { "SamplesWithBaseDir/FullMessage.cshtml", WithBase },
+			new object[] { "SamplesWithBaseDir/MessageItem.cshtml", WithBase },
+			new object[] { "SamplesWithBaseDir/FullMessage.cshtml", WithCacheAndBase },
+			new object[] { "SamplesWithBaseDir/MessageItem.cshtml", WithCacheAndBase },
+			new object[] { "SamplesWithBaseDir/FullMessage.cshtml", WithCacheAndBaseAndStrategySimple },
 		};
 	}
 }

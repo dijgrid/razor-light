@@ -1,12 +1,12 @@
-﻿using Microsoft.CodeAnalysis;
-using RazorLight.Caching;
-using RazorLight.Compilation;
-using RazorLight.Razor;
-using RazorLight.Text;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
+using RazorLight.Caching;
+using RazorLight.Compilation;
+using RazorLight.Razor;
+using RazorLight.Text;
 
 namespace RazorLight
 {
@@ -324,15 +324,15 @@ namespace RazorLight
 
 			if (namespaces != null)
 			{
-				if(namespaces.Count > 0 && buildOptions.Namespaces.Count > 0)
+				if (namespaces.Count > 0 && buildOptions.Namespaces.Count > 0)
 					ThrowIfHasBeenSetExplicitly(nameof(namespaces));
-				
+
 				buildOptions.Namespaces = new HashSet<string>(namespaces);
 			}
 
 			if (dynamicTemplates != null)
 			{
-				if(dynamicTemplates.Count > 0 && buildOptions.DynamicTemplates.Count > 0)
+				if (dynamicTemplates.Count > 0 && buildOptions.DynamicTemplates.Count > 0)
 					ThrowIfHasBeenSetExplicitly(nameof(dynamicTemplates));
 
 				buildOptions.DynamicTemplates = new ConcurrentDictionary<string, string>(dynamicTemplates);
@@ -364,7 +364,7 @@ namespace RazorLight
 
 			if (excludedAssemblies != null)
 			{
-				if(excludedAssemblies.Count > 0 && buildOptions.ExcludedAssemblies.Count > 0)
+				if (excludedAssemblies.Count > 0 && buildOptions.ExcludedAssemblies.Count > 0)
 					ThrowIfHasBeenSetExplicitly(nameof(excludedAssemblies));
 
 				buildOptions.ExcludedAssemblies = new HashSet<string>(excludedAssemblies);
@@ -372,7 +372,7 @@ namespace RazorLight
 
 			if (includedAssemblies != null)
 			{
-				if(includedAssemblies.Count > 0 && buildOptions.IncludedAssemblies.Count > 0)
+				if (includedAssemblies.Count > 0 && buildOptions.IncludedAssemblies.Count > 0)
 					ThrowIfHasBeenSetExplicitly(nameof(includedAssemblies));
 
 				buildOptions.IncludedAssemblies = new HashSet<string>(includedAssemblies, StringComparer.OrdinalIgnoreCase);
@@ -393,7 +393,7 @@ namespace RazorLight
 
 			if (cachingProvider != null)
 			{
-				if(buildOptions.CachingProvider != null)
+				if (buildOptions.CachingProvider != null)
 					ThrowIfHasBeenSetExplicitly(nameof(cachingProvider));
 
 				buildOptions.CachingProvider = cachingProvider;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -55,7 +55,7 @@ namespace RazorLight.Compilation
 				options.Value.EnableDebugMode ?? false,
 				precompileCallback)
 		{
-			
+
 		}
 
 		#region Options
@@ -143,7 +143,7 @@ namespace RazorLight.Compilation
 					builder.AppendLine("Failed to compile generated Razor template:");
 
 					var compilationDiagnostics = new List<TemplateCompilationDiagnostic>();
-					
+
 					foreach (Diagnostic diagnostic in errorsDiagnostics)
 					{
 						FileLinePositionSpan lineSpan = diagnostic.Location.GetMappedLineSpan();
@@ -175,7 +175,7 @@ namespace RazorLight.Compilation
 
 					builder.AppendLine("\nSee CompilationErrors for detailed information");
 
-					throw new TemplateCompilationException(builder.ToString(),compilationDiagnostics);
+					throw new TemplateCompilationException(builder.ToString(), compilationDiagnostics);
 				}
 
 				assemblyStream.Seek(0, SeekOrigin.Begin);
@@ -220,9 +220,6 @@ namespace RazorLight.Compilation
 
 			compilation = ExpressionRewriter.Rewrite(compilation, templateTree);
 
-			//var compilationContext = new RoslynCompilationContext(compilation);
-			//_compilationCallback(compilationContext);
-			//compilation = compilationContext.Compilation;
 			return compilation;
 		}
 

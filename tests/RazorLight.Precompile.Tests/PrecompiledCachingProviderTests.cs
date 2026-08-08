@@ -1,14 +1,12 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace RazorLight.Precompile.Tests
 {
-	[NonParallelizable]
-	public class PrecompiledCachingProviderTests
+	public class PrecompiledCachingProviderTests : IDisposable
 	{
 		private string _precompiledFilePath = null!;
 
-		[SetUp]
-		public void SetUp()
+		public PrecompiledCachingProviderTests()
 		{
 			PrecompileTestCases.CleanupDlls("Samples");
 			_precompiledFilePath = Helper.RunCommandTrimNewline(
@@ -19,13 +17,12 @@ namespace RazorLight.Precompile.Tests
 				"Samples");
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			PrecompileTestCases.CleanupDlls("Samples");
 		}
 
-		[Test]
+		[Fact]
 		public void CacheTemplate_And_Remove_Support_Runtime_Entries()
 		{
 			var cache = new PrecompiledCachingProvider(new[] { _precompiledFilePath }, null);
@@ -33,41 +30,41 @@ namespace RazorLight.Precompile.Tests
 
 			cache.CacheTemplate("runtime\\template.cshtml", () => page, null);
 
-			Assert.That(cache.Contains("/runtime/template.cshtml"), Is.True);
-			Assert.That(cache.TryGetTemplate("runtime/template.cshtml", out var pageFactory), Is.True);
-			Assert.That(pageFactory!(), Is.SameAs(page));
+			Assert.True(cache.Contains("/runtime/template.cshtml"));
+			Assert.True(cache.TryGetTemplate("runtime/template.cshtml", out var pageFactory));
+			Assert.Same(page, pageFactory!());
 
 			cache.Remove("runtime/template.cshtml");
 
-			Assert.That(cache.Contains("/runtime/template.cshtml"), Is.False);
-			Assert.That(cache.TryGetTemplate("runtime/template.cshtml", out var missingFactory), Is.False);
-			Assert.That((object?)missingFactory, Is.Null);
+			Assert.False(cache.Contains("/runtime/template.cshtml"));
+			Assert.False(cache.TryGetTemplate("runtime/template.cshtml", out var missingFactory));
+			Assert.Null(missingFactory);
 		}
 
-		[Test]
+		[Fact]
 		public void Precompiled_Keys_Normalize_Separators_And_Are_Case_Sensitive()
 		{
 			var cache = new PrecompiledCachingProvider(new[] { _precompiledFilePath }, null);
 
-			Assert.That(cache.Contains("folder\\MessageItem.cshtml"), Is.True);
-			Assert.That(cache.Contains("folder/messageitem.cshtml"), Is.False);
+			Assert.True(cache.Contains("folder\\MessageItem.cshtml"));
+			Assert.False(cache.Contains("folder/messageitem.cshtml"));
 
 			cache.Remove("folder\\MessageItem.cshtml");
 
-			Assert.That(cache.Contains("/folder/MessageItem.cshtml"), Is.False);
+			Assert.False(cache.Contains("/folder/MessageItem.cshtml"));
 		}
 
-		[Test]
+		[Fact]
 		public void Map_Is_Immutable_And_Assembly_Diagnostics_Are_Preserved()
 		{
-			string invalidAssembly = Path.Combine(TestContext.CurrentContext.WorkDirectory, "invalid-cache.dll");
+			string invalidAssembly = Path.Combine(AppContext.BaseDirectory, "invalid-cache.dll");
 			File.WriteAllText(invalidAssembly, "not an assembly");
 			try
 			{
 				var cache = new PrecompiledCachingProvider(new[] { invalidAssembly, _precompiledFilePath }, null);
 
-				Assert.That(cache.Diagnostics, Has.Count.EqualTo(1));
-				Assert.That(cache.Diagnostics[0], Does.Contain("invalid-cache.dll"));
+				Assert.Single(cache.Diagnostics);
+				Assert.Contains("invalid-cache.dll", cache.Diagnostics[0]);
 				Assert.Throws<NotSupportedException>(() =>
 					((IDictionary<string, string>)cache.Map).Add("new", "value"));
 			}
@@ -77,11 +74,11 @@ namespace RazorLight.Precompile.Tests
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void Duplicate_Key_Diagnostic_Is_Deterministic()
 		{
-			string first = Path.Combine(TestContext.CurrentContext.WorkDirectory, "a-duplicate.dll");
-			string second = Path.Combine(TestContext.CurrentContext.WorkDirectory, "z-duplicate.dll");
+			string first = Path.Combine(AppContext.BaseDirectory, "a-duplicate.dll");
+			string second = Path.Combine(AppContext.BaseDirectory, "z-duplicate.dll");
 			File.Copy(_precompiledFilePath, first, overwrite: true);
 			File.Copy(_precompiledFilePath, second, overwrite: true);
 			try
@@ -89,8 +86,8 @@ namespace RazorLight.Precompile.Tests
 				RazorLightException exception = Assert.Throws<RazorLightException>(() =>
 					new PrecompiledCachingProvider(new[] { second, first }, null))!;
 
-				Assert.That(exception.Message.IndexOf(first, StringComparison.Ordinal),
-					Is.LessThan(exception.Message.IndexOf(second, StringComparison.Ordinal)));
+				Assert.True(exception.Message.IndexOf(first, StringComparison.Ordinal) <
+					exception.Message.IndexOf(second, StringComparison.Ordinal));
 			}
 			finally
 			{

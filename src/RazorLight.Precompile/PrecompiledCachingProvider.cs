@@ -1,6 +1,3 @@
-using Microsoft.Extensions.Primitives;
-using Mono.Cecil;
-using RazorLight.Caching;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,6 +5,9 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Primitives;
+using Mono.Cecil;
+using RazorLight.Caching;
 
 namespace RazorLight.Precompile
 {

@@ -1,9 +1,9 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
 using RazorLight.Compilation;
-using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 
 namespace RazorLight.Caching
 {

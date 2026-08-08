@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
-using RazorLight.Compilation;
 using RazorLight.Compatibility;
+using RazorLight.Compilation;
 using RazorLight.Generation;
 using RazorLight.Razor;
 using RazorLight.Tests.Razor;
@@ -67,7 +67,7 @@ namespace RazorLight.Tests.Compilation
 			Action p1 = new Action(() => { new RazorTemplateCompiler(null!, compilerService, project, options); });
 			Action p2 = new Action(() => { new RazorTemplateCompiler(generator, null!, project, options); });
 			Action p3 = new Action(() => { new RazorTemplateCompiler(generator, compilerService, null!, options); });
-			
+
 			Action p4 = new Action(() => { new RazorTemplateCompiler(generator, compilerService, project, (RazorLightOptions)null!); });
 
 			Assert.Throws<ArgumentNullException>(p1);
@@ -192,7 +192,7 @@ namespace RazorLight.Tests.Compilation
 			var item = new EmbeddedRazorProjectItem(typeof(Root), "Any.Key");
 
 			var exception = await compiler.CreateTemplateNotFoundException(item);
-			
+
 			Assert.NotNull(exception.KnownDynamicTemplateKeys);
 			Assert.NotNull(exception.KnownProjectTemplateKeys);
 		}

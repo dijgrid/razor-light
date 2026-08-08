@@ -1,3 +1,5 @@
+using System;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using RazorLight.Caching;
 using RazorLight.Compatibility;
@@ -5,8 +7,6 @@ using RazorLight.Compilation;
 using RazorLight.DependencyInjection;
 using RazorLight.Generation;
 using RazorLight.Razor;
-using System;
-using System.Reflection;
 
 namespace RazorLight
 {

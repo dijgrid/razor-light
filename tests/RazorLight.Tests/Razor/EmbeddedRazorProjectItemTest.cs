@@ -1,6 +1,6 @@
-﻿using RazorLight.Razor;
 using System;
 using System.IO;
+using RazorLight.Razor;
 using Xunit;
 
 namespace RazorLight.Tests.Razor
@@ -18,19 +18,6 @@ namespace RazorLight.Tests.Razor
 		{
 			Assert.Throws<ArgumentNullException>(() => new EmbeddedRazorProjectItem(typeof(Root).Assembly, "namespace", null!));
 		}
-
-		//[Fact]
-		//public void Ensure_ConstructorParams_AreApplied()
-		//{
-		//    string templateKey = "Assets.Embedded.Empty";
-		//    Type rootType = typeof(Root);
-
-		//    var item = new EmbeddedRazorProjectItem(rootType, templateKey);
-
-		//    Assert.Equal(item.Key, templateKey);
-		//    Assert.Equal(item.RootType, rootType);
-		//    Assert.Equal(item.Assembly, rootType.GetTypeInfo().Assembly);
-		//}
 
 		[Fact]
 		public void ReturnsExistsTrue_OnExistingTemplate()

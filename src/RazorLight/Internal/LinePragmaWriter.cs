@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using System;
 using System.Globalization;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace RazorLight.Internal
 {

@@ -1,11 +1,11 @@
-using RazorLight.Compilation;
-using RazorLight.Razor;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using RazorLight.Compilation;
+using RazorLight.Razor;
 
 namespace RazorLight.Generation
 {

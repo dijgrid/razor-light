@@ -1,10 +1,9 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
+using RazorLight.Tests.Snippets.Core;
 using Xunit;
 
 namespace RazorLight.Tests.Snippets
 {
-	using Core;
-
 	public class Snippets
 	{
 		public class ViewModel
@@ -26,7 +25,7 @@ namespace RazorLight.Tests.Snippets
 				.Build();
 
 			string template = "Hello, @Model.Name. Welcome to RazorLight repository";
-			ViewModel model = new ViewModel {Name = "John Doe"};
+			ViewModel model = new ViewModel { Name = "John Doe" };
 
 			string result = await engine.CompileRenderStringAsync("templateKey", template, model);
 
@@ -71,7 +70,7 @@ namespace RazorLight.Tests.Snippets
 				.UseMemoryCachingProvider()
 				.Build();
 
-			var model = new {Name = "John Doe"};
+			var model = new { Name = "John Doe" };
 			string result = await engine.CompileRenderAsync("Subfolder/View.cshtml", model);
 
 			#endregion

@@ -1,12 +1,12 @@
 using System;
 using System.Threading;
-using NUnit.Framework;
+using Xunit;
 
 namespace RazorLight.Precompile.Tests
 {
 	public class CancellationTests
 	{
-		[Test]
+		[Fact]
 		public void Program_Observes_Cancellation_Before_Command_Start()
 		{
 			using var cancellationSource = new CancellationTokenSource();
@@ -16,7 +16,7 @@ namespace RazorLight.Precompile.Tests
 				Program.DoRun(new[] { "help" }, cancellationSource.Token));
 		}
 
-		[Test]
+		[Fact]
 		public void Precompile_Command_Observes_Cancellation_Before_Parsing()
 		{
 			using var cancellationSource = new CancellationTokenSource();

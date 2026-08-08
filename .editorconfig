@@ -15,6 +15,8 @@ tab_width = 4
 
 [*.cs]
 dotnet_diagnostic.CS1591.severity = none
+csharp_using_directive_placement = outside_namespace:error
+dotnet_sort_system_directives_first = true
 
 # RazorLight 2.3.1 already shipped overlapping optional-parameter overloads. TASK-018 owns redesign;
 # the public API files and package validation still enforce the inherited binary surface.

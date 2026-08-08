@@ -1,7 +1,7 @@
-﻿using Moq;
-using RazorLight.Caching;
 using System;
 using System.Threading.Tasks;
+using Moq;
+using RazorLight.Caching;
 using Xunit;
 
 namespace RazorLight.Tests.Caching
@@ -71,23 +71,23 @@ namespace RazorLight.Tests.Caching
 		public async Task Applies_OutputEncoder_To_CachedTemplates()
 		{
 			string templateKey = "Assets.Embedded.Empty.cshtml";
-		
+
 			var encoder = new TemplatePageTest.TestOutputEncoder();
 			var engine = new RazorLightEngineBuilder()
 				.UseOutputEncoder(encoder)
 				.UseMemoryCachingProvider()
 				.SetOperatingAssembly(typeof(Root).Assembly)
 				.UseEmbeddedResourcesProject(typeof(Root))
-				
+
 				.Build();
 			var testCompileToCache = await engine.CompileTemplateAsync(templateKey);
-		
+
 			Assert.Same(encoder, testCompileToCache.OutputEncoder);
-		
+
 			var cachedCompile = await engine.CompileTemplateAsync(templateKey);
-		
+
 			Assert.Same(encoder, cachedCompile.OutputEncoder);
-		
+
 		}
 
 		private Func<ITemplatePage> GetTestFactory(string key = "key")

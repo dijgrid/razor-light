@@ -1,10 +1,9 @@
-using RazorLight.Internal;
-using RazorLight.Text;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-
 using System.Threading;
+using System.Threading.Tasks;
+using RazorLight.Internal;
+using RazorLight.Text;
 
 namespace RazorLight
 {

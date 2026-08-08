@@ -1,7 +1,7 @@
-﻿using RazorLight.Razor;
 using System;
 using System.IO;
 using System.Text;
+using RazorLight.Razor;
 
 namespace Samples.EntityFrameworkProject
 {

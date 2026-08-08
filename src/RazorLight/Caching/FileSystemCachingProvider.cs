@@ -1,11 +1,11 @@
-using Microsoft.Extensions.Primitives;
-using RazorLight.Compilation;
-using RazorLight.Generation;
-using RazorLight.Razor;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
+using Microsoft.Extensions.Primitives;
+using RazorLight.Compilation;
+using RazorLight.Generation;
+using RazorLight.Razor;
 
 namespace RazorLight.Caching
 {

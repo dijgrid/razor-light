@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc.Razor.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using RazorLight.Internal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace RazorLight.Instrumentation
 {

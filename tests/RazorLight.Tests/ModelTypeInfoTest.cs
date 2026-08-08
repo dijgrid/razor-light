@@ -1,6 +1,6 @@
-﻿using RazorLight.Tests.Models;
 using System.Collections.Generic;
 using System.Dynamic;
+using RazorLight.Tests.Models;
 using Xunit;
 
 namespace RazorLight.Tests

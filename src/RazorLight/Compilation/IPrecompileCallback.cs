@@ -1,4 +1,4 @@
-﻿using RazorLight.Generation;
+using RazorLight.Generation;
 
 namespace RazorLight.Compilation
 {

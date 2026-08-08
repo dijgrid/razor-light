@@ -1,5 +1,5 @@
-﻿using RazorLight.Razor;
 using System.Threading.Tasks;
+using RazorLight.Razor;
 using Xunit;
 
 namespace RazorLight.Tests.Razor

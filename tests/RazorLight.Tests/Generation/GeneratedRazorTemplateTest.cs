@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Moq;
 using RazorLight.Generation;

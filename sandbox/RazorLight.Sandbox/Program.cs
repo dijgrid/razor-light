@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,11 +30,14 @@ namespace RazorLight.Sandbox
 			await using var decompressionStream = new DecompressionStream(tempStream);
 			await UnwrapStream(decompressionStream);
 			//System.GC.SuppressFinalize(decompressionStream);
-			var model = new {UnwrappedValue = new Lazy<string>(() =>
+			var model = new
+			{
+				UnwrappedValue = new Lazy<string>(() =>
 			{
 				var x = UnwrapStream(decompressionStream).Result;
 				return Encoding.Default.GetString(x);
-			})};
+			})
+			};
 
 			string dynamicTemplateResult =
 				await engine.CompileRenderStringAsync("templateKey", @"@using RazorLight

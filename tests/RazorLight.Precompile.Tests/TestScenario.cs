@@ -1,4 +1,4 @@
-﻿using RazorLight.Caching;
+using RazorLight.Caching;
 
 namespace RazorLight.Precompile.Tests
 {

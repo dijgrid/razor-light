@@ -1,5 +1,5 @@
-using RazorLight.Compilation;
 using System;
+using RazorLight.Compilation;
 using Xunit;
 using Xunit.Abstractions;
 

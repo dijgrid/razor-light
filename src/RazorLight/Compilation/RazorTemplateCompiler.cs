@@ -350,20 +350,6 @@ namespace RazorLight.Compilation
 			};
 		}
 
-		protected virtual async Task<CompiledTemplateDescriptor> CompileAndEmitAsync(RazorLightProjectItem projectItem)
-		{
-			IGeneratedRazorTemplate generatedTemplate = await _razorSourceGenerator.GenerateCodeAsync(projectItem);
-			return CompileAndEmit(projectItem, generatedTemplate);
-		}
-
-		private async Task<CompiledTemplateDescriptor> CompileAndEmitAsync(
-			RazorLightProjectItem projectItem,
-			Type modelType)
-		{
-			IGeneratedRazorTemplate generatedTemplate = await _razorSourceGenerator.GenerateCodeAsync(projectItem, modelType);
-			return CompileAndEmit(projectItem, generatedTemplate);
-		}
-
 		private CompiledTemplateDescriptor CompileAndEmit(
 			RazorLightProjectItem projectItem,
 			IGeneratedRazorTemplate generatedTemplate)

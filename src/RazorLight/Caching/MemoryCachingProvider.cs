@@ -1,8 +1,8 @@
+using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace RazorLight.Caching
 {

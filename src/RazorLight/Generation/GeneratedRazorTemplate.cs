@@ -1,8 +1,8 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using RazorLight.Compilation;
 using RazorLight.Razor;
-using System;
-using System.Collections.Generic;
 
 namespace RazorLight.Generation
 {

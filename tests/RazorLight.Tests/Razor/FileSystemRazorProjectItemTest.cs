@@ -1,6 +1,6 @@
-﻿using RazorLight.Razor;
 using System;
 using System.IO;
+using RazorLight.Razor;
 using RazorLight.Tests.Utils;
 using Xunit;
 

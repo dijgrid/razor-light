@@ -1,11 +1,11 @@
-﻿using System.Dynamic;
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Dynamic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using RazorLight.Caching;
 using RazorLight.Compilation;
-using System;
 
 namespace RazorLight
 {

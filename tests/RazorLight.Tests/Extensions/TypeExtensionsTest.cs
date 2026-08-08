@@ -1,8 +1,8 @@
-﻿using RazorLight.Extensions;
-using RazorLight.Tests.Models;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using RazorLight.Extensions;
+using RazorLight.Tests.Models;
 using Xunit;
 
 namespace RazorLight.Tests.Extensions

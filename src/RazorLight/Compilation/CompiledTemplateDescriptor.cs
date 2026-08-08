@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.Primitives;
 using RazorLight.Razor;
 

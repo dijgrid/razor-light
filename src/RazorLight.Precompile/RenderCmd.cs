@@ -1,14 +1,14 @@
-using Microsoft.Extensions.FileSystemGlobbing;
-using Mono.Cecil;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using RazorLight.Caching;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Mono.Cecil;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RazorLight.Caching;
 
 namespace RazorLight.Precompile
 {

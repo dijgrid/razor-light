@@ -36,7 +36,7 @@ Only packages that share a release train or compatibility boundary are grouped:
 | `microsoft-extensions` | Microsoft.Extensions packages | Runtime extensions follow the .NET 10 servicing line. |
 | `azure-functions` | Azure Functions Worker packages | The Functions sample's worker, SDK, and HTTP extension are validated together. |
 | `xunit` | xUnit core and Visual Studio runner | The runner is validated with the test framework it discovers. |
-| `nunit` | NUnit and NUnit adapter | The precompile tests require a compatible framework and adapter pair. |
+| `xunit` | xUnit and its Visual Studio runner | Core and precompile tests share one framework and runner family. |
 
 Unmatched packages and GitHub Actions update independently. There are no permanent ignore rules.
 Every Dependabot pull request runs the same unfiltered `pull_request` CI matrix as a maintainer pull
