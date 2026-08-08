@@ -56,9 +56,10 @@ DECISION-003 records the approved release identity and controls:
 
 1. The maintainer does not control the historical `RazorLightTeam` NuGet.org owner, so the existing
    package IDs will not be retained.
-2. The independent packages are `Dijgrid.RazorLight` and `Dijgrid.RazorLight.Precompile`; existing
-   CLR namespaces and the tool command remain unchanged.
-3. The independent version line begins at `3.0.0` and uses `v<major>.<minor>.<patch>` release tags.
+2. The independent packages are `Dijgrid.RazorLight`, `Dijgrid.RazorLight.Html`, and
+   `Dijgrid.RazorLight.Precompile`; existing CLR namespaces and the tool command remain unchanged.
+3. The independent version line begins with `3.0.0-beta.1` and uses exact SemVer
+   `v<major>.<minor>.<patch>[-prerelease]` release tags.
 4. NuGet.org is the public destination, and the same reviewed artifacts are attached to the matching
    GitHub Release.
 5. The NuGet.org trusted-publishing owner is the `dijgrid` account. The policy is restricted to
@@ -75,8 +76,8 @@ DECISION-003 records the approved release identity and controls:
    publishing.
 4. Add a tag-triggered release workflow with a protected `nuget` environment, least-privilege
    permissions, and OIDC trusted publishing where available.
-5. Exercise the workflow without publishing, inspect both packages, and document the first-release
-   checklist and rollback/yank procedure.
+5. Exercise the workflow without publishing, inspect all package artifacts, and document the
+   first-release checklist and rollback/yank procedure.
 
 ## Scope boundaries
 
@@ -104,19 +105,19 @@ and technically appropriate.
 
 - Verified that the historical packages are owned by `toddams` / `RazorLightTeam` and
   `johnzabroski` / `RazorLightTeam`; the maintainer confirmed those owners are not controlled here.
-- Centralized version `3.0.0`, independent-maintainer metadata, provenance, license/readme, portable
-  symbols, and Source Link for both `Dijgrid.*` packages.
+- Centralized version `3.0.0-beta.1`, independent-maintainer metadata, provenance, license/readme,
+  portable symbols, and Source Link for the Core, optional HTML, and precompile packages.
 - Added repeat-build hash checks and package/symbol validation scripts, then integrated them into CI
-  with reviewable artifacts for both the library and precompile tool.
-- Added a stable-tag-only release workflow that rebuilds and verifies artifacts before waiting for
-  the protected `nuget` environment, exchanges GitHub OIDC for a short-lived NuGet credential, and
-  creates a matching GitHub Release only after both packages publish.
+  with reviewable artifacts for all three packages.
+- Added a SemVer tag-triggered release workflow that rebuilds and verifies artifacts before waiting
+  for the protected `nuget` environment, exchanges GitHub OIDC for a short-lived NuGet credential,
+  and creates a matching GitHub Release only after all packages publish.
 - Configured the repository's `nuget` environment with `dijgrid` as required reviewer and a
   `v*.*.*` tag deployment policy. No packages, tags, or releases were published.
 - The maintainer confirmed on 2026-08-07 that the matching trusted-publishing policy was created in
   the `dijgrid` NuGet.org account.
-- Built and inspected all four `3.0.0` artifacts locally, validated their contents and Source Link
-  metadata, restored the library package in a clean consumer, and installed the tool from the local
-  package source.
+- Built and inspected all six `3.0.0-beta.1` artifacts locally, validated their contents and Source
+  Link metadata, restored Core and optional HTML packages in a clean consumer, and installed the tool
+  from the local package source.
 - Documented package review, first-release, trusted-publishing, and rollback/unlisting procedures in
   `docs/releasing.md`.

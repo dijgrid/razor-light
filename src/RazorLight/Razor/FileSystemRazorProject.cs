@@ -82,6 +82,11 @@ namespace RazorLight.Razor
 			{
 				throw new ArgumentNullException(nameof(sourceKey));
 			}
+			if (Path.IsPathFullyQualified(sourceKey))
+			{
+				throw new InvalidOperationException(
+					$"The C# source path '{sourceKey}' must be a logical path inside the configured project root.");
+			}
 
 			string relativePath = sourceKey.TrimStart('/', '\\');
 			string sourcePath = FileSystemRazorProjectHelper.ResolveContainedPath(

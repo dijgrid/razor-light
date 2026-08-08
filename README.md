@@ -35,11 +35,12 @@ is optional; the core library treats output as text.
 ## Install
 
 ```shell
-dotnet add package Dijgrid.RazorLight --version 3.0.0
+dotnet add package Dijgrid.RazorLight --version 3.0.0-beta.1
 ```
 
 The historical `RazorLight 2.3.1` package is the upstream release, not this continuation. Moving to
-the `Dijgrid.RazorLight` 3.x line is a framework and API migration.
+the `Dijgrid.RazorLight` 3.x line is a framework and API migration. Read the
+[2.3.1-to-3.0 migration guide](docs/migration-3.0.md) before upgrading.
 
 ## Quick example
 
@@ -113,6 +114,7 @@ an in-process sandbox for untrusted authors; see the
 ## Documentation
 
 - [Manual](docs/manual.md)
+- [Migrating from RazorLight 2.3.1](docs/migration-3.0.md)
 - [Framework support and migration](docs/framework-support.md)
 - [Template language compatibility](docs/template-language-compatibility.md)
 - [Caching and invalidation](docs/caching.md)

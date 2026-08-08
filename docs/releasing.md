@@ -7,8 +7,9 @@ document is an operator checklist; ordinary pull requests and CI runs never publ
 
 | Project | NuGet package | First independent version |
 | --- | --- | --- |
-| RazorLight library | `Dijgrid.RazorLight` | `3.0.0` |
-| Precompile tool | `Dijgrid.RazorLight.Precompile` | `3.0.0` |
+| RazorLight library | `Dijgrid.RazorLight` | `3.0.0-beta.1` |
+| Optional HTML integration | `Dijgrid.RazorLight.Html` | `3.0.0-beta.1` |
+| Precompile tool | `Dijgrid.RazorLight.Precompile` | `3.0.0-beta.1` |
 
 The package IDs distinguish the independent line from the historical packages. CLR namespaces and
 the `razorlight-precompile` tool command remain unchanged. DECISION-003 records the identity and
@@ -46,8 +47,10 @@ dotnet tool restore
 dotnet build RazorLight.sln --configuration Release --no-restore --warnaserror
 pwsh ./scripts/Test-DeterministicBuild.ps1
 dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages
+dotnet pack src/RazorLight.Html/RazorLight.Html.csproj --configuration Release --no-build --output artifacts/packages
 dotnet pack src/RazorLight.Precompile/RazorLight.Precompile.csproj --configuration Release --no-build --output artifacts/packages
-pwsh ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version 3.0.0
+pwsh ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version 3.0.0-beta.1
+pwsh ./scripts/Test-PackageConsumer.ps1 -PackageDirectory artifacts/packages -Version 3.0.0-beta.1
 ```
 
 Inspect the package files with a NuGet package viewer before approving a release. Confirm the IDs,
@@ -57,25 +60,28 @@ version, .NET 10 target, dependencies, license, README, repository commit, tool 
 
 1. Complete all intended changes on `master` and ensure required CI checks pass.
 2. Move the `Unreleased` changelog entries into a heading for the release version and date.
-3. Set `VersionPrefix` in `Directory.Build.props` to the exact release version.
+3. Set `VersionPrefix` and, for a prerelease, `VersionSuffix` in `Directory.Build.props` so the
+   evaluated project `Version` exactly matches the release version.
 4. Run the full local validation and inspect the latest default-branch package artifact.
-5. Create an annotated tag whose version exactly matches `VersionPrefix`, then push only that tag:
+5. Create an annotated tag whose version exactly matches the evaluated project `Version`, then push
+   only that tag:
 
    ```shell
-   git tag -a v3.0.0 -m "RazorLight 3.0.0"
-   git push origin v3.0.0
+   git tag -a v3.0.0-beta.1 -m "RazorLight 3.0.0-beta.1"
+   git push origin v3.0.0-beta.1
    ```
 
 6. The release workflow rebuilds, tests, validates, and uploads a second artifact set. Download and
    review that set before approving the waiting `nuget` environment deployment.
 7. Approval allows the workflow to exchange its OIDC token for a short-lived NuGet credential,
-   publish both packages and symbols, and attach the same files to a matching GitHub Release.
-8. Verify both NuGet package pages, symbol processing, installation, the GitHub Release assets, and
-   the generated release notes.
+   publish all packages and symbols, and attach the same files to a matching GitHub Release.
+8. Verify all NuGet package pages, symbol processing, installation, the GitHub Release assets, and
+   the release notes.
 
-The workflow rejects tags that do not use `v<major>.<minor>.<patch>`, do not match `VersionPrefix`,
-or do not point to a commit contained in `origin/master`. Published versions are immutable; never
-move or reuse a release tag.
+The workflow accepts SemVer tags in `v<major>.<minor>.<patch>[-prerelease]` form, requires an exact
+match with the evaluated project `Version`, and requires the commit to be contained in
+`origin/master`. A prerelease tag creates a GitHub prerelease. Published versions are immutable;
+never move or reuse a release tag.
 
 ## Failed or partial release
 

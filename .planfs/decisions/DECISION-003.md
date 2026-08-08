@@ -22,12 +22,12 @@ framework and compatibility break.
 
 ## Decision
 
-- Publish the library as `Dijgrid.RazorLight` and the tool as
-  `Dijgrid.RazorLight.Precompile`.
+- Publish the library as `Dijgrid.RazorLight`, optional HTML integration as
+  `Dijgrid.RazorLight.Html`, and tool as `Dijgrid.RazorLight.Precompile`.
 - Keep the existing `RazorLight` and `RazorLight.Precompile` CLR namespaces and command name so the
   package identity change does not create an unrelated source-compatibility break.
-- Begin the independent release line at `3.0.0`; release tags use the exact `v<major>.<minor>.<patch>`
-  form and supply the package version to the build.
+- Begin the independent release line with `3.0.0-beta.1`; release tags use exact SemVer
+  `v<major>.<minor>.<patch>[-prerelease]` form and supply the package version to the build.
 - Publish public packages to NuGet.org and attach the exact reviewed `.nupkg` and `.snupkg`
   artifacts to a GitHub Release for the same tag.
 - The NuGet.org trusted-publishing policy is owned by the `dijgrid` account and trusts only the

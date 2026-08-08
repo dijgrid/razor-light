@@ -14,10 +14,11 @@
 
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'RazorLight' Or '$(MSBuildProjectName)' == 'RazorLight.Html' Or '$(MSBuildProjectName)' == 'RazorLight.Precompile'">
     <VersionPrefix>3.0.0</VersionPrefix>
+    <VersionSuffix>beta.1</VersionSuffix>
     <Authors>Dijgrid; RazorLight contributors</Authors>
     <Company>Dijgrid</Company>
     <PackageProjectUrl>https://github.com/dijgrid/razor-light</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/dijgrid/razor-light/blob/master/CHANGELOG.md</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/dijgrid/razor-light/blob/master/docs/migration-3.0.md</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>

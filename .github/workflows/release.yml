@@ -20,6 +20,7 @@ jobs:
     timeout-minutes: 30
     outputs:
       version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
 
     steps:
       - name: Check out repository
@@ -37,17 +38,14 @@ jobs:
         shell: pwsh
         run: |
           $tag = '${{ github.ref_name }}'
-          if ($tag -notmatch '^v(?<version>[0-9]+[.][0-9]+[.][0-9]+)$') {
-              throw "Release tag '$tag' must use the v<major>.<minor>.<patch> form."
+          if ($tag -notmatch '^v(?<version>(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:[.][0-9A-Za-z-]+)*)?)$') {
+              throw "Release tag '$tag' must use a SemVer v<major>.<minor>.<patch>[-prerelease] form."
           }
 
           $version = $Matches.version
-          [xml] $props = Get-Content -Raw Directory.Build.props
-          $versionPrefix = $props.Project.PropertyGroup.VersionPrefix |
-              Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-              Select-Object -First 1
-          if ($version -ne $versionPrefix) {
-              throw "Release tag version '$version' does not match VersionPrefix '$versionPrefix'."
+          $projectVersion = (& dotnet msbuild src/RazorLight/RazorLight.csproj -getProperty:Version).Trim()
+          if ($version -ne $projectVersion) {
+              throw "Release tag version '$version' does not match project Version '$projectVersion'."
           }
 
           & git merge-base --is-ancestor $env:GITHUB_SHA origin/master
@@ -56,6 +54,7 @@ jobs:
           }
 
           "version=$version" >> $env:GITHUB_OUTPUT
+          "prerelease=$($version.Contains('-').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
 
       - name: Restore
         run: dotnet restore RazorLight.sln
@@ -66,11 +65,22 @@ jobs:
       - name: Build
         run: dotnet build RazorLight.sln --configuration Release --no-restore --warnaserror -p:ContinuousIntegrationBuild=true
 
-      - name: Test RazorLight
-        run: dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net10.0 --configuration Release --no-build
+      - name: Test and enforce coverage floors
+        shell: pwsh
+        run: ./scripts/Test-Coverage.ps1 -NoBuild
 
-      - name: Test precompile tool
-        run: dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj --configuration Release --no-build
+      - name: Test deployment modes
+        shell: pwsh
+        run: ./scripts/Test-DeploymentModes.ps1
+
+      - name: Verify trimming and Native AOT diagnostics
+        shell: pwsh
+        run: ./scripts/Test-DeploymentDiagnostics.ps1
+
+      - name: Audit direct and transitive dependencies
+        run: |
+          dotnet restore RazorLight.sln --force-evaluate -p:AuditPipeline=true
+          dotnet package list --project RazorLight.sln --vulnerable --include-transitive --no-restore
 
       - name: Verify deterministic build outputs
         shell: pwsh
@@ -79,6 +89,7 @@ jobs:
       - name: Pack and validate reviewed artifacts
         run: |
           dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages --warnaserror -p:PackageVersion=${{ steps.version.outputs.version }}
+          dotnet pack src/RazorLight.Html/RazorLight.Html.csproj --configuration Release --no-build --output artifacts/packages --warnaserror -p:PackageVersion=${{ steps.version.outputs.version }}
           dotnet pack src/RazorLight.Precompile/RazorLight.Precompile.csproj --configuration Release --no-build --output artifacts/packages --warnaserror -p:PackageVersion=${{ steps.version.outputs.version }}
 
       - name: Validate package layout and Source Link metadata
@@ -88,7 +99,21 @@ jobs:
       - name: Resolve Source Link documents
         run: |
           dotnet sourcelink test src/RazorLight/bin/Release/net10.0/RazorLight.pdb
+          dotnet sourcelink test src/RazorLight.Html/bin/Release/net10.0/RazorLight.Html.pdb
           dotnet sourcelink test src/RazorLight.Precompile/bin/Release/net10.0/RazorLight.Precompile.pdb
+
+      - name: Smoke-test clean package consumers
+        shell: pwsh
+        run: ./scripts/Test-PackageConsumer.ps1 -PackageDirectory artifacts/packages -Version ${{ steps.version.outputs.version }}
+
+      - name: Record reviewed artifact hashes
+        shell: pwsh
+        run: |
+          Get-ChildItem artifacts/packages -File |
+            Where-Object Extension -In '.nupkg', '.snupkg' |
+            Sort-Object Name |
+            ForEach-Object { "$(Get-FileHash $_.FullName -Algorithm SHA256 | Select-Object -ExpandProperty Hash)  $($_.Name)" } |
+            Set-Content artifacts/packages/SHA256SUMS
 
       - name: Upload artifacts for maintainer review
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -97,6 +122,7 @@ jobs:
           path: |
             artifacts/packages/*.nupkg
             artifacts/packages/*.snupkg
+            artifacts/packages/SHA256SUMS
           if-no-files-found: error
           retention-days: 30
 
@@ -132,7 +158,14 @@ jobs:
 
       - name: Revalidate reviewed artifacts
         shell: pwsh
-        run: ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version ${{ needs.build-and-verify.outputs.version }}
+        run: |
+          ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version ${{ needs.build-and-verify.outputs.version }}
+          Get-Content artifacts/packages/SHA256SUMS | ForEach-Object {
+              $expected, $name = $_ -split '  ', 2
+              $actual = Get-FileHash (Join-Path artifacts/packages $name) -Algorithm SHA256 |
+                  Select-Object -ExpandProperty Hash
+              if ($actual -ne $expected) { throw "Artifact hash mismatch for '$name'." }
+          }
 
       - name: Obtain short-lived NuGet credential
         id: login
@@ -143,7 +176,10 @@ jobs:
       - name: Publish packages and symbols to NuGet.org
         shell: pwsh
         run: |
-          Get-ChildItem artifacts/packages -Filter *.nupkg | Sort-Object Name | ForEach-Object {
+          Get-ChildItem artifacts/packages -File |
+            Where-Object Extension -In '.nupkg', '.snupkg' |
+            Sort-Object Name |
+            ForEach-Object {
               & dotnet nuget push $_.FullName `
                   --api-key '${{ steps.login.outputs.NUGET_API_KEY }}' `
                   --source https://api.nuget.org/v3/index.json
@@ -155,8 +191,16 @@ jobs:
       - name: Create matching GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: pwsh
         run: |
-          gh release create "${{ github.ref_name }}" artifacts/packages/* \
-            --verify-tag \
-            --title "RazorLight ${{ needs.build-and-verify.outputs.version }}" \
-            --generate-notes
+          $assets = Get-ChildItem artifacts/packages -File | Sort-Object Name | ForEach-Object FullName
+          $arguments = @(
+              'release', 'create', '${{ github.ref_name }}') + $assets + @(
+              '--verify-tag',
+              '--title', 'RazorLight ${{ needs.build-and-verify.outputs.version }}',
+              '--notes-file', 'docs/release-notes/${{ needs.build-and-verify.outputs.version }}.md')
+          if ('${{ needs.build-and-verify.outputs.prerelease }}' -eq 'true') {
+              $arguments += '--prerelease'
+          }
+          & gh @arguments
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub Release creation failed.' }

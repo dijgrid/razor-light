@@ -87,8 +87,15 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: pwsh
         run: |
-          $version = (& dotnet msbuild src/RazorLight/RazorLight.csproj -getProperty:VersionPrefix).Trim()
+          $version = (& dotnet msbuild src/RazorLight/RazorLight.csproj -getProperty:Version).Trim()
           ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version $version
+
+      - name: Smoke-test clean package consumers
+        if: matrix.os == 'ubuntu-latest'
+        shell: pwsh
+        run: |
+          $version = (& dotnet msbuild src/RazorLight/RazorLight.csproj -getProperty:Version).Trim()
+          ./scripts/Test-PackageConsumer.ps1 -PackageDirectory artifacts/packages -Version $version
 
       - name: Resolve Source Link documents
         if: matrix.os == 'ubuntu-latest'

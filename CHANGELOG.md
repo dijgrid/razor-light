@@ -7,11 +7,17 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 
 ## Unreleased
 
+## 3.0.0-beta.1 - 2026-08-08
+
+This first independent beta requires .NET 10, changes the package ID to `Dijgrid.RazorLight`, uses
+plain-text output by default, moves HTML encoding into the optional `Dijgrid.RazorLight.Html` package,
+removes MVC tag helpers, and intentionally retires obsolete public APIs. Read the
+[2.3.1-to-3.0 migration guide](docs/migration-3.0.md) before upgrading.
+
 ### Added
 
 - Added cross-platform line and branch coverage ratchets plus a reproducible BenchmarkDotNet suite
   for compilation, rendering, caching, concurrency, dependency injection, and lifecycle scenarios.
-
 - A supported precompiled-only engine entry point renders deterministic build artifacts without
   constructing the Razor/Roslyn compiler graph or silently falling back to runtime compilation.
   Template artifacts now carry version, model-contract, and source-checksum metadata.
@@ -69,24 +75,22 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 - Windows and Linux CI now executes framework-dependent, self-contained, and extraction-based
   single-file deployment probes and guards the documented trim-warning inventory.
 
-## 3.0.0 - 2026-08-07
-
-### Added
+### Repository and release infrastructure
 
 - Independent-maintenance provenance and upstream synchronization policy.
 - Repository contribution, support, security, conduct, and task-management guidance.
 - PlanFS backlog for modernization work.
 - Cross-platform .NET 10 test coverage, package validation, and maintained sample checks.
 - Compatibility, framework support, dependency policy, testing, and code-quality documentation.
-- Independent `Dijgrid.RazorLight` and `Dijgrid.RazorLight.Precompile` package identities beginning
-  at version `3.0.0`.
-- Deterministic-output, package-content, symbol, and Source Link validation for both release
+- Independent `Dijgrid.RazorLight`, `Dijgrid.RazorLight.Html`, and
+  `Dijgrid.RazorLight.Precompile` package identities beginning at version `3.0.0-beta.1`.
+- Deterministic-output, package-content, symbol, and Source Link validation for all three release
   artifacts.
 - SDK package compatibility validation against the inherited `RazorLight 2.3.1` baseline, with
   reviewed suppressions for its retired framework groups and a human-readable public API inventory.
 - Protected tag-triggered release automation using GitHub OIDC and NuGet trusted publishing.
 
-### Changed
+### Repository infrastructure changes
 
 - Repository metadata and links now point to `dijgrid/razor-light`.
 - GitHub automation and dependency maintenance use current, least-privilege workflows.
@@ -97,7 +101,7 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 - Package metadata identifies Dijgrid as the independent maintainer while preserving upstream
   provenance and existing CLR namespaces.
 
-### Removed
+### Repository cleanup
 
 - Obsolete PAT-based pull request rebasing and direct NuGet publishing automation.
 - Abandoned command-line and globbing dependencies, obsolete runtime branches, and stale .NET Core
