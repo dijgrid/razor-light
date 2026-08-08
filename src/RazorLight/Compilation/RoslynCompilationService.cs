@@ -122,7 +122,7 @@ namespace RazorLight.Compilation
 			}
 
 			string assemblyName = Path.GetRandomFileName();
-			var compilation = CreateCompilation(razorTemplate.GeneratedCode, assemblyName);
+			var compilation = CreateCompilation(razorTemplate, assemblyName);
 
 			using (var assemblyStream = new MemoryStream())
 			using (var pdbStream = new MemoryStream())
@@ -201,14 +201,23 @@ namespace RazorLight.Compilation
 			return DependencyContextCompilationOptions.Default;
 		}
 
-		private CSharpCompilation CreateCompilation(string compilationContent, string assemblyName)
+		private CSharpCompilation CreateCompilation(IGeneratedRazorTemplate razorTemplate, string assemblyName)
 		{
-			SourceText sourceText = SourceText.From(compilationContent, Encoding.UTF8);
-			SyntaxTree syntaxTree = CreateSyntaxTree(sourceText).WithFilePath(assemblyName);
+			SourceText sourceText = SourceText.From(razorTemplate.GeneratedCode, Encoding.UTF8);
+			SyntaxTree templateTree = CreateSyntaxTree(sourceText).WithFilePath(assemblyName);
 
-			CSharpCompilation compilation = CreateCompilation(assemblyName).AddSyntaxTrees(syntaxTree);
+			var syntaxTrees = new List<SyntaxTree> { templateTree };
+			if (razorTemplate is IGeneratedCSharpSourceContainer sourceContainer)
+			{
+				foreach (CSharpSourceDocument source in sourceContainer.CSharpSources)
+				{
+					syntaxTrees.Add(CreateSyntaxTree(SourceText.From(source.Content, Encoding.UTF8)).WithFilePath(source.Key));
+				}
+			}
 
-			compilation = ExpressionRewriter.Rewrite(compilation);
+			CSharpCompilation compilation = CreateCompilation(assemblyName).AddSyntaxTrees(syntaxTrees);
+
+			compilation = ExpressionRewriter.Rewrite(compilation, templateTree);
 
 			//var compilationContext = new RoslynCompilationContext(compilation);
 			//_compilationCallback(compilationContext);

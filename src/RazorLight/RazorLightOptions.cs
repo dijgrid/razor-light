@@ -15,6 +15,8 @@ namespace RazorLight
 		{
 			Namespaces = new HashSet<string>();
 			DynamicTemplates = new ConcurrentDictionary<string, string>();
+			CSharpSourceKeys = new HashSet<string>(StringComparer.Ordinal);
+			DynamicCSharpSources = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 			AdditionalMetadataReferences = new HashSet<MetadataReference>();
 			IncludedAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 			ExcludedAssemblies = new HashSet<string>();
@@ -24,6 +26,10 @@ namespace RazorLight
 		public ISet<string> Namespaces { get; set; }
 
 		public IDictionary<string, string> DynamicTemplates { get; set; }
+
+		public ISet<string> CSharpSourceKeys { get; set; }
+
+		public IDictionary<string, string> DynamicCSharpSources { get; set; }
 
 		public HashSet<MetadataReference> AdditionalMetadataReferences { get; set; }
 

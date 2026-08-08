@@ -64,6 +64,34 @@ namespace RazorLight.Razor
 			return Task.FromResult((RazorLightProjectItem)item);
 		}
 
+		public override Task<RazorLightProjectItem> GetSourceItemAsync(string sourceKey)
+		{
+			if (string.IsNullOrWhiteSpace(sourceKey))
+			{
+				throw new ArgumentNullException(nameof(sourceKey));
+			}
+
+			string relativePath = sourceKey.TrimStart('/', '\\')
+				.Replace('/', Path.DirectorySeparatorChar)
+				.Replace('\\', Path.DirectorySeparatorChar);
+			string rootPath = Path.GetFullPath(Root);
+			string sourcePath = Path.GetFullPath(Path.Combine(rootPath, relativePath));
+			string rootPrefix = rootPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+				+ Path.DirectorySeparatorChar;
+			if (!sourcePath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
+			{
+				throw new InvalidOperationException("C# source paths must remain inside the project root.");
+			}
+
+			var item = new FileSystemRazorProjectItem(sourceKey, new FileInfo(sourcePath));
+			if (item.Exists)
+			{
+				item.ExpirationToken = _fileProvider.Watch(relativePath.Replace('\\', '/'));
+			}
+
+			return Task.FromResult((RazorLightProjectItem)item);
+		}
+
 		/// <summary>
 		/// Root folder
 		/// </summary>

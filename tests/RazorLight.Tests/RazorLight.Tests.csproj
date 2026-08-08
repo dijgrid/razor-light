@@ -22,12 +22,18 @@
 
   <ItemGroup>
     <None Remove="Assets\Embedded\*.cshtml" />
+    <Compile Remove="Assets\Embedded\EmbeddedFunctions.cs" />
     <EmbeddedResource Include="Assets\Embedded\*.cshtml" />
+    <EmbeddedResource Include="Assets\Embedded\EmbeddedFunctions.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="Assets\Files\*.cshtml" />
+    <Compile Remove="Assets\Files\CSharpSource\**\*.cs" />
     <Content Include="Assets\Files\*.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Files\CSharpSource\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

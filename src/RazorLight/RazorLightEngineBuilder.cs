@@ -20,6 +20,10 @@ namespace RazorLight
 
 		protected ConcurrentDictionary<string, string>? dynamicTemplates;
 
+		private HashSet<string>? csharpSourceKeys;
+
+		private ConcurrentDictionary<string, string>? dynamicCSharpSources;
+
 		protected HashSet<MetadataReference>? metadataReferences;
 
 		private HashSet<string>? includedAssemblies;
@@ -258,6 +262,40 @@ namespace RazorLight
 			return this;
 		}
 
+		/// <summary>
+		/// Compiles a project C# source with every template created by this engine.
+		/// </summary>
+		public RazorLightEngineBuilder AddCSharpSource(string sourceKey)
+		{
+			if (string.IsNullOrWhiteSpace(sourceKey))
+			{
+				throw new ArgumentException("A C# source key is required.", nameof(sourceKey));
+			}
+
+			csharpSourceKeys ??= new HashSet<string>(StringComparer.Ordinal);
+			csharpSourceKeys.Add(sourceKey);
+			return this;
+		}
+
+		/// <summary>
+		/// Registers in-memory C# source and compiles it with every template created by this engine.
+		/// </summary>
+		public RazorLightEngineBuilder AddCSharpSource(string sourceKey, string sourceContent)
+		{
+			if (string.IsNullOrWhiteSpace(sourceKey))
+			{
+				throw new ArgumentException("A C# source key is required.", nameof(sourceKey));
+			}
+			if (sourceContent == null)
+			{
+				throw new ArgumentNullException(nameof(sourceContent));
+			}
+
+			dynamicCSharpSources ??= new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+			dynamicCSharpSources[sourceKey] = sourceContent;
+			return AddCSharpSource(sourceKey);
+		}
+
 		public virtual RazorLightEngineBuilder SetOperatingAssembly(Assembly assembly)
 		{
 			if (assembly == null)
@@ -295,6 +333,22 @@ namespace RazorLight
 					ThrowIfHasBeenSetExplicitly(nameof(dynamicTemplates));
 
 				options.DynamicTemplates = dynamicTemplates;
+			}
+
+			if (csharpSourceKeys != null)
+			{
+				if (csharpSourceKeys.Count > 0 && options.CSharpSourceKeys.Count > 0)
+					ThrowIfHasBeenSetExplicitly(nameof(csharpSourceKeys));
+
+				options.CSharpSourceKeys = csharpSourceKeys;
+			}
+
+			if (dynamicCSharpSources != null)
+			{
+				if (dynamicCSharpSources.Count > 0 && options.DynamicCSharpSources.Count > 0)
+					ThrowIfHasBeenSetExplicitly(nameof(dynamicCSharpSources));
+
+				options.DynamicCSharpSources = dynamicCSharpSources;
 			}
 
 			if (metadataReferences != null)
@@ -379,7 +433,8 @@ namespace RazorLight
 				Razor6CompilerCompatibility.CreateEngine(),
 				project,
 				options.Namespaces,
-				options.EnableDebugMode ?? false);
+				options.EnableDebugMode ?? false,
+				options);
 			var templateCompiler = new RazorTemplateCompiler(sourceGenerator, compiler, project, options);
 			var templateFactoryProvider = new TemplateFactoryProvider();
 

@@ -29,6 +29,7 @@ and [testing guidance](docs/testing.md) for the current maintenance baseline.
   - [Files](#file-source)
   - [Embedded resources](#embedded-resource-source)
   - [Custom sources](#custom-source)
+- [C# source composition](#c-source-composition)
 - [Includes and partial templates](#includes-and-partial-templates)
 - [Caching and invalidation](#caching-and-invalidation)
 - [Encoding](#encoding)
@@ -168,6 +169,38 @@ string integerResult = await engine.CompileRenderAsync(
 ```
 
 See the [custom project sample](samples/RazorLight.Samples) for a complete implementation.
+
+# C# source composition
+
+Templates can compose trusted helper code from ordinary `.cs` compilation units. This keeps shared
+logic in C# types instead of requiring Razor inheritance or executable Razor modules:
+
+```csharp
+var engine = new RazorLightEngineBuilder()
+    .UseFileSystemProject(templateRoot)
+    .AddCSharpSource("Shared/ScenarioFunctions.cs")
+    .Build();
+```
+
+`AddCSharpSource(path)` compiles a project source with every template. The two-argument overload
+registers source text in memory and also adds it globally. A template can instead select project
+source relative to its own path:
+
+```razor
+@compileSource "../Shared/ScenarioFunctions.cs"
+@using ScenarioTemplates
+@ScenarioFunctions.Quote(Model.Name)
+```
+
+Each source is an ordinary C# 14 file and becomes a separate syntax tree in the consuming
+template's generated assembly. Prefer `internal` helper types. The same file is compiled separately
+for each template assembly, so its types do not have cross-template identity and should not be used
+as models or values passed across the host boundary. Source files must end in `.cs`, cannot escape
+the project root, and are never rendered as templates. File-project change tokens invalidate every
+dependent template when a helper changes.
+
+Imported code has the same full process privileges as Razor code. Only compose application-owned or
+otherwise trusted source; see [template security](docs/template-security.md).
 
 # Includes and partial templates
 

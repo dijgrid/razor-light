@@ -17,6 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Samples\SharedComposition.cs" />
+    <None Include="Samples\SharedComposition.cs" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Samples\**\*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
