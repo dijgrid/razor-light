@@ -35,7 +35,7 @@ is optional; the core library treats output as text.
 ## Install
 
 ```shell
-dotnet add package Dijgrid.RazorLight --version 3.0.0-beta.3
+dotnet add package Dijgrid.RazorLight --version 3.0.0-beta.4
 ```
 
 The historical `RazorLight 2.3.1` package is the upstream release, not this continuation. Moving to

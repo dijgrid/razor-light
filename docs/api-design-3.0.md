@@ -237,7 +237,7 @@ validation.
 3. TASK-021 establishes immutable configuration, per-render DI scopes, page initialization, and
    predictable ViewBag behavior.
 4. TASK-029 internalizes implementation details and locks the generated-template ABI.
-5. TASK-030 publishes `3.0.0-beta.3` from the reviewed artifacts.
+5. TASK-030 publishes `3.0.0-beta.4` from the reviewed artifacts.
 
 TASK-013 cancellation, TASK-017 performance/coverage ratchets, and TASK-022 precompiled-only
 execution can continue during the beta series without delaying the first useful prerelease unless
