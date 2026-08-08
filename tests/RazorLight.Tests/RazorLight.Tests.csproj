@@ -7,10 +7,6 @@
     <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <MdTargetDir>$(SolutionDir)</MdTargetDir>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -40,7 +36,6 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" PrivateAssets="all" />
-    <PackageReference Include="MarkdownSnippets.MsBuild" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="Xunit.SkippableFact" />

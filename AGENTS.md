@@ -60,11 +60,11 @@ repository-native Markdown format.
 
 ## Documentation
 
-`README.md` is generated from `README.source.md` by MarkdownSnippets. Edit the source first and
-include the synchronized generated output.
+`README.md` is the authoritative project overview. Keep detailed demonstrations and usage guidance
+in `docs/manual.md` so the root README stays concise.
 
-Keep `CHANGELOG.md`, `SECURITY.md`, `SUPPORT.md`, and `UPSTREAM.md` aligned with behavior and release
-policy changes.
+Keep `CHANGELOG.md`, `SECURITY.md`, and `UPSTREAM.md` aligned with behavior and release policy
+changes.
 
 ## Verification
 

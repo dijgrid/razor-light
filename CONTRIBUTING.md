@@ -33,8 +33,8 @@ and test baseline is .NET 10.
 
 ## Documentation
 
-`README.md` is generated from `README.source.md` by MarkdownSnippets. Edit the source file and make
-sure the generated file is included in the same change.
+`README.md` is the authoritative project overview. Keep it concise and put detailed demonstrations
+and usage instructions in `docs/manual.md`.
 
 ## Planning
 
