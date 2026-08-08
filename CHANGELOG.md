@@ -9,6 +9,9 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 
 ### Added
 
+- A supported precompiled-only engine entry point renders deterministic build artifacts without
+  constructing the Razor/Roslyn compiler graph or silently falling back to runtime compilation.
+  Template artifacts now carry version, model-contract, and source-checksum metadata.
 - Templates can compose ordinary trusted C# source files through global `AddCSharpSource` builder
   configuration or a per-template `@compileSource` directive. Sources compile as separate syntax
   trees with mapped diagnostics and participate in project change-token invalidation.

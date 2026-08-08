@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -183,6 +184,7 @@ namespace RazorLight.Compilation
 			}
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Metadata discovery is available only on the runtime-compilation path, which is annotated as trim-unsafe.")]
 		private static IEnumerable<Assembly> GetReferencedAssemblies(Assembly a, ISet<string> excludedAssemblies, HashSet<string>? visitedAssemblies = null)
 		{
 			visitedAssemblies = visitedAssemblies ?? new HashSet<string>();

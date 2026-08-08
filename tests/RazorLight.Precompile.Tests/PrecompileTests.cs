@@ -46,11 +46,11 @@ namespace RazorLight.Precompile.Tests
 		}
 
 		[Fact]
-		public void Precompile_Rejects_Template_Outside_Explicit_Base_Directory()
+		public async Task Precompile_Rejects_Template_Outside_Explicit_Base_Directory()
 		{
 			var command = new PrecompileCmd();
 
-			Assert.Throws<InvalidOperationException>(() => command.Run(new[]
+			await Assert.ThrowsAsync<InvalidOperationException>(() => command.RunAsync(new[]
 			{
 				"--base", "Samples/folder",
 				"--template", "../FullMessage.cshtml",
@@ -102,6 +102,7 @@ namespace RazorLight.Precompile.Tests
 			var precompiledFilePath = Helper.RunCommandTrimNewline(commandLineArgs.ToArray());
 			Assert.Equal(expectedPrecompiledFilePath, precompiledFilePath);
 			Assert.True(File.Exists(precompiledFilePath));
+			Assert.True(File.Exists(Path.ChangeExtension(precompiledFilePath, ".pdb")));
 		}
 	}
 }

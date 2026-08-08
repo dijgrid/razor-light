@@ -503,6 +503,9 @@ could not be inspected or did not contain RazorLight metadata. Its lookup follow
 contract and returns `false` on a miss. The `render` command remains intentionally strict: every
 template and include must have a matching precompiled assembly.
 
+For the supported build/deploy workflow, artifact compatibility checks, and the runtime entry point
+that constructs no compiler graph, see [Precompiled-only execution](precompiled-only.md).
+
 Run `razorlight-precompile help` for the current command syntax. The tool also supports cache
 directory and caching-strategy selection plus rendering with a JSON model.
 

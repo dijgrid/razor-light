@@ -81,12 +81,10 @@ internal evidence.
 
 ## Precompiled alternatives
 
-The current `RazorLight.Precompile` tool can move template compilation out of an application's hot
-path for ordinary JIT deployments, but its compiled-cache loader still uses dynamic assembly loading.
-It does **not** make the current runtime trim-safe or Native AOT-compatible.
+`RazorLightEngineBuilder.CreatePrecompiled` is the static runtime entry point for build-produced page
+factories. It does not construct or fall back to the Razor/Roslyn compilation graph. A trimmed,
+self-contained, single-file deployment probe verifies this path on the supported Windows and Linux
+matrix; see [precompiled-only execution](precompiled-only.md) for the workflow and limitations.
 
-Until a static precompiled-only execution path is delivered by `TASK-022`, applications that require
-trimming or Native AOT must render Razor templates in a separate, untrimmed JIT-capable process, or
-replace RazorLight at that boundary with build-generated/static rendering code. This limitation is
-deliberate: publishing an executable that builds successfully but cannot load its generated template
-assemblies would be a false compatibility claim.
+Native AOT is not claimed. Dynamic loading of separately deployed template assemblies and other
+generated-page runtime behavior still require an explicit executable AOT proof.

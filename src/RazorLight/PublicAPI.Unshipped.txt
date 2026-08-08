@@ -63,6 +63,16 @@ RazorLight.Caching.IFileSystemCachingStrategy
 RazorLight.Caching.IFileSystemCachingStrategy.GetCachedFileInfo(string! key, string! templateFilePath, string! cacheDir) -> RazorLight.Caching.CachedFileInfo
 RazorLight.Caching.IFileSystemCachingStrategy.Name.get -> string!
 RazorLight.Caching.MemoryCachingProvider
+RazorLight.Caching.PrecompiledCachingProvider
+RazorLight.Caching.PrecompiledCachingProvider.PrecompiledCachingProvider(System.Collections.Generic.IEnumerable<string!>! assemblyPaths, System.IO.TextWriter? log = null) -> void
+RazorLight.Caching.PrecompiledCachingProvider.CacheTemplate(string! key, System.Func<RazorLight.ITemplatePage!>! pageFactory, Microsoft.Extensions.Primitives.IChangeToken? expirationToken) -> void
+RazorLight.Caching.PrecompiledCachingProvider.Contains(string! key) -> bool
+static RazorLight.Caching.PrecompiledCachingProvider.CreateAsync(System.Collections.Generic.IEnumerable<string!>! assemblyPaths, System.IO.TextWriter? log = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<RazorLight.Caching.PrecompiledCachingProvider!>!
+RazorLight.Caching.PrecompiledCachingProvider.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<string!>!
+RazorLight.Caching.PrecompiledCachingProvider.Dispose() -> void
+RazorLight.Caching.PrecompiledCachingProvider.Map.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+RazorLight.Caching.PrecompiledCachingProvider.Remove(string! key) -> void
+RazorLight.Caching.PrecompiledCachingProvider.TryGetTemplate(string! key, out System.Func<RazorLight.ITemplatePage!>? pageFactory) -> bool
 RazorLight.Caching.MemoryCachingProvider.CacheTemplate(string! key, System.Func<RazorLight.ITemplatePage!>! pageFactory, Microsoft.Extensions.Primitives.IChangeToken? expirationToken = null) -> void
 RazorLight.Caching.MemoryCachingProvider.Contains(string! key) -> bool
 RazorLight.Caching.MemoryCachingProvider.MemoryCachingProvider() -> void
@@ -185,7 +195,14 @@ RazorLight.Razor.RazorLightProjectItem.RazorLightProjectItem() -> void
 RazorLight.Razor.RazorLightTemplateAttribute
 RazorLight.Razor.RazorLightTemplateAttribute.Key.get -> string!
 RazorLight.Razor.RazorLightTemplateAttribute.RazorLightTemplateAttribute(string! key, System.Type! templateType) -> void
+RazorLight.Razor.RazorLightTemplateAttribute.RazorLightTemplateAttribute(string! key, System.Type! templateType, int formatVersion, string! compilerVersion, string! modelContract, string! sourceChecksum) -> void
 RazorLight.Razor.RazorLightTemplateAttribute.TemplateType.get -> System.Type!
+RazorLight.Razor.RazorLightTemplateAttribute.CompilerVersion.get -> string!
+RazorLight.Razor.RazorLightTemplateAttribute.FormatVersion.get -> int
+RazorLight.Razor.RazorLightTemplateAttribute.ModelContract.get -> string!
+RazorLight.Razor.RazorLightTemplateAttribute.SourceChecksum.get -> string!
+const RazorLight.Razor.RazorLightTemplateAttribute.CurrentCompilerVersion = "RazorLight-3.0-Razor6" -> string!
+const RazorLight.Razor.RazorLightTemplateAttribute.CurrentFormatVersion = 1 -> int
 RazorLight.Razor.TextSourceRazorProjectItem
 RazorLight.Razor.TextSourceRazorProjectItem.Content.get -> string!
 RazorLight.Razor.TextSourceRazorProjectItem.TextSourceRazorProjectItem(string! key, string! content) -> void
@@ -203,6 +220,7 @@ RazorLight.RazorLightDependencyBuilder.UseFileSystemProject(string! root, string
 RazorLight.RazorLightDependencyBuilder.UseMemoryCachingProvider() -> RazorLight.RazorLightDependencyBuilder!
 RazorLight.RazorLightEngineBuilder
 RazorLight.RazorLightEngineBuilder.cachingProvider -> RazorLight.Caching.ICachingProvider?
+static RazorLight.RazorLightEngineBuilder.CreatePrecompiled(RazorLight.Caching.ICachingProvider! provider, RazorLight.RazorLightOptions? options = null) -> RazorLight.IRazorLightEngine!
 RazorLight.RazorLightEngineBuilder.dynamicTemplates -> System.Collections.Concurrent.ConcurrentDictionary<string!, string!>?
 RazorLight.RazorLightEngineBuilder.excludedAssemblies -> System.Collections.Generic.HashSet<string!>?
 RazorLight.RazorLightEngineBuilder.metadataReferences -> System.Collections.Generic.HashSet<Microsoft.CodeAnalysis.MetadataReference!>?
@@ -331,6 +349,7 @@ virtual RazorLight.RazorLightEngineBuilder.SetOperatingAssembly(System.Reflectio
 virtual RazorLight.RazorLightEngineBuilder.UseAllDependencyContextMetadataReferences() -> RazorLight.RazorLightEngineBuilder!
 virtual RazorLight.RazorLightEngineBuilder.UseCachingProvider(RazorLight.Caching.ICachingProvider! provider) -> RazorLight.RazorLightEngineBuilder!
 virtual RazorLight.RazorLightEngineBuilder.UseMemoryCachingProvider() -> RazorLight.RazorLightEngineBuilder!
+RazorLight.RazorLightEngineBuilder.UsePrecompiledOnly(RazorLight.Caching.ICachingProvider! provider) -> RazorLight.RazorLightEngineBuilder!
 virtual RazorLight.RazorLightEngineBuilder.UseProject(RazorLight.Razor.RazorLightProject! razorLightProject) -> RazorLight.RazorLightEngineBuilder!
 virtual RazorLight.TemplatePage.RenderBody() -> RazorLight.Text.ITemplateContent!
 virtual RazorLight.TemplatePageBase.BeginWriteAttribute(string! name, string! prefix, int prefixOffset, string! suffix, int suffixOffset, int attributeValuesCount) -> void

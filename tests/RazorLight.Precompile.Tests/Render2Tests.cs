@@ -105,8 +105,8 @@ First Found Date: 7/10/2020 7:00:28 PM
 		{
 			Precompile(key, key2, s);
 
-			var exc = Assert.Throws<RazorLightException>(() => Run(key, expected, "Samples"))!;
-			Assert.Equal("No precompiled template found for the key /folder/MessageItem.cshtml", exc.Message);
+			var exc = Assert.ThrowsAny<RazorLightException>(() => Run(key, expected, "Samples"));
+			Assert.Contains("No precompiled template was found for key 'folder/MessageItem.cshtml'", exc.Message);
 		}
 
 		[Theory]
@@ -115,8 +115,8 @@ First Found Date: 7/10/2020 7:00:28 PM
 		{
 			Precompile(key, key2, s);
 
-			var exc = Assert.Throws<RazorLightException>(() => Run(key, expected, "Samples/*.dll"))!;
-			Assert.Equal("No precompiled template found for the key /folder/MessageItem.cshtml", exc.Message);
+			var exc = Assert.ThrowsAny<RazorLightException>(() => Run(key, expected, "Samples/*.dll"));
+			Assert.Contains("No precompiled template was found for key 'folder/MessageItem.cshtml'", exc.Message);
 		}
 
 		private static (string, string) Precompile(string key, string key2, IFileSystemCachingStrategy s) => (

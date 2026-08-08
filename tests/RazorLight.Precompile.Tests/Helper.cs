@@ -16,7 +16,7 @@ namespace RazorLight.Precompile.Tests
 		{
 			var sw = new StringWriter();
 			Program.ConsoleOut = sw;
-			var exitCode = Program.DoRun(args);
+			var exitCode = Program.DoRunAsync(args).GetAwaiter().GetResult();
 			Assert.Equal(0, exitCode);
 			sw.Close();
 

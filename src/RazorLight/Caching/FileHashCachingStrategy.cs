@@ -1,6 +1,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -32,6 +33,7 @@ namespace RazorLight.Caching
 			return new CachedFileInfo(File.Exists(asmFilePath), asmFilePath, pdbFilePath);
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The build-time file cache fingerprints the compiler assembly reference identity.")]
 		internal static string CreateFingerprint(string key, string templateFilePath, string projectRoot)
 		{
 			using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);

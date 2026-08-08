@@ -121,10 +121,12 @@ namespace RazorLight.Caching
 			return GetTemplatePageType(rawAssembly, rawSymbolStore);
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "Runtime-loaded template types carry a public parameterless constructor by generated-code contract.")]
 		public static ITemplatePage NewTemplatePage(Type templatePageType) =>
 			(ITemplatePage)(Activator.CreateInstance(templatePageType)
 				?? throw new InvalidOperationException($"Could not create template page type '{templatePageType}'."));
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This API is the explicitly dynamic assembly-loading path and is not used by statically registered precompiled pages.")]
 		public static Type GetTemplatePageType(byte[] rawAssembly, byte[]? rawSymbolStore) => Assembly
 			.Load(rawAssembly, rawSymbolStore)
 			.GetCustomAttribute<RazorLightTemplateAttribute>()

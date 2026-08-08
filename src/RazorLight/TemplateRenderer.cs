@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,6 +94,7 @@ namespace RazorLight
 			}
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Precompiled-only handlers resolve includes from registered page factories; runtime handlers expose the trim warning at their public entry points.")]
 		private async Task RenderPageCoreAsync(ITemplatePage page, PageContext context, CancellationToken cancellationToken)
 		{
 			page.PageContext = context;
@@ -115,6 +117,7 @@ namespace RazorLight
 			cancellationToken.ThrowIfCancellationRequested();
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Precompiled-only handlers resolve layouts from registered page factories; runtime handlers expose the trim warning at their public entry points.")]
 		private async Task RenderLayoutAsync(
 			ITemplatePage page,
 			PageContext context,

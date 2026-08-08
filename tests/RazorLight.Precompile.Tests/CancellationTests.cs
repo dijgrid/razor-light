@@ -7,23 +7,23 @@ namespace RazorLight.Precompile.Tests
 	public class CancellationTests
 	{
 		[Fact]
-		public void Program_Observes_Cancellation_Before_Command_Start()
+		public async Task Program_Observes_Cancellation_Before_Command_Start()
 		{
 			using var cancellationSource = new CancellationTokenSource();
 			cancellationSource.Cancel();
 
-			Assert.Throws<OperationCanceledException>(() =>
-				Program.DoRun(new[] { "help" }, cancellationSource.Token));
+			await Assert.ThrowsAsync<OperationCanceledException>(() =>
+				Program.DoRunAsync(new[] { "help" }, cancellationSource.Token));
 		}
 
 		[Fact]
-		public void Precompile_Command_Observes_Cancellation_Before_Parsing()
+		public async Task Precompile_Command_Observes_Cancellation_Before_Parsing()
 		{
 			using var cancellationSource = new CancellationTokenSource();
 			cancellationSource.Cancel();
 
-			Assert.Throws<OperationCanceledException>(() =>
-				new PrecompileCmd().Run(Array.Empty<string>(), cancellationSource.Token));
+			await Assert.ThrowsAsync<OperationCanceledException>(() =>
+				new PrecompileCmd().RunAsync(Array.Empty<string>(), cancellationSource.Token));
 		}
 	}
 }

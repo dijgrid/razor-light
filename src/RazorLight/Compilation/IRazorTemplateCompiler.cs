@@ -7,8 +7,6 @@ namespace RazorLight.Compilation
 {
 	internal interface IRazorTemplateCompiler
 	{
-		ICompilationService CompilationService { get; }
-
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		Task<CompiledTemplateDescriptor> CompileAsync(string templateKey);

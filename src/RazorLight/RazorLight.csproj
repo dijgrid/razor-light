@@ -5,6 +5,7 @@
     <Description>A generic C# text-template engine using Razor syntax for strings, files, embedded resources, and custom sources on .NET 10.</Description>
     <PackageTags>RazorLight;razor;render;dotnet;template-engine;email</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
     <EnablePackageValidation>true</EnablePackageValidation>
     <PackageValidationBaselineName>RazorLight</PackageValidationBaselineName>
     <PackageValidationBaselineVersion>2.3.1</PackageValidationBaselineVersion>
@@ -29,6 +30,7 @@
   <ItemGroup>
     <AdditionalFiles Include="PublicAPI.Shipped.txt" />
     <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
+    <None Include="buildTransitive\Dijgrid.RazorLight.targets" Pack="true" PackagePath="buildTransitive\Dijgrid.RazorLight.targets" />
   </ItemGroup>
 
 </Project>

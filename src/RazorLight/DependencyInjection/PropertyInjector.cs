@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -35,6 +36,7 @@ namespace RazorLight.DependencyInjection
 			}
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "Generated pages used with dependency injection must preserve RazorInject properties.")]
 		private InjectionPlan CreatePlan(Type pageType)
 		{
 			Interlocked.Increment(ref _planCreationCount);

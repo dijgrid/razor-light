@@ -1,0 +1,10 @@
+<Project>
+  <Target Name="RemoveRazorLightCompilerAssetsFromPrecompiledPublish"
+          AfterTargets="ComputeFilesToPublish"
+          Condition="'$(RazorLightPrecompiledOnly)' == 'true'">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="$([System.String]::Copy('%(ResolvedFileToPublish.Filename)').StartsWith('Microsoft.CodeAnalysis')) Or '%(ResolvedFileToPublish.Filename)' == 'Microsoft.AspNetCore.Razor.Language' Or '%(ResolvedFileToPublish.Filename)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions'" />
+    </ItemGroup>
+  </Target>
+</Project>

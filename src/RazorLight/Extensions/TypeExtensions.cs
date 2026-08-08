@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
@@ -9,6 +10,7 @@ namespace RazorLight.Extensions
 {
 	public static class TypeExtensions
 	{
+		[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Anonymous-object conversion is an opt-in reflection feature; callers must preserve model properties.")]
 		public static ExpandoObject ToExpando(this object anonymousObject)
 		{
 			if (anonymousObject is ExpandoObject exp)

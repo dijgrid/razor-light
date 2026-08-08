@@ -12,6 +12,24 @@ namespace RazorLight
 {
 	public class RazorLightEngineBuilder
 	{
+		/// <summary>
+		/// Creates an engine that can render only page factories already present in
+		/// <paramref name="provider"/>. This entry point has no runtime compiler construction path.
+		/// </summary>
+		public static IRazorLightEngine CreatePrecompiled(
+			ICachingProvider provider,
+			RazorLightOptions? options = null)
+		{
+			if (provider == null) throw new ArgumentNullException(nameof(provider));
+			var snapshot = RazorLightOptionsSnapshot.CreatePrecompiled(options ?? new RazorLightOptions()).Options;
+			if (snapshot.CachingProvider != null && !ReferenceEquals(snapshot.CachingProvider, provider))
+			{
+				throw new RazorLightException("The options caching provider conflicts with the precompiled provider argument.");
+			}
+
+			return RazorLightEngineFactory.CreatePrecompiled(snapshot, provider);
+		}
+
 		protected Assembly? operatingAssembly;
 
 		protected HashSet<string>? namespaces;
@@ -37,6 +55,7 @@ namespace RazorLight
 		protected ICachingProvider? cachingProvider;
 		private bool ownsProject;
 		private bool ownsCachingProvider;
+		private bool precompiledOnly;
 
 		private IOutputEncoder? outputEncoder;
 
@@ -166,6 +185,17 @@ namespace RazorLight
 			cachingProvider = provider;
 			ownsCachingProvider = false;
 
+			return this;
+		}
+
+		/// <summary>
+		/// Uses only page factories supplied by <paramref name="provider"/> and disables all runtime
+		/// Razor generation and Roslyn compilation.
+		/// </summary>
+		public RazorLightEngineBuilder UsePrecompiledOnly(ICachingProvider provider)
+		{
+			UseCachingProvider(provider);
+			precompiledOnly = true;
 			return this;
 		}
 
@@ -416,6 +446,19 @@ namespace RazorLight
 				buildOptions.EnableDebugMode = buildOptions.EnableDebugMode ?? enableDebugMode ?? false;
 			}
 
+			if (precompiledOnly)
+			{
+				if (project != null && project is not NoRazorProject)
+				{
+					throw new RazorLightException("A source project cannot be combined with precompiled-only mode.");
+				}
+
+				return RazorLightEngineFactory.CreatePrecompiled(
+					buildOptions,
+					buildOptions.CachingProvider
+						?? throw new RazorLightException("Precompiled-only mode requires a caching provider."),
+					ownedCache: ownsCachingProvider ? buildOptions.CachingProvider as IDisposable : null);
+			}
 			var assembly = operatingAssembly ?? Assembly.GetEntryAssembly()
 				?? throw new InvalidOperationException("An operating assembly could not be determined. Configure one with SetOperatingAssembly.");
 			return RazorLightEngineFactory.Create(

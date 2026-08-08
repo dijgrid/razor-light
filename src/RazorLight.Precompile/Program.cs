@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RazorLight.Precompile
 {
@@ -9,7 +10,7 @@ namespace RazorLight.Precompile
 	{
 		public static TextWriter ConsoleOut { get; set; } = Console.Out;
 
-		public static int Main(string[] args)
+		public static async Task<int> Main(string[] args)
 		{
 			using var cancellationSource = new CancellationTokenSource();
 			ConsoleCancelEventHandler cancelHandler = (_, eventArgs) =>
@@ -20,7 +21,7 @@ namespace RazorLight.Precompile
 			Console.CancelKeyPress += cancelHandler;
 			try
 			{
-				return DoRun(args, cancellationSource.Token);
+				return await DoRunAsync(args, cancellationSource.Token).ConfigureAwait(false);
 			}
 			catch (OperationCanceledException) when (cancellationSource.IsCancellationRequested)
 			{
@@ -37,9 +38,9 @@ namespace RazorLight.Precompile
 			}
 		}
 
-		public static int DoRun(string[] args) => DoRun(args, CancellationToken.None);
+		public static Task<int> DoRunAsync(string[] args) => DoRunAsync(args, CancellationToken.None);
 
-		public static int DoRun(string[] args, CancellationToken cancellationToken)
+		public static async Task<int> DoRunAsync(string[] args, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			if (args == null || args.Length == 0)
@@ -52,9 +53,9 @@ namespace RazorLight.Precompile
 			switch (args[0].ToLowerInvariant())
 			{
 				case "precompile":
-					return new PrecompileCmd().Run(commandArgs, cancellationToken);
+					return await new PrecompileCmd().RunAsync(commandArgs, cancellationToken).ConfigureAwait(false);
 				case "render":
-					return new RenderCmd().Run(commandArgs, cancellationToken);
+					return await new RenderCmd().RunAsync(commandArgs, cancellationToken).ConfigureAwait(false);
 				case "help":
 				case "--help":
 				case "-h":

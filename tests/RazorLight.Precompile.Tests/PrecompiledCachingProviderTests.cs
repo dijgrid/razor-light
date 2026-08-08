@@ -1,3 +1,5 @@
+using Mono.Cecil;
+using RazorLight.Caching;
 using Xunit;
 
 namespace RazorLight.Precompile.Tests
@@ -93,6 +95,33 @@ namespace RazorLight.Precompile.Tests
 			{
 				File.Delete(first);
 				File.Delete(second);
+			}
+		}
+
+		[Fact]
+		public void Rejects_Incompatible_Compiler_Metadata_With_Actionable_Diagnostic()
+		{
+			string incompatible = Path.Combine(AppContext.BaseDirectory, "incompatible-template.dll");
+			using (var assembly = AssemblyDefinition.ReadAssembly(_precompiledFilePath))
+			{
+				CustomAttribute attribute = Assert.Single(assembly.CustomAttributes,
+					item => item.AttributeType.FullName == "RazorLight.Razor.RazorLightTemplateAttribute");
+				attribute.ConstructorArguments[3] = new CustomAttributeArgument(
+					attribute.ConstructorArguments[3].Type,
+					"incompatible-compiler");
+				assembly.Write(incompatible);
+			}
+
+			try
+			{
+				var exception = Assert.Throws<RazorLightException>(() =>
+					new PrecompiledCachingProvider(new[] { incompatible }, null));
+				Assert.Contains("requires format", exception.Message);
+				Assert.Contains("Recompile the template", exception.Message);
+			}
+			finally
+			{
+				File.Delete(incompatible);
 			}
 		}
 

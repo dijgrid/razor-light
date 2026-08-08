@@ -12,6 +12,30 @@ namespace RazorLight
 {
 	internal static class RazorLightEngineFactory
 	{
+		public static RazorLightEngine CreatePrecompiled(
+			RazorLightOptions options,
+			ICachingProvider cache,
+			IDisposable? ownedCache = null,
+			IServiceScopeFactory? scopeFactory = null)
+		{
+			if (options == null) throw new ArgumentNullException(nameof(options));
+			if (cache == null) throw new ArgumentNullException(nameof(cache));
+
+			options.CachingProvider = cache;
+			var handler = new EngineHandler(
+				options,
+				new PrecompiledTemplateCompiler(),
+				new UnavailableTemplateFactoryProvider(),
+				cache,
+				ownedCachingProvider: ownedCache);
+			if (scopeFactory != null)
+			{
+				handler.ConfigureServices(scopeFactory, new PropertyInjector());
+			}
+
+			return new RazorLightEngine(handler);
+		}
+
 		public static RazorLightEngine Create(
 			RazorLightOptions options,
 			RazorLightProject project,

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Mono.Cecil;
 using Newtonsoft.Json;
@@ -14,9 +14,9 @@ namespace RazorLight.Precompile
 {
 	internal class RenderCmd
 	{
-		public int Run(string[] args) => Run(args, CancellationToken.None);
+		public Task<int> RunAsync(string[] args) => RunAsync(args, CancellationToken.None);
 
-		public int Run(string[] args, CancellationToken cancellationToken)
+		public async Task<int> RunAsync(string[] args, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			var options = CommandLineArguments.Parse(
@@ -32,7 +32,8 @@ namespace RazorLight.Precompile
 				? SearchOption.AllDirectories
 				: SearchOption.TopDirectoryOnly;
 
-			var modelToken = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(modelFilePath));
+			var modelToken = JsonConvert.DeserializeObject<JToken>(
+				await File.ReadAllTextAsync(modelFilePath, cancellationToken).ConfigureAwait(false));
 			if (jsonQuery != null)
 			{
 				modelToken = modelToken?.SelectToken(jsonQuery);
@@ -40,8 +41,10 @@ namespace RazorLight.Precompile
 
 			var model = JsonModel.New(modelToken);
 
-			using var log = logFilePath == null ? null : new StreamWriter(logFilePath);
-			using var cachingProvider = new PrecompiledCachingProvider(YieldFiles(path, searchOption), log);
+			await using var log = logFilePath == null ? null : new StreamWriter(logFilePath);
+			using var cachingProvider = await PrecompiledCachingProvider
+				.CreateAsync(YieldFiles(path, searchOption), log, cancellationToken)
+				.ConfigureAwait(false);
 
 			if (key == null)
 			{
@@ -57,9 +60,7 @@ namespace RazorLight.Precompile
 				key = '/' + key;
 			}
 
-			using var engine = new RazorLightEngineBuilder()
-				.UseCachingProvider(new StrictPrecompiledCachingProvider(cachingProvider))
-				.Build();
+			using var engine = RazorLightEngineBuilder.CreatePrecompiled(cachingProvider);
 
 			if (!cachingProvider.TryGetTemplate(key, out var pageFactory))
 			{
@@ -67,36 +68,9 @@ namespace RazorLight.Precompile
 			}
 
 			var templatePage = pageFactory();
-			Program.ConsoleOut.WriteLine(engine.RenderTemplateAsync(templatePage, model, cancellationToken).GetAwaiter().GetResult());
+			Program.ConsoleOut.WriteLine(
+				await engine.RenderTemplateAsync(templatePage, model, cancellationToken).ConfigureAwait(false));
 			return 0;
-		}
-
-		private sealed class StrictPrecompiledCachingProvider : ICachingProvider
-		{
-			private readonly PrecompiledCachingProvider _inner;
-
-			public StrictPrecompiledCachingProvider(PrecompiledCachingProvider inner)
-			{
-				_inner = inner;
-			}
-
-			public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
-			{
-				if (_inner.TryGetTemplate(key, out pageFactory)) return true;
-				throw new RazorLightException($"No precompiled template found for the key {NormalizeKey(key)}");
-			}
-
-			public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, Microsoft.Extensions.Primitives.IChangeToken? expirationToken) =>
-				_inner.CacheTemplate(key, pageFactory, expirationToken);
-
-			public bool Contains(string key) => _inner.Contains(key);
-			public void Remove(string key) => _inner.Remove(key);
-
-			private static string NormalizeKey(string key)
-			{
-				key = key.Replace('\\', '/');
-				return key.Length > 0 && key[0] == '/' ? key : '/' + key;
-			}
 		}
 
 		private static IEnumerable<string> YieldFiles(string path, SearchOption searchOption)

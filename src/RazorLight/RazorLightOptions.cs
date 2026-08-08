@@ -11,13 +11,14 @@ namespace RazorLight
 {
 	public sealed class RazorLightOptions
 	{
+		private HashSet<MetadataReference>? _additionalMetadataReferences;
+
 		public RazorLightOptions()
 		{
 			Namespaces = new HashSet<string>();
 			DynamicTemplates = new ConcurrentDictionary<string, string>();
 			CSharpSourceKeys = new HashSet<string>(StringComparer.Ordinal);
 			DynamicCSharpSources = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
-			AdditionalMetadataReferences = new HashSet<MetadataReference>();
 			IncludedAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 			ExcludedAssemblies = new HashSet<string>();
 			PageInitializers = new List<Action<ITemplatePage>>();
@@ -31,7 +32,11 @@ namespace RazorLight
 
 		public IDictionary<string, string> DynamicCSharpSources { get; set; }
 
-		public HashSet<MetadataReference> AdditionalMetadataReferences { get; set; }
+		public HashSet<MetadataReference> AdditionalMetadataReferences
+		{
+			get => _additionalMetadataReferences ??= new HashSet<MetadataReference>();
+			set => _additionalMetadataReferences = value;
+		}
 
 		/// <summary>
 		/// Assembly names to add to minimal automatic metadata-reference discovery.

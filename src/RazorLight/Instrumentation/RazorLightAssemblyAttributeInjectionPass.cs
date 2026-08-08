@@ -1,4 +1,6 @@
+using System;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -27,11 +29,18 @@ namespace RazorLight.Instrumentation
 			string generatedTypeName = $"{@namespace.Content}.{@class.ClassName}";
 			string templateKey = codeDocument.Source.FilePath;
 			string escapedTemplateKey = EscapeAsVerbatimLiteral(templateKey);
+			string modelContract = EscapeAsVerbatimLiteral(ModelDirective.GetModelType(documentNode));
+			string sourceChecksum = EscapeAsVerbatimLiteral(
+				Convert.ToHexString(codeDocument.Source.GetChecksum().ToArray()).ToLowerInvariant());
 
 			string attribute;
 			if (documentNode.DocumentKind == RazorLightTemplateDocumentClassifierPass.RazorLightTemplateDocumentKind)
 			{
-				attribute = $"[assembly:{RazorLightTemplateAttribute}({escapedTemplateKey}, typeof({generatedTypeName}))]";
+				attribute = $"[assembly:{RazorLightTemplateAttribute}(" +
+					$"{escapedTemplateKey}, typeof({generatedTypeName}), " +
+					$"global::RazorLight.Razor.RazorLightTemplateAttribute.CurrentFormatVersion, " +
+					$"global::RazorLight.Razor.RazorLightTemplateAttribute.CurrentCompilerVersion, " +
+					$"{modelContract}, {sourceChecksum})]";
 			}
 			else
 			{

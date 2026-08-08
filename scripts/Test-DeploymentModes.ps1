@@ -9,6 +9,7 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $project = Join-Path $repositoryRoot "tests/RazorLight.DeploymentProbe/RazorLight.DeploymentProbe.csproj"
 $workerProject = Join-Path $repositoryRoot "tests/RazorLight.WorkerProbe/RazorLight.WorkerProbe.csproj"
 $desktopProject = Join-Path $repositoryRoot "tests/RazorLight.DesktopProbe/RazorLight.DesktopProbe.csproj"
+$precompiledProject = Join-Path $repositoryRoot "tests/RazorLight.PrecompiledProbe/RazorLight.PrecompiledProbe.csproj"
 $outputRoot = Join-Path $repositoryRoot "artifacts/deployment"
 
 if ([string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
@@ -63,6 +64,31 @@ function Assert-NoAspNetCoreFramework {
     if ($frameworkNames -contains "Microsoft.AspNetCore.App") {
         throw "The deployment probe unexpectedly requires Microsoft.AspNetCore.App: $RuntimeConfigPath"
     }
+}
+
+function Assert-PrecompiledProbeOutput {
+    param(
+        [string[]] $Output,
+        [string] $PublishDirectory
+    )
+
+    if ($LASTEXITCODE -ne 0 -or $Output -notcontains "RazorLight precompiled-only probe passed.") {
+        throw "The published RazorLight precompiled-only probe did not complete successfully."
+    }
+
+    $forbiddenFiles = @(
+        Get-ChildItem -LiteralPath $PublishDirectory -File |
+            Where-Object {
+                $_.Name -like "Microsoft.CodeAnalysis*.dll" -or
+                $_.Name -eq "Microsoft.AspNetCore.Razor.Language.dll" -or
+                $_.Name -eq "Microsoft.AspNetCore.Mvc.Razor.Extensions.dll"
+            }
+    )
+    if ($forbiddenFiles.Count -ne 0) {
+        throw "The precompiled-only deployment retained compiler files: $($forbiddenFiles.Name -join ', ')"
+    }
+
+    $Output
 }
 
 $frameworkOutput = Join-Path $outputRoot "framework-dependent"
@@ -121,5 +147,18 @@ Invoke-DotNetPublish -Arguments @(
 )
 $probeOutput = & (Join-Path $singleFileOutput $executableName)
 Assert-ProbeOutput -Output $probeOutput
+
+$precompiledOutput = Join-Path $outputRoot "precompiled-single-file/$RuntimeIdentifier"
+Invoke-DotNetPublish -Project $precompiledProject -Arguments @(
+    "--runtime", $RuntimeIdentifier,
+    "--self-contained", "true",
+    "-p:PublishSingleFile=true",
+    "-p:PublishTrimmed=true",
+    "-p:TrimMode=partial",
+    "--output", $precompiledOutput
+)
+$precompiledExecutable = if ($IsWindows) { "RazorLight.PrecompiledProbe.exe" } else { "RazorLight.PrecompiledProbe" }
+$precompiledProbeOutput = & (Join-Path $precompiledOutput $precompiledExecutable)
+Assert-PrecompiledProbeOutput -Output $precompiledProbeOutput -PublishDirectory $precompiledOutput
 
 Write-Host "RazorLight deployment modes passed for $RuntimeIdentifier."

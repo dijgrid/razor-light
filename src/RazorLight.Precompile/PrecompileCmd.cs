@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RazorLight.Caching;
@@ -23,9 +24,9 @@ namespace RazorLight.Precompile
 			[StrategyName.FileHash] = FileHashCachingStrategy.Instance
 		};
 
-		public int Run(string[] args) => Run(args, CancellationToken.None);
+		public Task<int> RunAsync(string[] args) => RunAsync(args, CancellationToken.None);
 
-		public int Run(string[] args, CancellationToken cancellationToken)
+		public async Task<int> RunAsync(string[] args, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			var options = CommandLineArguments.Parse(args, new[]
@@ -100,19 +101,21 @@ namespace RazorLight.Precompile
 
 			if (modelFilePath == null)
 			{
-				engine.CompileTemplateAsync(templateKey, cancellationToken).GetAwaiter().GetResult();
+				await engine.CompileTemplateAsync(templateKey, cancellationToken).ConfigureAwait(false);
 				Program.ConsoleOut.WriteLine(provider.GetAssemblyFilePath(templateKey, templateFile));
 			}
 			else
 			{
-				var modelToken = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(modelFilePath));
+				var modelToken = JsonConvert.DeserializeObject<JToken>(
+					await File.ReadAllTextAsync(modelFilePath, cancellationToken).ConfigureAwait(false));
 				if (jsonQuery != null)
 				{
 					modelToken = modelToken?.SelectToken(jsonQuery);
 				}
 
 				var model = JsonModel.New(modelToken);
-				Program.ConsoleOut.WriteLine(engine.CompileRenderAsync(templateKey, model, cancellationToken).GetAwaiter().GetResult());
+				Program.ConsoleOut.WriteLine(
+					await engine.CompileRenderAsync(templateKey, model, cancellationToken).ConfigureAwait(false));
 			}
 
 			return 0;

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RazorLightPrecompiledOnly>true</RazorLightPrecompiledOnly>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\RazorLight\RazorLight.csproj" />
+  </ItemGroup>
+  <Import Project="..\..\src\RazorLight\buildTransitive\Dijgrid.RazorLight.targets" />
+</Project>

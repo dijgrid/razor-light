@@ -75,8 +75,6 @@ namespace RazorLight.Compilation
 
 		}
 
-		public ICompilationService CompilationService => _compiler;
-
 		internal IMemoryCache Cache => _cache;
 		internal int ActiveCompilationCount => _compilations.Count;
 		internal int CacheGenerationCount => _cacheGenerations.Count;
@@ -350,6 +348,7 @@ namespace RazorLight.Compilation
 			};
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This method is reachable only from the runtime-compilation API, which is annotated as trim-unsafe.")]
 		private CompiledTemplateDescriptor CompileAndEmit(
 			RazorLightProjectItem projectItem,
 			IGeneratedRazorTemplate generatedTemplate)

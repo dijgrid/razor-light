@@ -24,7 +24,8 @@ is optional; the core library treats output as text.
   `@compileSource`.
 - Cache compiled templates and invalidate dependent templates when project sources change.
 - Cancel template lookup, compilation waits, rendering, layouts, and includes cooperatively.
-- Precompile templates with the `Dijgrid.RazorLight.Precompile` command-line tool.
+- Precompile templates with the `Dijgrid.RazorLight.Precompile` command-line tool and render them in a
+  compiler-free execution mode that never falls back to runtime compilation.
 - Select plain-text output, optional HTML encoding, or a custom output encoder.
 - Control namespaces, metadata references, dependency discovery, diagnostics, and integration with
   dependency injection.
