@@ -1,7 +1,7 @@
 ---
 id: TASK-030
 title: Prepare and publish the 3.0.0-beta.1 release
-status: in-progress
+status: review
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-release-readiness
@@ -25,7 +25,7 @@ tags:
   - beta
   - compatibility
 createdAt: 2026-08-08T04:17:59.721Z
-updatedAt: 2026-08-08T19:42:27.491Z
+updatedAt: 2026-08-08T20:03:31.616Z
 refinementState: ready
 ---
 
