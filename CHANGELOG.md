@@ -15,6 +15,10 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 
 ### Changed
 
+- DI-created engines now create one service scope per top-level render and share it across pages,
+  layouts, and includes. `@inject` uses that scope, `AddPageInitializer` replaces the old pre-render
+  callback spelling, and missing ViewBag members now return `null` without suppressing other dynamic
+  binding errors.
 - `RazorLightEngineBuilder.Build()` now returns `IRazorLightEngine`. The engine exposes direct
   `IsTemplateCached` and `InvalidateTemplate` operations instead of public handler/options graphs,
   and builder configuration is copied when the engine is built.

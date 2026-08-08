@@ -9,25 +9,22 @@ namespace RazorLight.DependencyInjection
 {
 	public class PropertyInjector
 	{
-		private readonly IServiceProvider services;
 		private readonly ConcurrentDictionary<PropertyInfo, FastPropertySetter> _propertyCache;
 
-		public PropertyInjector(IServiceProvider services)
+		public PropertyInjector()
 		{
-			if (services == null)
-			{
-				throw new ArgumentNullException(nameof(services));
-			}
-
-			this.services = services;
 			this._propertyCache = new ConcurrentDictionary<PropertyInfo, FastPropertySetter>();
 		}
 
-		public void Inject(ITemplatePage page)
+		public void Inject(ITemplatePage page, IServiceProvider services)
 		{
 			if (page == null)
 			{
 				throw new ArgumentNullException(nameof(page));
+			}
+			if (services == null)
+			{
+				throw new ArgumentNullException(nameof(services));
 			}
 
 			PropertyInfo[] properties = page.GetType().GetRuntimeProperties()
@@ -39,20 +36,13 @@ namespace RazorLight.DependencyInjection
 					   p.SetMethod?.IsStatic == false;
 			   }).ToArray();
 
-			var scopeFactory = services.GetRequiredService<IServiceScopeFactory>();
-
-			using (IServiceScope scope = scopeFactory.CreateScope())
+			foreach (var property in properties)
 			{
-				IServiceProvider scopeServices = scope.ServiceProvider;
+				Type memberType = property.PropertyType;
+				object instance = services.GetRequiredService(memberType);
 
-				foreach (var property in properties)
-				{
-					Type memberType = property.PropertyType;
-					object instance = scopeServices.GetRequiredService(memberType);
-
-					FastPropertySetter setter = _propertyCache.GetOrAdd(property, new FastPropertySetter(property));
-					setter.SetValue(page, instance);
-				}
+				FastPropertySetter setter = _propertyCache.GetOrAdd(property, new FastPropertySetter(property));
+				setter.SetValue(page, instance);
 			}
 		}
 	}

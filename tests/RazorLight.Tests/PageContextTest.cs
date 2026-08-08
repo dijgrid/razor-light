@@ -22,7 +22,8 @@ namespace RazorLight.Tests
 			var context = new PageContext(viewBag);
 
 			Assert.NotNull(context.ViewBag);
-			Assert.Same(context.ViewBag, viewBag);
+			context.ViewBag.Title = "Updated";
+			Assert.Equal("Updated", viewBag.Title);
 		}
 	}
 }

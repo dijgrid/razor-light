@@ -4,10 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.DependencyInjection;
 using RazorLight.Caching;
 using RazorLight.Compilation;
+using RazorLight.DependencyInjection;
 using RazorLight.Internal.Buffering;
 
 namespace RazorLight
@@ -17,6 +18,8 @@ namespace RazorLight
 		private readonly ConcurrentDictionary<string, string> _stringTemplateCacheKeys =
 			new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 		private readonly ITemplateCompilerCache? _compilerCache;
+		private IServiceScopeFactory? _scopeFactory;
+		private PropertyInjector? _propertyInjector;
 
 		public EngineHandler(
 			RazorLightOptions options,
@@ -37,18 +40,10 @@ namespace RazorLight
 			Options.CachingProvider = Cache;
 		}
 
-		public EngineHandler(
-			IOptions<RazorLightOptions> options,
-			IRazorTemplateCompiler compiler,
-			ITemplateFactoryProvider factoryProvider,
-			ICachingProvider? cache) : this(
-				(options ?? throw new ArgumentNullException(nameof(options))).Value,
-				compiler,
-				factoryProvider,
-				cache)
+		internal void ConfigureServices(IServiceScopeFactory scopeFactory, PropertyInjector propertyInjector)
 		{
-
-
+			_scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
+			_propertyInjector = propertyInjector ?? throw new ArgumentNullException(nameof(propertyInjector));
 		}
 
 		public RazorLightOptions Options { get; }
@@ -172,10 +167,41 @@ namespace RazorLight
 		{
 			SetModelContext(templatePage, textWriter, model, viewBag);
 
-			using (var scope = new MemoryPoolViewBufferScope())
+			using (var bufferScope = new MemoryPoolViewBufferScope())
 			{
-				var renderer = new TemplateRenderer(this, scope);
-				await renderer.RenderAsync(templatePage).ConfigureAwait(false);
+				if (_scopeFactory == null)
+				{
+					var renderer = new TemplateRenderer(this, bufferScope, InitializePage);
+					await renderer.RenderAsync(templatePage).ConfigureAwait(false);
+					return;
+				}
+
+				await using (AsyncServiceScope renderScope = _scopeFactory.CreateAsyncScope())
+				{
+					var renderer = new TemplateRenderer(
+						this,
+						bufferScope,
+						page => InitializePage(page, renderScope.ServiceProvider));
+					await renderer.RenderAsync(templatePage).ConfigureAwait(false);
+				}
+			}
+		}
+
+		private void InitializePage(ITemplatePage page)
+		{
+			InitializePage(page, services: null);
+		}
+
+		private void InitializePage(ITemplatePage page, IServiceProvider? services)
+		{
+			foreach (Action<ITemplatePage> initializer in Options.PageInitializers)
+			{
+				initializer(page);
+			}
+
+			if (services != null)
+			{
+				_propertyInjector!.Inject(page, services);
 			}
 		}
 

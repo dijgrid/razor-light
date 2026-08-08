@@ -169,9 +169,10 @@ IRazorLightEngine engine = new RazorLightEngineBuilder()
     .Build();
 ```
 
-TASK-021 owns the final initializer name and DI scope implementation. Builder options are copied
-when `Build()` is called, so later mutation of a supplied `RazorLightOptions` instance does not alter
-the engine.
+`AddPageInitializer` is the construction-time initializer contract. Builder options are copied when
+`Build()` is called, and DI options are copied before singleton runtime services are created, so
+later mutation does not alter an engine. DI-created engines create one scope per top-level render
+and share it with layouts and includes.
 
 ## Binary and package migration
 

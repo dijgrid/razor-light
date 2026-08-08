@@ -3,6 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using RazorLight.DependencyInjection;
 
 namespace RazorLight
 {
@@ -24,9 +26,14 @@ namespace RazorLight
 
 		public void InvalidateTemplate(string key) => _cache.Remove(key);
 
-		internal void AddPreRenderCallback(Action<ITemplatePage> callback)
+		internal void ConfigureServices(IServiceScopeFactory scopeFactory, PropertyInjector propertyInjector)
 		{
-			_handler.Options.PreRenderCallbacks.Add(callback);
+			if (_handler is not EngineHandler engineHandler)
+			{
+				throw new InvalidOperationException("Dependency injection requires the built-in RazorLight engine handler.");
+			}
+
+			engineHandler.ConfigureServices(scopeFactory, propertyInjector);
 		}
 
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]

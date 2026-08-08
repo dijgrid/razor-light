@@ -8,6 +8,7 @@ using RazorLight.Caching;
 using RazorLight.Compilation;
 using RazorLight.DependencyInjection;
 using RazorLight.Generation;
+using RazorLight.Razor;
 
 namespace RazorLight.Extensions
 {
@@ -31,7 +32,7 @@ namespace RazorLight.Extensions
 			services.TryAddSingleton<IRazorLightEngine>(p =>
 			{
 				var engine = engineFactoryProvider();
-				AddEngineRenderCallbacks(engine, p);
+				ConfigureEngineServices(engine, p);
 
 				return engine;
 			});
@@ -48,24 +49,56 @@ namespace RazorLight.Extensions
 			});
 			services.TryAddSingleton<PropertyInjector>();
 			services.TryAddSingleton<ICachingProvider, MemoryCachingProvider>();
+			services.TryAddSingleton<RazorLightProject, NoRazorProject>();
+			services.TryAddSingleton(provider => RazorLightOptionsSnapshot.Create(
+				provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RazorLightOptions>>().Value));
 			services.TryAddSingleton<RazorEngine>(Razor6CompilerCompatibility.CreateEngine());
 			services.TryAddSingleton<RazorSourceGenerator>(provider =>
 			{
-				var options = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RazorLightOptions>>().Value;
+				var options = provider.GetRequiredService<RazorLightOptionsSnapshot>().Options;
 				return new RazorSourceGenerator(
 					provider.GetRequiredService<RazorEngine>(),
-					provider.GetService<RazorLight.Razor.RazorLightProject>(),
+					provider.GetRequiredService<RazorLightProject>(),
 					options.Namespaces,
 					options.EnableDebugMode ?? false,
 					options);
 			});
-			services.TryAddSingleton<IRazorTemplateCompiler, RazorTemplateCompiler>();
 			services.TryAddSingleton<ITemplateFactoryProvider, TemplateFactoryProvider>();
-			services.TryAddSingleton<IMetadataReferenceManager, DefaultMetadataReferenceManager>();
-			services.TryAddSingleton<ICompilationService, RoslynCompilationService>();
-
-
-			services.TryAddSingleton<IEngineHandler, EngineHandler>();
+			services.TryAddSingleton<IMetadataReferenceManager>(provider =>
+			{
+				var options = provider.GetRequiredService<RazorLightOptionsSnapshot>().Options;
+				return new DefaultMetadataReferenceManager(
+					options.AdditionalMetadataReferences,
+					options.IncludedAssemblies,
+					options.ExcludedAssemblies,
+					options.MetadataReferenceDiscovery);
+			});
+			services.TryAddSingleton<ICompilationService>(provider =>
+			{
+				var options = provider.GetRequiredService<RazorLightOptionsSnapshot>().Options;
+				return new RoslynCompilationService(
+					provider.GetRequiredService<IMetadataReferenceManager>(),
+					options.OperatingAssembly ?? throw new InvalidOperationException("RazorLightOptions.OperatingAssembly must be configured."),
+					options.EnableDebugMode ?? false,
+					provider.GetService<IPrecompileCallback>());
+			});
+			services.TryAddSingleton<IRazorTemplateCompiler>(provider => new RazorTemplateCompiler(
+				provider.GetRequiredService<RazorSourceGenerator>(),
+				provider.GetRequiredService<ICompilationService>(),
+				provider.GetRequiredService<RazorLightProject>(),
+				provider.GetRequiredService<RazorLightOptionsSnapshot>().Options));
+			services.TryAddSingleton<IEngineHandler>(provider =>
+			{
+				var handler = new EngineHandler(
+					provider.GetRequiredService<RazorLightOptionsSnapshot>().Options,
+					provider.GetRequiredService<IRazorTemplateCompiler>(),
+					provider.GetRequiredService<ITemplateFactoryProvider>(),
+					provider.GetService<ICachingProvider>());
+				handler.ConfigureServices(
+					provider.GetRequiredService<IServiceScopeFactory>(),
+					provider.GetRequiredService<PropertyInjector>());
+				return handler;
+			});
 			services.TryAddSingleton<IRazorLightEngine, RazorLightEngine>();
 
 			RazorLightDependencyBuilder builder = new RazorLightDependencyBuilder(services);
@@ -73,13 +106,13 @@ namespace RazorLight.Extensions
 			return builder;
 		}
 
-		private static void AddEngineRenderCallbacks(IRazorLightEngine engine, IServiceProvider services)
+		private static void ConfigureEngineServices(IRazorLightEngine engine, IServiceProvider services)
 		{
-			var injector = services.GetRequiredService<PropertyInjector>();
-
 			if (engine is RazorLightEngine razorLightEngine)
 			{
-				razorLightEngine.AddPreRenderCallback(template => injector.Inject(template));
+				razorLightEngine.ConfigureServices(
+					services.GetRequiredService<IServiceScopeFactory>(),
+					services.GetRequiredService<PropertyInjector>());
 			}
 		}
 	}

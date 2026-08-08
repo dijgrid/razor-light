@@ -20,7 +20,7 @@ namespace RazorLight
 			AdditionalMetadataReferences = new HashSet<MetadataReference>();
 			IncludedAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 			ExcludedAssemblies = new HashSet<string>();
-			PreRenderCallbacks = new List<Action<ITemplatePage>>();
+			PageInitializers = new List<Action<ITemplatePage>>();
 		}
 
 		public ISet<string> Namespaces { get; set; }
@@ -46,7 +46,7 @@ namespace RazorLight
 		/// </summary>
 		public MetadataReferenceDiscoveryMode MetadataReferenceDiscovery { get; set; }
 
-		public virtual IList<Action<ITemplatePage>> PreRenderCallbacks { get; set; }
+		internal IList<Action<ITemplatePage>> PageInitializers { get; set; }
 
 		public ICachingProvider? CachingProvider { get; set; }
 

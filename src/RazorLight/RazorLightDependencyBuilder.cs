@@ -91,6 +91,20 @@ namespace RazorLight
 			return this;
 		}
 
+		/// <summary>
+		/// Adds an initializer that runs once for every rendered page, including layouts and includes.
+		/// </summary>
+		public RazorLightDependencyBuilder AddPageInitializer(Action<ITemplatePage> initializer)
+		{
+			if (initializer == null)
+			{
+				throw new ArgumentNullException(nameof(initializer));
+			}
+
+			_services.Configure<RazorLightOptions>(options => options.PageInitializers.Add(initializer));
+			return this;
+		}
+
 		public RazorLightDependencyBuilder AddMetadataReferences(params MetadataReference[] metadata)
 		{
 			var metadataReferences = new HashSet<MetadataReference>();

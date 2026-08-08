@@ -1,7 +1,7 @@
 ---
 id: TASK-021
 title: Align dependency injection and ViewBag behavior
-status: todo
+status: review
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-language-runtime-compatibility
@@ -15,7 +15,7 @@ tags:
   - viewbag
   - compatibility
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-08T04:19:48.485Z
+updatedAt: 2026-08-08T06:47:11.752Z
 refinementState: ready
 ---
 
@@ -24,23 +24,23 @@ supported project and rendering entry point before the 3.0 beta.
 
 ## Acceptance criteria
 
-- [ ] `@inject` behavior is covered for string, file, embedded, custom, builder-created, and
+- [x] `@inject` behavior is covered for string, file, embedded, custom, builder-created, and
       dependency-injection-created engines.
-- [ ] Service-provider ownership and scope behavior are explicit; RazorLight does not capture a scoped
+- [x] Service-provider ownership and scope behavior are explicit; RazorLight does not capture a scoped
       service in a singleton unintentionally.
-- [ ] A top-level render creates one service scope; its page, layout, sections, and includes share that
+- [x] A top-level render creates one service scope; its page, layout, sections, and includes share that
       scope, and RazorLight disposes it after rendering.
-- [ ] Builder-created engines do not imply service injection; DI-created engines resolve `@inject`
+- [x] Builder-created engines do not imply service injection; DI-created engines resolve `@inject`
       properties from the render scope without exposing internal handler/compiler services.
-- [ ] Missing ViewBag members return null to match normal Razor expectations while invalid method,
+- [x] Missing ViewBag members return null to match normal Razor expectations while invalid method,
       conversion, and index operations retain actionable dynamic-binding errors.
-- [ ] Null-conditional, indexer, method, and nested dynamic access have focused regression tests.
-- [ ] Replace the inconsistently cased `AddPrerenderCallbacks` surface with a documented page
+- [x] Null-conditional, indexer, method, and nested dynamic access have focused regression tests.
+- [x] Replace the inconsistently cased `AddPrerenderCallbacks` surface with a documented page
       initializer contract that runs exactly once per page, including layouts and includes.
 - [x] Tag-helper activation is absent; TASK-019 removed it from the generic core.
-- [ ] Mutable options are consumed during registration/build and snapshotted before singleton runtime
+- [x] Mutable options are consumed during registration/build and snapshotted before singleton runtime
       services are created.
-- [ ] Documentation distinguishes RazorLight's standalone runtime services from MVC services that are
+- [x] Documentation distinguishes RazorLight's standalone runtime services from MVC services that are
       not available.
 
 ## Baseline findings
@@ -59,3 +59,19 @@ Keep compilation and caches singleton, create one dependency-injection scope per
 and share it through the complete layout/include graph. Treat page initialization as a supported
 render-lifecycle extension rather than exposing mutable options. Align missing-member ViewBag reads
 with Razor's null-returning behavior, without hiding unrelated dynamic programming errors.
+
+## Implementation notes
+
+- DI-created engines keep compilation and caches singleton but create an async-disposable scope for
+  each top-level render. Page, layout, section, and include execution share the same scoped services.
+- `PropertyInjector` now resolves from the active render scope. Builder-created engines have no
+  implicit service provider, while engines supplied through the DI factory gain the same lifecycle.
+- `AddPageInitializer` is available on both builders and runs exactly once per page instance;
+  `AddPrerenderCallbacks` and mutable callback options were removed.
+- DI and direct-builder options are copied before singleton runtime construction. The registrations
+  now consume the same snapshot across generation, compilation, caching, and rendering.
+- ViewBag uses an Expando-backed dynamic wrapper whose missing members return null. Focused tests
+  retain binder errors for invalid method, conversion, and index operations.
+- String, file, embedded, custom, layout/include, builder, and DI render paths are covered. Validation
+  passed with 272 core tests, 122 precompile tests, a warning-free Release solution build, package
+  validation, `git diff --check`, and `planfs validate`.

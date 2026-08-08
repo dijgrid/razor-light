@@ -12,7 +12,7 @@ namespace RazorLight.Tests
 	public class TemplateRendererTest
 	{
 		[Fact]
-		public async Task Ensure_PrerenderCallbacks_Are_Invoked()
+		public async Task Ensure_Page_Initializer_Is_Invoked()
 		{
 			//Assign
 			var page = TemplatePageTest.CreatePage(t => t.Write("test"));
@@ -24,12 +24,13 @@ namespace RazorLight.Tests
 				t => triggered2 = true
 			};
 
-			var options = new RazorLightOptions { PreRenderCallbacks = callbacks };
 			var engineMock = new Mock<IEngineHandler>();
-			engineMock.SetupGet(e => e.Options).Returns(options);
 
 			//Act
-			var templateRenderer = new TemplateRenderer(engineMock.Object, new MemoryPoolViewBufferScope());
+			var templateRenderer = new TemplateRenderer(
+				engineMock.Object,
+				new MemoryPoolViewBufferScope(),
+				page => callbacks.ForEach(callback => callback(page)));
 			await templateRenderer.RenderAsync(page);
 
 			//Assert

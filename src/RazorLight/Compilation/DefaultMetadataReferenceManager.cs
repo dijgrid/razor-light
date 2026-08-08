@@ -152,6 +152,7 @@ namespace RazorLight.Compilation
 
 			Assembly razorLightAssembly = typeof(RazorLightEngine).Assembly;
 			AddAssemblyName(allowed, razorLightAssembly);
+			AddAssemblyName(allowed, typeof(Microsoft.CSharp.RuntimeBinder.Binder).Assembly);
 			foreach (Assembly referencedAssembly in GetReferencedAssemblies(razorLightAssembly, ExcludedAssemblies))
 			{
 				AddAssemblyName(allowed, referencedAssembly);
