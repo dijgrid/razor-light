@@ -18,8 +18,6 @@ namespace RazorLight.Compilation
 {
 	internal class RazorTemplateCompiler : IRazorTemplateCompiler
 	{
-		private readonly SemaphoreSlim _cacheLock = new SemaphoreSlim(1, 1);
-
 		private RazorSourceGenerator _razorSourceGenerator;
 		private ICompilationService _compiler;
 
@@ -30,6 +28,8 @@ namespace RazorLight.Compilation
 		private readonly Dictionary<string, CompiledTemplateDescriptor> _precompiledViews;
 		private readonly ConcurrentDictionary<string, string> _stringTemplateCacheKeys;
 		private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _cacheKeysByTemplate;
+		private readonly ConcurrentDictionary<string, object> _cacheGenerations;
+		private readonly ConcurrentDictionary<CompilationIdentity, Lazy<Task<CompiledTemplateDescriptor>>> _compilations;
 
 		public RazorTemplateCompiler(
 			RazorSourceGenerator sourceGenerator,
@@ -50,6 +50,8 @@ namespace RazorLight.Compilation
 			_normalizedKeysCache = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 			_stringTemplateCacheKeys = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 			_cacheKeysByTemplate = new ConcurrentDictionary<string, ConcurrentDictionary<string, byte>>(StringComparer.Ordinal);
+			_cacheGenerations = new ConcurrentDictionary<string, object>(StringComparer.Ordinal);
+			_compilations = new ConcurrentDictionary<CompilationIdentity, Lazy<Task<CompiledTemplateDescriptor>>>();
 
 			// We need to validate that the all of the precompiled views are unique by path (case-insensitive).
 			// We do this because there's no good way to canonicalize paths on windows, and it will create
@@ -76,6 +78,8 @@ namespace RazorLight.Compilation
 		public ICompilationService CompilationService => _compiler;
 
 		internal IMemoryCache Cache => _cache;
+		internal int ActiveCompilationCount => _compilations.Count;
+		internal int CacheGenerationCount => _cacheGenerations.Count;
 
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
@@ -161,7 +165,6 @@ namespace RazorLight.Compilation
 			}
 
 			InvalidatePreviousStringTemplate(request);
-			RegisterCacheKey(request);
 
 			// Attempt to lookup the cache entry using the passed in key. This will succeed if the key is already
 			// normalized and a cache entry exists.
@@ -187,121 +190,105 @@ namespace RazorLight.Compilation
 		/// </summary>
 		internal Type ProjectType => _razorProject.GetType();
 
-		private async Task<CompiledTemplateDescriptor> OnCacheMissAsync(
+		private Task<CompiledTemplateDescriptor> OnCacheMissAsync(
 			TemplateCompilationRequest request,
 			CancellationToken cancellationToken)
 		{
-			ViewCompilerWorkItem item;
-			TaskCompletionSource<CompiledTemplateDescriptor> taskSource;
-			MemoryCacheEntryOptions cacheEntryOptions;
 			string normalizedKey = request.ModelType == null && !request.IsStringTemplate
 				? GetNormalizedKey(request.TemplateKey)
 				: request.CacheKey;
-			ViewCompilerWorkItem? runtimeItem = null;
-			if (!(request.ModelType == null && !request.IsStringTemplate &&
-				_precompiledViews.ContainsKey(normalizedKey)))
-			{
-				// Source generation and project I/O are intentionally outside the cache lock. A race can
-				// perform this work more than once, but only one compiled result is published.
-				runtimeItem = await CreateRuntimeCompilationWorkItem(request, cancellationToken).ConfigureAwait(false);
-			}
+			string templateKey = request.IsStringTemplate
+				? request.TemplateKey
+				: GetNormalizedKey(request.TemplateKey);
+			cancellationToken.ThrowIfCancellationRequested();
+			object generation = _cacheGenerations.GetOrAdd(templateKey, _ => new object());
+			var identity = new CompilationIdentity(normalizedKey, templateKey, generation);
+			var candidate = new Lazy<Task<CompiledTemplateDescriptor>>(
+				() => CompileAndCacheAsync(request, normalizedKey, templateKey, generation),
+				LazyThreadSafetyMode.ExecutionAndPublication);
+			Lazy<Task<CompiledTemplateDescriptor>> compilation = _compilations.GetOrAdd(identity, candidate);
+			return AwaitCompilationAsync(identity, compilation);
+		}
 
-			// Safe races cannot be allowed when compiling Razor pages. To ensure only one compilation request succeeds
-			// per file, we'll lock the creation of a cache entry. Creating the cache entry should be very quick. The
-			// actual work for compiling files happens outside the critical section.
-			await _cacheLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+		private async Task<CompiledTemplateDescriptor> AwaitCompilationAsync(
+			CompilationIdentity identity,
+			Lazy<Task<CompiledTemplateDescriptor>> compilation)
+		{
 			try
 			{
-				// Double-checked locking to handle a possible race.
-				if (_cache.TryGetValue(normalizedKey, out object? cachedValue) && cachedValue is Task<CompiledTemplateDescriptor> result)
-				{
-					return await result;
-				}
-
-				if (request.ModelType == null && !request.IsStringTemplate &&
-					_precompiledViews.TryGetValue(normalizedKey, out var precompiledView))
-				{
-					item = new ViewCompilerWorkItem
-					{
-						NormalizedKey = normalizedKey,
-						ExpirationToken = precompiledView.ExpirationToken,
-						Descriptor = precompiledView,
-					};
-				}
-				else
-				{
-					item = runtimeItem
-						?? throw new InvalidOperationException("The runtime compilation work item was not prepared.");
-				}
-
-				// At this point, we've decided what to do - but we should create the cache entry and
-				// release the lock first.
-				cacheEntryOptions = new MemoryCacheEntryOptions();
-				if (item.ExpirationToken != null)
-				{
-					cacheEntryOptions.ExpirationTokens.Add(item.ExpirationToken);
-				}
-
-				taskSource = new TaskCompletionSource<CompiledTemplateDescriptor>();
-				if (item.SupportsCompilation)
-				{
-					// We'll compile in just a sec, be patient.
-				}
-				else
-				{
-					// If we can't compile, we should have already created the descriptor
-					Debug.Assert(item.Descriptor != null);
-					taskSource.SetResult(item.Descriptor!);
-				}
-
-				_ = _cache.Set(item.NormalizedKey, taskSource.Task, cacheEntryOptions);
-				if (request.IsStringTemplate)
-				{
-					_ = _cache.Set(request.TemplateKey, taskSource.Task, cacheEntryOptions);
-				}
+				return await compilation.Value.ConfigureAwait(false);
 			}
 			finally
 			{
-				_cacheLock.Release();
+				_compilations.TryRemove(
+					new KeyValuePair<CompilationIdentity, Lazy<Task<CompiledTemplateDescriptor>>>(identity, compilation));
+				if (compilation.IsValueCreated && !compilation.Value.IsCompletedSuccessfully)
+				{
+					_stringTemplateCacheKeys.TryRemove(
+						new KeyValuePair<string, string>(identity.TemplateKey, identity.CacheKey));
+				}
+				TryRemoveUnusedGeneration(identity.TemplateKey, identity.Generation);
+			}
+		}
+
+		private async Task<CompiledTemplateDescriptor> CompileAndCacheAsync(
+			TemplateCompilationRequest request,
+			string normalizedKey,
+			string templateKey,
+			object generation)
+		{
+			ViewCompilerWorkItem item;
+			if (request.ModelType == null && !request.IsStringTemplate &&
+				_precompiledViews.TryGetValue(normalizedKey, out var precompiledView))
+			{
+				item = new ViewCompilerWorkItem
+				{
+					NormalizedKey = normalizedKey,
+					ExpirationToken = precompiledView.ExpirationToken,
+					Descriptor = precompiledView,
+				};
+			}
+			else
+			{
+				item = await CreateRuntimeCompilationWorkItem(request, CancellationToken.None).ConfigureAwait(false);
 			}
 
-			// Now the lock has been released so we can do more expensive processing.
+			CompiledTemplateDescriptor descriptor;
 			if (item.SupportsCompilation)
 			{
-				Debug.Assert(taskSource != null);
+				var projectItem = item.ProjectItem
+					?? throw new InvalidOperationException("The compilation work item has no project item.");
+				var generatedTemplate = item.GeneratedTemplate
+					?? throw new InvalidOperationException("The compilation work item has no generated template.");
+				descriptor = CompileAndEmit(projectItem, generatedTemplate);
+				descriptor.ExpirationToken = item.ExpirationToken;
+			}
+			else
+			{
+				descriptor = item.Descriptor
+					?? throw new InvalidOperationException("The precompiled work item has no descriptor.");
+			}
 
-				//if (item.Descriptor?.Item != null &&
-				//	ChecksumValidator.IsItemValid(_projectEngine, item.Descriptor.Item))
-				//{
-				//	// If the item has checksums to validate, we should also have a precompiled view.
-				//	Debug.Assert(item.Descriptor != null);
+			var cacheEntryOptions = new MemoryCacheEntryOptions();
+			if (item.ExpirationToken != null)
+			{
+				cacheEntryOptions.ExpirationTokens.Add(item.ExpirationToken);
+			}
 
-				//	taskSource.SetResult(item.Descriptor);
-				//	return taskSource.Task;
-				//}
-
-				try
+			if (_cacheGenerations.TryGetValue(templateKey, out object? currentGeneration) &&
+				ReferenceEquals(currentGeneration, generation))
+			{
+				Task<CompiledTemplateDescriptor> completed = Task.FromResult(descriptor);
+				RegisterCacheKey(templateKey, item.NormalizedKey, generation, cacheEntryOptions);
+				_ = _cache.Set(item.NormalizedKey, completed, cacheEntryOptions);
+				if (request.IsStringTemplate)
 				{
-					var projectItem = item.ProjectItem
-						?? throw new InvalidOperationException("The compilation work item has no project item.");
-					var generatedTemplate = item.GeneratedTemplate
-						?? throw new InvalidOperationException("The compilation work item has no generated template.");
-					CompiledTemplateDescriptor descriptor = CompileAndEmit(projectItem, generatedTemplate);
-					descriptor.ExpirationToken = cacheEntryOptions.ExpirationTokens.FirstOrDefault();
-					taskSource.SetResult(descriptor);
-				}
-				catch (Exception ex)
-				{
-					_cache.Remove(item.NormalizedKey);
-					if (request.IsStringTemplate)
-					{
-						_cache.Remove(request.TemplateKey);
-					}
-					taskSource.SetException(ex);
+					RegisterCacheKey(templateKey, request.TemplateKey, generation, cacheEntryOptions);
+					_ = _cache.Set(request.TemplateKey, completed, cacheEntryOptions);
 				}
 			}
 
-			return await taskSource.Task;
+			return descriptor;
 		}
 
 		private async Task<ViewCompilerWorkItem> CreateRuntimeCompilationWorkItem(
@@ -400,15 +387,17 @@ namespace RazorLight.Compilation
 
 			_stringTemplateCacheKeys.AddOrUpdate(
 				request.TemplateKey,
-				_ =>
+				templateKey =>
 				{
+					_cacheGenerations.TryRemove(request.TemplateKey, out _);
 					_cache.Remove(request.TemplateKey);
 					return request.CacheKey;
 				},
-				(_, previousCacheKey) =>
+				(templateKey, previousCacheKey) =>
 				{
 					if (!string.Equals(previousCacheKey, request.CacheKey, StringComparison.Ordinal))
 					{
+						_cacheGenerations.TryRemove(request.TemplateKey, out _);
 						_cache.Remove(request.TemplateKey);
 						_cache.Remove(previousCacheKey);
 					}
@@ -417,16 +406,28 @@ namespace RazorLight.Compilation
 				});
 		}
 
-		private void RegisterCacheKey(TemplateCompilationRequest request)
+		private void RegisterCacheKey(
+			string templateKey,
+			string cacheKey,
+			object generation,
+			MemoryCacheEntryOptions cacheEntryOptions)
 		{
-			string templateKey = request.IsStringTemplate
-				? request.TemplateKey
-				: GetNormalizedKey(request.TemplateKey);
 			var keys = _cacheKeysByTemplate.GetOrAdd(
 				templateKey,
 				_ => new ConcurrentDictionary<string, byte>(StringComparer.Ordinal));
-			keys.TryAdd(request.CacheKey, 0);
-			keys.TryAdd(templateKey, 0);
+			keys.TryAdd(cacheKey, 0);
+			cacheEntryOptions.RegisterPostEvictionCallback((_, _, _, _) =>
+			{
+				keys.TryRemove(cacheKey, out _);
+				if (keys.IsEmpty)
+				{
+					_cacheKeysByTemplate.TryRemove(
+						new KeyValuePair<string, ConcurrentDictionary<string, byte>>(templateKey, keys));
+					_stringTemplateCacheKeys.TryRemove(
+						new KeyValuePair<string, string>(templateKey, cacheKey));
+					TryRemoveUnusedGeneration(templateKey, generation);
+				}
+			});
 		}
 
 		internal string NormalizeCacheKey(string key)
@@ -447,19 +448,26 @@ namespace RazorLight.Compilation
 			}
 
 			string normalizedKey = GetNormalizedKey(key);
-			_cacheLock.Wait();
-			try
+			_cacheGenerations.TryRemove(key, out _);
+			RemoveCacheKeys(key);
+			if (!string.Equals(key, normalizedKey, StringComparison.Ordinal))
 			{
-				RemoveCacheKeys(key);
-				if (!string.Equals(key, normalizedKey, StringComparison.Ordinal))
-				{
-					RemoveCacheKeys(normalizedKey);
-				}
+				_cacheGenerations.TryRemove(normalizedKey, out _);
+				RemoveCacheKeys(normalizedKey);
 			}
-			finally
+		}
+
+		private void TryRemoveUnusedGeneration(string templateKey, object generation)
+		{
+			if (_cacheKeysByTemplate.ContainsKey(templateKey) ||
+				_compilations.Keys.Any(identity =>
+					string.Equals(identity.TemplateKey, templateKey, StringComparison.Ordinal) &&
+					ReferenceEquals(identity.Generation, generation)))
 			{
-				_cacheLock.Release();
+				return;
 			}
+
+			_cacheGenerations.TryRemove(new KeyValuePair<string, object>(templateKey, generation));
 		}
 
 		private void RemoveCacheKeys(string templateKey)
@@ -552,6 +560,11 @@ namespace RazorLight.Compilation
 
 			public IGeneratedRazorTemplate? GeneratedTemplate { get; set; }
 		}
+
+		private readonly record struct CompilationIdentity(
+			string CacheKey,
+			string TemplateKey,
+			object Generation);
 
 		#endregion
 	}

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.IO;
@@ -16,8 +15,6 @@ namespace RazorLight
 {
 	internal sealed class EngineHandler : IEngineHandler
 	{
-		private readonly ConcurrentDictionary<string, string> _stringTemplateCacheKeys =
-			new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 		private readonly ITemplateCompilerCache? _compilerCache;
 		private IServiceScopeFactory? _scopeFactory;
 		private PropertyInjector? _propertyInjector;
@@ -84,8 +81,10 @@ namespace RazorLight
 			cancellationToken.ThrowIfCancellationRequested();
 			InvalidatePreviousStringTemplate(request);
 			var coordinatedCache = Cache as ICoordinatedCachingProvider;
-			long cacheVersion = coordinatedCache?.GetVersion(request.TemplateKey) ?? 0;
+			long cacheVersion = coordinatedCache?.BeginCompilation(request.TemplateKey) ?? 0;
 
+			try
+			{
 			ITemplatePage? templatePage = null;
 			if (Cache != null)
 			{
@@ -144,6 +143,11 @@ namespace RazorLight
 
 			templatePage.OutputEncoder = Options.OutputEncoder;
 			return templatePage;
+			}
+			finally
+			{
+				coordinatedCache?.CompleteCompilation(request.TemplateKey);
+			}
 		}
 
 		/// <summary>
@@ -494,23 +498,14 @@ namespace RazorLight
 				return;
 			}
 
-			_stringTemplateCacheKeys.AddOrUpdate(
-				request.TemplateKey,
-				_ =>
-				{
-					Cache.Remove(request.TemplateKey);
-					return request.CacheKey;
-				},
-				(_, previousCacheKey) =>
-				{
-					if (!string.Equals(previousCacheKey, request.CacheKey, StringComparison.Ordinal))
-					{
-						Cache.Remove(request.TemplateKey);
-						Cache.Remove(previousCacheKey);
-					}
-
-					return request.CacheKey;
-				});
+			if (Cache is ICoordinatedCachingProvider coordinatedCache)
+			{
+				coordinatedCache.PrepareStringTemplate(request.TemplateKey, request.CacheKey);
+			}
+			else
+			{
+				Cache.Remove(request.TemplateKey);
+			}
 		}
 
 		private string NormalizeProjectKey(string key)

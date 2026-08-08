@@ -59,7 +59,7 @@ namespace RazorLight.Tests
 			cancellationSource.Cancel();
 
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelled);
-			Assert.Equal(cancellationSource.Token, project.ObservedToken);
+			Assert.False(project.ObservedToken.CanBeCanceled);
 		}
 
 		[Fact]

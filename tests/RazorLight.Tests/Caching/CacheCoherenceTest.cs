@@ -221,13 +221,64 @@ namespace RazorLight.Tests.Caching
 			var compilerCache = new RecordingCompilerCache();
 			var pageCache = new MemoryCachingProvider();
 			var cache = new CoordinatedCachingProvider(pageCache, compilerCache);
-			long versionBeforeRemoval = cache.GetVersion("template");
+			long versionBeforeRemoval = cache.BeginCompilation("template");
 
 			cache.Remove("template");
 			cache.StoreCompiledTemplate("template", "template.__razorlight.old", () => new TestPage(), null, versionBeforeRemoval);
+			cache.CompleteCompilation("template");
 
 			Assert.False(cache.Contains("template.__razorlight.old"));
 			Assert.Contains("template", compilerCache.RemovedKeys);
+		}
+
+		[Fact]
+		public void Internal_Separator_Text_In_User_Key_Is_Not_Reinterpreted()
+		{
+			var cache = new CoordinatedCachingProvider(new MemoryCachingProvider(), new RecordingCompilerCache());
+			var page = new TestPage();
+			const string key = "customer.__razorlight.template";
+
+			cache.CacheTemplate(key, () => page, null);
+
+			Assert.True(cache.TryGetTemplate(key, out var pageFactory));
+			Assert.Same(page, pageFactory());
+			Assert.False(cache.Contains("customer"));
+		}
+
+		[Fact]
+		public async Task Expiration_Releases_Cache_Key_And_Version_Tracking()
+		{
+			var cache = new CoordinatedCachingProvider(new MemoryCachingProvider(), new RecordingCompilerCache());
+			using var expiration = new CancellationTokenSource();
+			long version = cache.BeginCompilation("temporary");
+			cache.StoreCompiledTemplate(
+				"temporary",
+				"temporary.variant",
+				() => new TestPage(),
+				new CancellationChangeToken(expiration.Token),
+				version);
+			cache.CompleteCompilation("temporary");
+
+			expiration.Cancel();
+
+			await AssertEventuallyAsync(() => Task.FromResult(
+				cache.TrackedTemplateCount == 0 && cache.TrackedVersionCount == 0));
+		}
+
+		[Fact]
+		public async Task Invalidation_During_Compilation_Cannot_Repopulate_Stale_Result()
+		{
+			var project = new BlockingMutableProject("old");
+			var engine = CreateEngine(project);
+
+			Task<string> staleRender = engine.CompileRenderAsync("template", new object());
+			await project.LookupStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			project.Content = "new";
+			engine.InvalidateTemplate("template");
+			project.ReleaseLookup.TrySetResult();
+
+			Assert.Equal("old", await staleRender);
+			Assert.Equal("new", await engine.CompileRenderAsync("template", new object()));
 		}
 
 		[Fact]
@@ -370,6 +421,37 @@ namespace RazorLight.Tests.Caching
 			{
 				public CancellationTokenSource Expiration { get; } = new();
 			}
+		}
+
+		private sealed class BlockingMutableProject : RazorLightProject
+		{
+			private int _lookupCount;
+
+			public BlockingMutableProject(string content)
+			{
+				Content = content;
+			}
+
+			public string Content { get; set; }
+			public TaskCompletionSource LookupStarted { get; } =
+				new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			public TaskCompletionSource ReleaseLookup { get; } =
+				new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public override async Task<RazorLightProjectItem> GetItemAsync(string templateKey)
+			{
+				string capturedContent = Content;
+				if (Interlocked.Increment(ref _lookupCount) == 1)
+				{
+					LookupStarted.TrySetResult();
+					await ReleaseLookup.Task;
+				}
+
+				return new TextSourceRazorProjectItem(templateKey, capturedContent);
+			}
+
+			public override Task<IEnumerable<RazorLightProjectItem>> GetImportsAsync(string templateKey) =>
+				Task.FromResult<IEnumerable<RazorLightProjectItem>>(Array.Empty<RazorLightProjectItem>());
 		}
 
 		private class RecordingCompilerCache : ITemplateCompilerCache

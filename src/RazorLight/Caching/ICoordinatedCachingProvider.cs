@@ -5,6 +5,12 @@ namespace RazorLight.Caching
 {
 	internal interface ICoordinatedCachingProvider
 	{
+		void PrepareStringTemplate(string templateKey, string cacheKey);
+
+		long BeginCompilation(string templateKey);
+
+		void CompleteCompilation(string templateKey);
+
 		long GetVersion(string templateKey);
 
 		void StoreCompiledTemplate(

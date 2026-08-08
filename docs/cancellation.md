@@ -33,15 +33,16 @@ before releasing its resources and then observes cancellation at the next safe b
 
 ## Shared compilation
 
-Compilation tasks are cached and may have multiple waiters. Cancelling one caller cancels that
-caller's wait, not an already-published shared compilation required by another caller. Before a
-compilation is published, cancellation is passed through project lookup, import lookup, C# source
-lookup, source reading, and the compile-lock wait. A cancelled or failed attempt is not retained as
-a poisoned cache entry, so a later call can retry the same key.
+Compilation tasks are cached and may have multiple waiters. RazorLight publishes a per-identity
+single-flight operation before project lookup and source generation begin. Cancelling one caller
+therefore cancels that caller's wait, not the shared compilation that another caller may require.
+Project lookup, import lookup, C# source lookup, and source generation complete under the shared
+operation; a failed attempt is not retained as a poisoned cache entry, so a later call can retry the
+same key. Project APIs still receive a token for non-shared direct operations, but a caller should
+not assume its exact token owns an already-published compilation.
 
 Roslyn emission is synchronous once it starts and cannot be interrupted safely. Cancellation is
-checked immediately before and after source generation and at the surrounding asynchronous
-boundaries.
+checked at the surrounding asynchronous boundaries.
 
 This shared-compilation behavior is intentionally different from rendering: a compilation waiter
 does not exclusively own the shared task, while a renderer exclusively owns its page, buffers, and

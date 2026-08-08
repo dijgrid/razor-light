@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -36,34 +37,21 @@ namespace RazorLight.Tests.Compilation
 		}
 
 		[Fact]
-		public async Task Cancellation_While_Waiting_For_Compile_Lock_Allows_Retry()
+		public async Task Unrelated_Template_Compilation_Does_Not_Wait_For_Blocked_Key()
 		{
-			var project = new TestRazorProject
-			{
-				Value = new TextSourceRazorProjectItem("locked", "completed"),
-			};
+			var project = new IndependentlyBlockingProject();
 			var compiler = TestRazorTemplateCompiler.Create(project: project);
-			var cacheLock = (SemaphoreSlim)typeof(RazorTemplateCompiler)
-				.GetField("_cacheLock", BindingFlags.Instance | BindingFlags.NonPublic)!
-				.GetValue(compiler)!;
-			await cacheLock.WaitAsync();
-			using var cancellationSource = new CancellationTokenSource();
 
-			try
-			{
-				Task<CompiledTemplateDescriptor> cancelled = compiler.CompileAsync("locked", cancellationSource.Token);
-				await Task.Delay(200);
-				Assert.False(cancelled.IsCompleted);
-				cancellationSource.Cancel();
+			Task<CompiledTemplateDescriptor> blocked = compiler.CompileAsync("blocked");
+			await project.BlockedLookupStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelled);
-			}
-			finally
-			{
-				cacheLock.Release();
-			}
+			CompiledTemplateDescriptor independent = await compiler
+				.CompileAsync("independent")
+				.WaitAsync(TimeSpan.FromSeconds(5));
 
-			Assert.Equal("locked", (await compiler.CompileAsync("locked")).TemplateKey);
+			Assert.Equal("independent", independent.TemplateKey);
+			project.ReleaseBlocked.TrySetResult();
+			Assert.Equal("blocked", (await blocked).TemplateKey);
 		}
 
 		[Fact]
@@ -178,6 +166,24 @@ namespace RazorLight.Tests.Compilation
 		}
 
 		[Fact]
+		public async Task Failed_Compilations_Do_Not_Retain_InFlight_Or_Generation_State()
+		{
+			var compiler = TestRazorTemplateCompiler.Create(project: new TestRazorProject
+			{
+				Value = NoRazorProjectItem.Empty,
+			});
+
+			for (int index = 0; index < 20; index++)
+			{
+				await Assert.ThrowsAsync<TemplateNotFoundException>(() =>
+					compiler.CompileAsync("missing-" + index));
+			}
+
+			Assert.Equal(0, compiler.ActiveCompilationCount);
+			Assert.Equal(0, compiler.CacheGenerationCount);
+		}
+
+		[Fact]
 		public async Task Ensure_TemplateNotFoundException_KnownKeys_NotNull_When_EnableDebugMode_True()
 		{
 			var options = new RazorLightOptions { EnableDebugMode = true };
@@ -260,6 +266,28 @@ namespace RazorLight.Tests.Compilation
 
 				return new TestRazorTemplateCompiler(generator, compilerService, razorProject, razorOptions);
 			}
+		}
+
+		private sealed class IndependentlyBlockingProject : RazorLightProject
+		{
+			public TaskCompletionSource BlockedLookupStarted { get; } =
+				new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			public TaskCompletionSource ReleaseBlocked { get; } =
+				new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public override async Task<RazorLightProjectItem> GetItemAsync(string templateKey)
+			{
+				if (templateKey == "blocked")
+				{
+					BlockedLookupStarted.TrySetResult();
+					await ReleaseBlocked.Task;
+				}
+
+				return new TextSourceRazorProjectItem(templateKey, templateKey);
+			}
+
+			public override Task<IEnumerable<RazorLightProjectItem>> GetImportsAsync(string templateKey) =>
+				Task.FromResult<IEnumerable<RazorLightProjectItem>>(Array.Empty<RazorLightProjectItem>());
 		}
 	}
 }
