@@ -8,7 +8,7 @@ namespace RazorLight.Internal.Buffering
 	/// Encapsulates a string or <see cref="ITemplateContent"/> value.
 	/// </summary>
 	[DebuggerDisplay("{DebuggerToString()}")]
-	public struct ViewBufferValue
+	internal readonly struct ViewBufferValue
 	{
 		/// <summary>
 		/// Initializes a new instance of <see cref="ViewBufferValue"/> with a <c>string</c> value.

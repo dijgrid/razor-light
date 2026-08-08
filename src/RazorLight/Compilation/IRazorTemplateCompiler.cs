@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace RazorLight.Compilation
 {
-	public interface IRazorTemplateCompiler
+	internal interface IRazorTemplateCompiler
 	{
 		ICompilationService CompilationService { get; }
 

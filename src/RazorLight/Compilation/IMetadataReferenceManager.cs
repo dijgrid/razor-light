@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace RazorLight.Compilation
 {
-	public interface IMetadataReferenceManager
+	internal interface IMetadataReferenceManager
 	{
 		IReadOnlyList<MetadataReference> Resolve(Assembly assembly);
 

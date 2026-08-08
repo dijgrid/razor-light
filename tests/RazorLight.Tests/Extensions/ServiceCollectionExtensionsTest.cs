@@ -86,22 +86,15 @@ namespace RazorLight.Tests.Extensions
 		}
 
 		[Fact]
-		public void Ensure_Works_With_Generic_Host_When_Resolving_IEngineHandler_Before_IRazorLightEngine()
+		public void Registers_Only_Supported_RazorLight_Service_Contracts()
 		{
-			static IHostBuilder CreateHostBuilder(string[]? args)
-			{
-				return Host.CreateDefaultBuilder(args)
-					.ConfigureServices(services => new EmbeddedEngineStartup().ConfigureServices(services));
-			}
+			var services = GetServices();
+			services.AddRazorLight();
 
-			var hostBuilder = CreateHostBuilder(null);
-
-			Assert.NotNull(hostBuilder);
-			var host = hostBuilder.Build();
-			Assert.NotNull(host);
-			var exception = Assert.Throws<InvalidOperationException>(() => host.Services.GetService<IEngineHandler>());
-			Assert.Equal("This exception can only occur if you inject IEngineHandler directly using ServiceCollectionExtensions.AddRazorLight", exception.Message);
-			host.Services.GetService<IRazorLightEngine>();
+			Assert.DoesNotContain(services, descriptor =>
+				descriptor.ServiceType.Assembly == typeof(IRazorLightEngine).Assembly &&
+				!descriptor.ServiceType.IsPublic &&
+				!descriptor.ServiceType.IsNestedPublic);
 		}
 
 		[Fact()]
@@ -225,11 +218,6 @@ namespace RazorLight.Tests.Extensions
 				.UseMemoryCachingProvider()
 				.UseFileSystemProject(_rootPath);
 
-			services.RemoveAll<IMetadataReferenceManager>();
-			services.AddSingleton<IMetadataReferenceManager>(new TestMetadataReferenceManager(() =>
-			{
-			}));
-
 			services.RemoveAll<IRazorLightEngine>();
 			services.AddSingleton<IRazorLightEngine>(new TestRazorLightEngine(() =>
 			{
@@ -248,30 +236,6 @@ namespace RazorLight.Tests.Extensions
 			await engine.CompileRenderStringAsync("", "", "");
 			Assert.True(newRazorLightEngineCalled);
 
-			Assert.IsType<TestMetadataReferenceManager>(provider.GetService<IMetadataReferenceManager>());
-		}
-
-		public class TestMetadataReferenceManager : IMetadataReferenceManager
-		{
-
-			private readonly Action _resolveAction;
-			public TestMetadataReferenceManager(Action resolveAction)
-			{
-				_resolveAction = resolveAction;
-			}
-
-			public HashSet<MetadataReference> AdditionalMetadataReferences {
-				get
-				{
-					return new HashSet<MetadataReference>();
-				}
-			}
-
-			public IReadOnlyList<MetadataReference> Resolve(Assembly assembly)
-			{
-				_resolveAction();
-				return new List<MetadataReference>();
-			}
 		}
 
 		public class TestRazorLightEngine : IRazorLightEngine

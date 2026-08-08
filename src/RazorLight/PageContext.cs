@@ -3,7 +3,7 @@ using System.IO;
 
 namespace RazorLight
 {
-	public class PageContext : IPageContext
+	public sealed class PageContext : IPageContext
 	{
 		private dynamic _viewBag;
 		private readonly ExpandoObject _viewBagData;

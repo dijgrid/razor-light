@@ -41,7 +41,7 @@ system's casing behavior.
 
 The coordinator serializes replacement and removal bookkeeping, but retrieval and the configured
 provider's own work can occur concurrently. Custom `ICachingProvider` implementations must make
-`RetrieveTemplate`, `CacheTemplate`, `Contains`, and `Remove` safe for concurrent callers.
+`TryGetTemplate`, `CacheTemplate`, `Contains`, and `Remove` safe for concurrent callers.
 
 The built-in `PrecompiledCachingProvider` follows the same separator and case rules. `CacheTemplate`
 can add or replace a runtime page factory, and `Remove` deletes both that runtime entry and the

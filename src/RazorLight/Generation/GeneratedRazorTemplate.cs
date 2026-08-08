@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace RazorLight.Generation
 {
-	public class GeneratedRazorTemplate : IGeneratedRazorTemplate, IGeneratedCSharpSourceContainer
+	internal sealed class GeneratedRazorTemplate : IGeneratedRazorTemplate, IGeneratedCSharpSourceContainer
 	{
 		public GeneratedRazorTemplate(RazorLightProjectItem projectItem, RazorCSharpDocument cSharpDocument)
 			: this(projectItem, cSharpDocument, Array.Empty<CSharpSourceDocument>())

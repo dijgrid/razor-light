@@ -2,7 +2,7 @@
 
 namespace RazorLight.Compilation
 {
-	public interface IAssemblyPathFormatter
+	internal interface IAssemblyPathFormatter
 	{
 		string GetAssemblyPath(Assembly assembly);
 	}

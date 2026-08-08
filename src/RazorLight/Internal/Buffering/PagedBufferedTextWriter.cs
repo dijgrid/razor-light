@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace RazorLight.Internal.Buffering
 {
-	public class PagedBufferedTextWriter : TextWriter
+	internal sealed class PagedBufferedTextWriter : TextWriter
 	{
 		private readonly TextWriter _inner;
 		private readonly PagedCharBuffer _charBuffer;

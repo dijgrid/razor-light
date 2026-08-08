@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace RazorLight.Internal.Buffering
 {
-	public class PagedCharBuffer : IDisposable
+	internal sealed class PagedCharBuffer : IDisposable
 	{
 		public const int PageSize = 1024;
 		private int _charIndex;

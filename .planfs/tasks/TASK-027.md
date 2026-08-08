@@ -1,7 +1,7 @@
 ---
 id: TASK-027
 title: Remove inherited obsolete and unsupported APIs
-status: review
+status: done
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-library-quality
@@ -13,7 +13,7 @@ tags:
   - cleanup
   - beta
 createdAt: 2026-08-08T04:17:53.038Z
-updatedAt: 2026-08-08T06:16:26.742Z
+updatedAt: 2026-08-08T08:44:00.032Z
 refinementState: ready
 ---
 

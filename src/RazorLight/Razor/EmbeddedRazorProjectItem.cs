@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace RazorLight.Razor
 {
-	public class EmbeddedRazorProjectItem : RazorLightProjectItem
+	public sealed class EmbeddedRazorProjectItem : RazorLightProjectItem
 	{
 		private readonly string fullTemplateKey;
 

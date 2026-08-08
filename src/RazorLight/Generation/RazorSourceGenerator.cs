@@ -11,7 +11,7 @@ using RazorLight.Instrumentation;
 
 namespace RazorLight.Generation
 {
-	public class RazorSourceGenerator
+	internal class RazorSourceGenerator
 	{
 		private readonly bool includeDetailedDiagnostics;
 		private readonly RazorLightOptions options;

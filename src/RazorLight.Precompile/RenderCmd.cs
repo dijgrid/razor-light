@@ -56,7 +56,12 @@ namespace RazorLight.Precompile
 				.UseCachingProvider(cachingProvider)
 				.Build();
 
-			var templatePage = cachingProvider.RetrieveTemplate(key).Template.TemplatePageFactory();
+			if (!cachingProvider.TryGetTemplate(key, out var pageFactory))
+			{
+				throw new RazorLightException($"No precompiled template found for the key {key}");
+			}
+
+			var templatePage = pageFactory();
 			Program.ConsoleOut.WriteLine(engine.RenderTemplateAsync(templatePage, model).GetAwaiter().GetResult());
 			return 0;
 		}

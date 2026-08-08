@@ -1,6 +1,6 @@
 ﻿namespace RazorLight.Internal.Buffering
 {
-	public class ViewBufferPage
+	internal sealed class ViewBufferPage
 	{
 		public ViewBufferPage(ViewBufferValue[] buffer)
 		{

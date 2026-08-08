@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace RazorLight.Compilation
 {
-	public interface ICompilationService
+	internal interface ICompilationService
 	{
 		CSharpCompilationOptions CSharpCompilationOptions { get; }
 		EmitOptions EmitOptions { get; }

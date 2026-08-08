@@ -8,7 +8,7 @@ using RazorLight.DependencyInjection;
 
 namespace RazorLight
 {
-	public class RazorLightEngine : IRazorLightEngine
+	internal sealed class RazorLightEngine : IRazorLightEngine
 	{
 		private readonly IEngineHandler _handler;
 		private readonly TemplateCache _cache;

@@ -9,7 +9,7 @@ namespace RazorLight
 	/// <summary>
 	/// Stores information about model of the template page
 	/// </summary>
-	public class ModelTypeInfo
+	public sealed class ModelTypeInfo
 	{
 		/// <summary>
 		/// Indicates whether given model is not a dynamic or anonymous object

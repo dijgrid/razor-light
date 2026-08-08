@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace RazorLight.Instrumentation
 {
-	public class RazorLightAssemblyAttributeInjectionPass : IntermediateNodePassBase, IRazorOptimizationPass
+	internal sealed class RazorLightAssemblyAttributeInjectionPass : IntermediateNodePassBase, IRazorOptimizationPass
 	{
 		private const string RazorLightTemplateAttribute = "global::RazorLight.Razor.RazorLightTemplateAttribute";
 

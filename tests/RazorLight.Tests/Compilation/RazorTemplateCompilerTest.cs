@@ -186,7 +186,7 @@ namespace RazorLight.Tests.Compilation
 
 
 
-		public class TestRazorTemplateCompiler : RazorTemplateCompiler
+		private sealed class TestRazorTemplateCompiler : RazorTemplateCompiler
 		{
 			public TestRazorTemplateCompiler(
 				RazorSourceGenerator sourceGenerator,

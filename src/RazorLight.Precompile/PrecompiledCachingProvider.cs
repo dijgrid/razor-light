@@ -4,12 +4,13 @@ using RazorLight.Caching;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
 namespace RazorLight.Precompile
 {
-	public class PrecompiledCachingProvider : ICachingProvider
+	public sealed class PrecompiledCachingProvider : ICachingProvider
 	{
 		public readonly IReadOnlyDictionary<string, string> Map;
 		private readonly MemoryCachingProvider m_cache = new();
@@ -80,19 +81,19 @@ namespace RazorLight.Precompile
 			m_map.TryRemove(key, out _);
 		}
 
-		public TemplateCacheLookupResult RetrieveTemplate(string key)
+		public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
 		{
 			key = NormalizeKey(key);
 
-			var res = m_cache.RetrieveTemplate(key);
-			if (res.Success)
+			if (m_cache.TryGetTemplate(key, out pageFactory))
 			{
-				return res;
+				return true;
 			}
 
 			if (m_map.TryGetValue(key, out var filePath))
 			{
-				return new TemplateCacheLookupResult(new TemplateCacheItem(key, CreateTemplatePage));
+				pageFactory = CreateTemplatePage;
+				return true;
 
 				ITemplatePage CreateTemplatePage()
 				{

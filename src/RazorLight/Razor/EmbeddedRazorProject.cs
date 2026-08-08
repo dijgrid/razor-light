@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RazorLight.Razor
 {
-	public class EmbeddedRazorProject : RazorLightProject
+	public sealed class EmbeddedRazorProject : RazorLightProject
 	{
 		public EmbeddedRazorProject(Type rootType)
 		{

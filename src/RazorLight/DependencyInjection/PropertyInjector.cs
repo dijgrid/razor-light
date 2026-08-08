@@ -7,7 +7,7 @@ using RazorLight.Internal;
 
 namespace RazorLight.DependencyInjection
 {
-	public class PropertyInjector
+	internal sealed class PropertyInjector
 	{
 		private readonly ConcurrentDictionary<PropertyInfo, FastPropertySetter> _propertyCache;
 

@@ -8,7 +8,7 @@ namespace RazorLight.Internal.Buffering
 	/// <summary>
 	/// A <see cref="IViewBufferScope"/> that uses pooled memory.
 	/// </summary>
-	public class MemoryPoolViewBufferScope : IViewBufferScope, IDisposable
+	internal sealed class MemoryPoolViewBufferScope : IViewBufferScope, IDisposable
 	{
 		public static readonly int MinimumSize = 16;
 		private readonly ArrayPool<ViewBufferValue> _viewBufferPool;

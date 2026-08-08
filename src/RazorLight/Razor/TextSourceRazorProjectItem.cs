@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RazorLight.Razor
 {
-	public class TextSourceRazorProjectItem : RazorLightProjectItem
+	public sealed class TextSourceRazorProjectItem : RazorLightProjectItem
 	{
 		private string _content;
 

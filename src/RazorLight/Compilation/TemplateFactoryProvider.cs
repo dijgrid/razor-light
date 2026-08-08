@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace RazorLight.Compilation
 {
-	public class TemplateFactoryProvider : ITemplateFactoryProvider
+	internal sealed class TemplateFactoryProvider : ITemplateFactoryProvider
 	{
 		public Func<ITemplatePage> CreateFactory(CompiledTemplateDescriptor templateDescriptor)
 		{

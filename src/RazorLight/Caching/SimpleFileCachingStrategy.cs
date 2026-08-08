@@ -2,7 +2,7 @@
 
 namespace RazorLight.Caching
 {
-	public class SimpleFileCachingStrategy : IFileSystemCachingStrategy
+	public sealed class SimpleFileCachingStrategy : IFileSystemCachingStrategy
 	{
 		public static readonly IFileSystemCachingStrategy Instance = new SimpleFileCachingStrategy();
 

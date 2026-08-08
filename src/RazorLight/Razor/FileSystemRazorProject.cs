@@ -11,7 +11,7 @@ namespace RazorLight.Razor
 	/// <summary>
 	/// Specifies RazorProject where templates are located in files
 	/// </summary>
-	public class FileSystemRazorProject : RazorLightProject
+	public sealed class FileSystemRazorProject : RazorLightProject
 	{
 		public const string DefaultExtension = ".cshtml";
 		private readonly IFileProvider _fileProvider;
@@ -97,7 +97,7 @@ namespace RazorLight.Razor
 		/// </summary>
 		public string Root { get; }
 
-		protected string GetAbsoluteFilePathFromKey(string templateKey)
+		private string GetAbsoluteFilePathFromKey(string templateKey)
 		{
 			if (string.IsNullOrEmpty(templateKey))
 			{

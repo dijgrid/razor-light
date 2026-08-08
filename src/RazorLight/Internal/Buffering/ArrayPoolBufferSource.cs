@@ -2,7 +2,7 @@
 
 namespace RazorLight.Internal.Buffering
 {
-	public class ArrayPoolBufferSource : ICharBufferSource
+	internal sealed class ArrayPoolBufferSource : ICharBufferSource
 	{
 		private readonly ArrayPool<char> _pool;
 

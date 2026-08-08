@@ -13,7 +13,7 @@ namespace RazorLight.Text
 	/// <summary>
 	/// Represents an unencoded string.
 	/// </summary>
-	public class RawString : IRawString
+	public sealed class RawString : IRawString
 	{
 		private readonly string _value;
 

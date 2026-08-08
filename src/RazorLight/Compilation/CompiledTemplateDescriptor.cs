@@ -4,7 +4,7 @@ using RazorLight.Razor;
 
 namespace RazorLight.Compilation
 {
-	public class CompiledTemplateDescriptor
+	internal sealed class CompiledTemplateDescriptor
 	{
 		public string? TemplateKey { get; set; }
 

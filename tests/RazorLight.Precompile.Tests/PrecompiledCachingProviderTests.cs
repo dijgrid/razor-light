@@ -34,12 +34,13 @@ namespace RazorLight.Precompile.Tests
 			cache.CacheTemplate("runtime\\template.cshtml", () => page, null);
 
 			Assert.That(cache.Contains("/runtime/template.cshtml"), Is.True);
-			Assert.That(cache.RetrieveTemplate("runtime/template.cshtml").Template.TemplatePageFactory(), Is.SameAs(page));
+			Assert.That(cache.TryGetTemplate("runtime/template.cshtml", out var pageFactory), Is.True);
+			Assert.That(pageFactory!(), Is.SameAs(page));
 
 			cache.Remove("runtime/template.cshtml");
 
 			Assert.That(cache.Contains("/runtime/template.cshtml"), Is.False);
-			Assert.Throws<RazorLightException>(() => cache.RetrieveTemplate("runtime/template.cshtml"));
+			Assert.Throws<RazorLightException>(() => cache.TryGetTemplate("runtime/template.cshtml", out _));
 		}
 
 		[Test]

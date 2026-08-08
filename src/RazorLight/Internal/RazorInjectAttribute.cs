@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace RazorLight.Internal
+namespace RazorLight
 {
 	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-	public class RazorInjectAttribute : Attribute
+	public sealed class RazorInjectAttribute : Attribute
 	{
 
 	}

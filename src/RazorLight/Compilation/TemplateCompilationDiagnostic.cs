@@ -2,7 +2,7 @@
 
 namespace RazorLight.Compilation
 {
-	public class TemplateCompilationDiagnostic
+	public sealed class TemplateCompilationDiagnostic
 	{
 		public string ErrorMessage { get; }
 		public string FormattedMessage { get; }

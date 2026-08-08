@@ -2,10 +2,11 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RazorLight.Caching
 {
-	public class MemoryCachingProvider : ICachingProvider
+	public sealed class MemoryCachingProvider : ICachingProvider
 	{
 		public MemoryCachingProvider()
 		{
@@ -13,25 +14,16 @@ namespace RazorLight.Caching
 			LookupCache = new MemoryCache(cacheOptions);
 		}
 
-		protected IMemoryCache LookupCache { get; set; }
+		private IMemoryCache LookupCache { get; }
 
-		public TemplateCacheLookupResult RetrieveTemplate(string key)
+		public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
 		{
 			if (string.IsNullOrEmpty(key))
 			{
 				throw new ArgumentNullException(nameof(key));
 			}
 
-			if (LookupCache.TryGetValue(key, out object? value) && value is TemplateCacheItem template)
-			{
-				var result = new TemplateCacheLookupResult(template);
-
-				return result;
-			}
-			else
-			{
-				return new TemplateCacheLookupResult();
-			}
+			return LookupCache.TryGetValue(key, out pageFactory);
 		}
 
 		public bool Contains(string key)
@@ -62,8 +54,7 @@ namespace RazorLight.Caching
 				cacheEntryOptions.ExpirationTokens.Add(expirationToken);
 			}
 
-			var cacheItem = new TemplateCacheItem(key, pageFactory);
-			LookupCache.Set(key, cacheItem, cacheEntryOptions);
+			LookupCache.Set(key, pageFactory, cacheEntryOptions);
 		}
 
 		public void Remove(string key)

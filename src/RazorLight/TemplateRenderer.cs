@@ -7,7 +7,7 @@ using RazorLight.Internal.Buffering;
 
 namespace RazorLight
 {
-	public class TemplateRenderer
+	internal class TemplateRenderer
 	{
 		private readonly IEngineHandler _engineHandler;
 		private readonly IViewBufferScope _bufferScope;

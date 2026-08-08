@@ -11,7 +11,7 @@ namespace RazorLight.Internal.Buffering
 	/// Buffers final template output in pooled pages.
 	/// </summary>
 	[DebuggerDisplay("{DebuggerToString()}")]
-	public class ViewBuffer : ITemplateContent
+	internal sealed class ViewBuffer : ITemplateContent
 	{
 		public static readonly int PartialViewPageSize = 32;
 		public static readonly int ViewPageSize = 256;

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace RazorLight.Compilation
 {
-	public class DefaultMetadataReferenceManager : IMetadataReferenceManager
+	internal sealed class DefaultMetadataReferenceManager : IMetadataReferenceManager
 	{
 		private readonly IAssemblyPathFormatter _pathFormatter = new DefaultAssemblyPathFormatter();
 		public HashSet<MetadataReference> AdditionalMetadataReferences { get; }

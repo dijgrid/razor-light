@@ -11,7 +11,7 @@ namespace RazorLight.Internal
 	/// <summary>
 	/// An expression rewriter which can hoist a simple expression lambda into a private field.
 	/// </summary>
-	public class ExpressionRewriter : CSharpSyntaxRewriter
+	internal sealed class ExpressionRewriter : CSharpSyntaxRewriter
 	{
 		private static readonly string FieldNameTemplate = "__h{0}";
 

@@ -86,7 +86,7 @@ The existing test suite provides regression evidence for:
 | --- | --- |
 | String, file, embedded-resource, and custom project compilation | `RazorLightEngineTest`, project tests, and compiler tests |
 | Rendering, HTML encoding, local functions, and model binding | `RazorLightEngineTest` and `TemplateRendererTest` |
-| Memory caching and cache lookup behavior | `DefaultCachingProviderTest` and `TemplateCacheLookupResultTest` |
+| Memory caching and custom-provider lookup behavior | `DefaultCachingProviderTest` and `CacheCoherenceTest` |
 | Includes, nested includes, layouts, sections, and layout model sharing | `RendererCommonCasesTests` and `TemplateRendererTest` |
 | Missing templates, invalid Razor, and compilation diagnostics | `RazorTemplateCompilerTest`, `RoslynCompilerServiceTest`, and `TemplateCompilationExceptionTests` |
 | Concurrent compilation and rendering | `RaceConditionTests` |

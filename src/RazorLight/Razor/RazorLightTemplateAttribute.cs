@@ -3,7 +3,7 @@
 namespace RazorLight.Razor
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-	public class RazorLightTemplateAttribute : Attribute
+	public sealed class RazorLightTemplateAttribute : Attribute
 	{
 		public RazorLightTemplateAttribute(string key, Type templateType)
 		{

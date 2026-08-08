@@ -9,7 +9,7 @@ using RazorLight.Text;
 
 namespace RazorLight
 {
-	public class RazorLightOptions
+	public sealed class RazorLightOptions
 	{
 		public RazorLightOptions()
 		{

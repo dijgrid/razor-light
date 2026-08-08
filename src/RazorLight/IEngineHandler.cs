@@ -8,7 +8,7 @@ using System;
 
 namespace RazorLight
 {
-	public interface IEngineHandler
+	internal interface IEngineHandler
 	{
 		ICachingProvider? Cache { get; }
 		IRazorTemplateCompiler Compiler { get; }

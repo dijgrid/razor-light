@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace RazorLight
 {
-	public class RazorLightDependencyBuilder
+	public sealed class RazorLightDependencyBuilder
 	{
 		private readonly IServiceCollection _services;
 		public RazorLightDependencyBuilder(IServiceCollection services)

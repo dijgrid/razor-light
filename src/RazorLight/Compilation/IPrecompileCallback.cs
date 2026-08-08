@@ -2,7 +2,7 @@
 
 namespace RazorLight.Compilation
 {
-	public interface IPrecompileCallback
+	internal interface IPrecompileCallback
 	{
 		void Invoke(IGeneratedRazorTemplate generatedRazorTemplate, byte[] rawAssembly, byte[] rawSymbolStore);
 	}

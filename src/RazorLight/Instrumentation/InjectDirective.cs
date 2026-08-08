@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace RazorLight.Instrumentation
 {
-	public class InjectDirective
+	internal static class InjectDirective
 	{
 		public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
 			"inject",
@@ -79,7 +79,7 @@ namespace RazorLight.Instrumentation
 
 		internal class InjectTargetExtension : IInjectTargetExtension
 		{
-			private const string RazorInjectAttribute = "[global::RazorLight.Internal.RazorInjectAttribute]";
+			private const string RazorInjectAttribute = "[global::RazorLight.RazorInjectAttribute]";
 
 			public void WriteInjectProperty(CodeRenderingContext context, InjectIntermediateNode node)
 			{

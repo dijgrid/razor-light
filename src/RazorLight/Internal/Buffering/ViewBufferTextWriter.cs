@@ -9,7 +9,7 @@ namespace RazorLight.Internal.Buffering
 	/// <summary>
 	/// A text writer backed by a pooled template buffer and, optionally, a final writer.
 	/// </summary>
-	public class ViewBufferTextWriter : TextWriter
+	internal sealed class ViewBufferTextWriter : TextWriter
 	{
 		private readonly TextWriter? _inner;
 

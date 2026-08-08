@@ -13,7 +13,7 @@ using RazorLight.Internal.Buffering;
 
 namespace RazorLight
 {
-	public class EngineHandler : IEngineHandler
+	internal sealed class EngineHandler : IEngineHandler
 	{
 		private readonly ConcurrentDictionary<string, string> _stringTemplateCacheKeys =
 			new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
@@ -80,10 +80,9 @@ namespace RazorLight
 			ITemplatePage? templatePage = null;
 			if (Cache != null)
 			{
-				var cacheLookupResult = Cache.RetrieveTemplate(request.CacheKey);
-				if (cacheLookupResult.Success)
+				if (Cache.TryGetTemplate(request.CacheKey, out Func<ITemplatePage>? pageFactory))
 				{
-					templatePage = cacheLookupResult.Template.TemplatePageFactory();
+					templatePage = pageFactory();
 				}
 			}
 

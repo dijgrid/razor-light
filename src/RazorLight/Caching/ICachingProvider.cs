@@ -1,11 +1,12 @@
 ﻿using Microsoft.Extensions.Primitives;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RazorLight.Caching
 {
 	public interface ICachingProvider
 	{
-		TemplateCacheLookupResult RetrieveTemplate(string key);
+		bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory);
 
 		void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken? expirationToken);
 

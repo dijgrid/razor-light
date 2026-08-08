@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RazorLight.Caching
 {
-	public class FileHashCachingStrategy : IFileSystemCachingStrategy
+	public sealed class FileHashCachingStrategy : IFileSystemCachingStrategy
 	{
 		public static readonly IFileSystemCachingStrategy Instance = new FileHashCachingStrategy();
 

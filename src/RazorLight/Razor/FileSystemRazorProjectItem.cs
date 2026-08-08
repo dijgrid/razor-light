@@ -3,7 +3,7 @@ using System.IO;
 
 namespace RazorLight.Razor
 {
-	public class FileSystemRazorProjectItem : RazorLightProjectItem
+	public sealed class FileSystemRazorProjectItem : RazorLightProjectItem
 	{
 		public FileSystemRazorProjectItem(string templateKey, FileInfo fileInfo)
 		{

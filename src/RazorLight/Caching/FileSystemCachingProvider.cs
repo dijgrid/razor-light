@@ -3,12 +3,13 @@ using RazorLight.Compilation;
 using RazorLight.Generation;
 using RazorLight.Razor;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 
 namespace RazorLight.Caching
 {
-	public class FileSystemCachingProvider : ICachingProvider, IPrecompileCallback
+	public sealed class FileSystemCachingProvider : ICachingProvider, IPrecompileCallback
 	{
 		private readonly MemoryCachingProvider m_cache = new MemoryCachingProvider();
 		private readonly string m_baseDir;
@@ -54,12 +55,11 @@ namespace RazorLight.Caching
 			File.Delete(pdbFilePath);
 		}
 
-		public TemplateCacheLookupResult RetrieveTemplate(string key)
+		public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
 		{
-			var res = m_cache.RetrieveTemplate(key);
-			if (res.Success)
+			if (m_cache.TryGetTemplate(key, out pageFactory))
 			{
-				return res;
+				return true;
 			}
 
 			var srcFilePath = GetSourceFilePath(key);
@@ -68,7 +68,8 @@ namespace RazorLight.Caching
 			{
 				var rawAssembly = File.ReadAllBytes(asmFilePath);
 				var rawSymbolStore = File.Exists(pdbFilePath) ? File.ReadAllBytes(pdbFilePath) : null;
-				return new TemplateCacheLookupResult(new TemplateCacheItem(key, CreateTemplatePage));
+				pageFactory = CreateTemplatePage;
+				return true;
 
 				ITemplatePage CreateTemplatePage()
 				{
@@ -79,7 +80,8 @@ namespace RazorLight.Caching
 					ITemplatePage CreateTemplatePage2() => NewTemplatePage(templatePageType);
 				}
 			}
-			return new TemplateCacheLookupResult();
+			pageFactory = null;
+			return false;
 		}
 
 		public static Type GetTemplatePageType(string asmFilePath)

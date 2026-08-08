@@ -2,7 +2,7 @@
 
 namespace RazorLight.Razor
 {
-	public static class FileSystemRazorProjectHelper
+	internal static class FileSystemRazorProjectHelper
 	{
 		public static string NormalizeKey(string templateKey)
 		{

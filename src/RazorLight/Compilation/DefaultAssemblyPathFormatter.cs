@@ -2,7 +2,7 @@
 
 namespace RazorLight.Compilation
 {
-	public class DefaultAssemblyPathFormatter : IAssemblyPathFormatter
+	internal sealed class DefaultAssemblyPathFormatter : IAssemblyPathFormatter
 	{
 		public string GetAssemblyPath(Assembly assembly) => assembly.IsDynamic ? string.Empty : assembly.Location;
 	}

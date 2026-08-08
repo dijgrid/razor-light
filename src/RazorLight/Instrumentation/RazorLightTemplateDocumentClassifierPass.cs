@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace RazorLight.Instrumentation
 {
-	public class RazorLightTemplateDocumentClassifierPass : DocumentClassifierPassBase
+	internal sealed class RazorLightTemplateDocumentClassifierPass : DocumentClassifierPassBase
 	{
 		public static readonly string RazorLightTemplateDocumentKind = "razorlight.2.0.template";
 

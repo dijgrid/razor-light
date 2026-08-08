@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -34,6 +35,22 @@ namespace RazorLight.Tests.Caching
 
 			Assert.False(engine.IsTemplateCached("template"));
 			Assert.Equal("second", await engine.CompileRenderStringAsync("template", "second", new object()));
+		}
+
+		[Fact]
+		public async Task Custom_Cache_Provider_Is_Used_End_To_End()
+		{
+			var provider = new TrackingCachingProvider();
+			var engine = new RazorLightEngineBuilder()
+				.UseNoProject()
+				.UseCachingProvider(provider)
+				.Build();
+
+			Assert.Equal("cached", await engine.CompileRenderStringAsync("template", "cached", new object()));
+			Assert.Equal("cached", await engine.CompileRenderStringAsync("template", "cached", new object()));
+
+			Assert.True(provider.StoreCount > 0);
+			Assert.True(provider.HitCount > 0);
 		}
 
 		[Fact]
@@ -227,7 +244,7 @@ namespace RazorLight.Tests.Caching
 				else
 				{
 					cache.CacheTemplate("template", () => new TestPage(), null);
-					cache.RetrieveTemplate("template");
+					cache.TryGetTemplate("template", out _);
 				}
 			}));
 
@@ -235,7 +252,8 @@ namespace RazorLight.Tests.Caching
 
 			var finalPage = new TestPage();
 			cache.CacheTemplate("template", () => finalPage, null);
-			Assert.Same(finalPage, cache.RetrieveTemplate("template").Template.TemplatePageFactory());
+			Assert.True(cache.TryGetTemplate("template", out var finalFactory));
+			Assert.Same(finalPage, finalFactory());
 		}
 
 		[Fact]
@@ -246,7 +264,8 @@ namespace RazorLight.Tests.Caching
 
 			cache.CacheTemplate("folder\\template.cshtml", () => page, null);
 
-			Assert.Same(page, cache.RetrieveTemplate("folder/template.cshtml").Template.TemplatePageFactory());
+			Assert.True(cache.TryGetTemplate("folder/template.cshtml", out var pageFactory));
+			Assert.Same(page, pageFactory());
 			Assert.False(cache.Contains("folder/Template.cshtml"));
 		}
 
@@ -257,6 +276,35 @@ namespace RazorLight.Tests.Caching
 				.UseMemoryCachingProvider()
 				.SetOperatingAssembly(typeof(CacheCoherenceTest).Assembly)
 				.Build();
+		}
+
+		private sealed class TrackingCachingProvider : ICachingProvider
+		{
+			private readonly MemoryCachingProvider _inner = new MemoryCachingProvider();
+
+			public int HitCount { get; private set; }
+			public int StoreCount { get; private set; }
+
+			public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
+			{
+				bool found = _inner.TryGetTemplate(key, out pageFactory);
+				if (found)
+				{
+					HitCount++;
+				}
+
+				return found;
+			}
+
+			public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken? expirationToken)
+			{
+				StoreCount++;
+				_inner.CacheTemplate(key, pageFactory, expirationToken);
+			}
+
+			public bool Contains(string key) => _inner.Contains(key);
+
+			public void Remove(string key) => _inner.Remove(key);
 		}
 
 		private static async Task AssertEventuallyAsync(Func<Task<bool>> condition)

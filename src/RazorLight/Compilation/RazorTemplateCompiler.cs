@@ -16,7 +16,7 @@ using RazorLight.Razor;
 
 namespace RazorLight.Compilation
 {
-	public class RazorTemplateCompiler : IRazorTemplateCompiler
+	internal class RazorTemplateCompiler : IRazorTemplateCompiler
 	{
 		private readonly SemaphoreSlim _cacheLock = new SemaphoreSlim(1, 1);
 

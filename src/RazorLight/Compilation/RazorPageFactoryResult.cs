@@ -2,7 +2,7 @@
 
 namespace RazorLight.Compilation
 {
-	public struct TemplateFactoryResult
+	internal readonly struct TemplateFactoryResult
 	{
 		/// <summary>
 		/// Initializes a new instance of <see cref="TemplateFactoryResult"/> with the

@@ -2,7 +2,7 @@
 
 namespace RazorLight.Generation
 {
-	public interface IGeneratedRazorTemplate
+	internal interface IGeneratedRazorTemplate
 	{
 		string TemplateKey { get; }
 

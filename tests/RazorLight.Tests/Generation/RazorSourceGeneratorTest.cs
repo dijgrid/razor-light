@@ -139,6 +139,25 @@ namespace RazorLight.Tests.Generation
 		}
 
 		[Fact]
+		public async Task Generated_Code_Uses_Only_The_Reviewed_RazorLight_ABI()
+		{
+			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), project: null);
+			var item = new TextSourceRazorProjectItem(
+				"abi-template",
+				"@model string\n@inject System.IServiceProvider Services\n@Model");
+
+			var generated = await generator.GenerateCodeAsync(item);
+
+			Assert.Contains("global::RazorLight.TemplatePage<string>", generated.GeneratedCode);
+			Assert.Contains("[global::RazorLight.RazorInjectAttribute]", generated.GeneratedCode);
+			Assert.Contains("global::RazorLight.Razor.RazorLightTemplateAttribute", generated.GeneratedCode);
+			Assert.DoesNotContain("RazorLight.Internal", generated.GeneratedCode, StringComparison.Ordinal);
+			Assert.DoesNotContain("RazorLight.Compilation", generated.GeneratedCode, StringComparison.Ordinal);
+			Assert.DoesNotContain("RazorLight.Generation", generated.GeneratedCode, StringComparison.Ordinal);
+			Assert.DoesNotContain("RazorLight.Instrumentation", generated.GeneratedCode, StringComparison.Ordinal);
+		}
+
+		[Fact]
 		public async Task GenerateCode_ByKey_Throws_OnEmpty_Project()
 		{
 			var generator = new RazorSourceGenerator(Razor6CompilerCompatibility.CreateEngine(), project: null);

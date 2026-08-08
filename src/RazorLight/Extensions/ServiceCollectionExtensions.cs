@@ -26,13 +26,10 @@ namespace RazorLight.Extensions
 				throw new ArgumentNullException(nameof(engineFactoryProvider));
 			}
 
-			services.AddSingleton<PropertyInjector>();
-			services.TryAddSingleton<IEngineHandler>(p =>
-				throw new InvalidOperationException($"This exception can only occur if you inject {nameof(IEngineHandler)} directly using {nameof(ServiceCollectionExtensions)}.{nameof(AddRazorLight)}"));
 			services.TryAddSingleton<IRazorLightEngine>(p =>
 			{
 				var engine = engineFactoryProvider();
-				ConfigureEngineServices(engine, p);
+				ConfigureEngineServices(engine, p, new PropertyInjector());
 
 				return engine;
 			});
@@ -47,72 +44,55 @@ namespace RazorLight.Extensions
 			{
 				options.OperatingAssembly = options.OperatingAssembly ?? Assembly.GetEntryAssembly();
 			});
-			services.TryAddSingleton<PropertyInjector>();
 			services.TryAddSingleton<ICachingProvider, MemoryCachingProvider>();
 			services.TryAddSingleton<RazorLightProject, NoRazorProject>();
-			services.TryAddSingleton(provider => RazorLightOptionsSnapshot.Create(
-				provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RazorLightOptions>>().Value));
-			services.TryAddSingleton<RazorEngine>(Razor6CompilerCompatibility.CreateEngine());
-			services.TryAddSingleton<RazorSourceGenerator>(provider =>
-			{
-				var options = provider.GetRequiredService<RazorLightOptionsSnapshot>().Options;
-				return new RazorSourceGenerator(
-					provider.GetRequiredService<RazorEngine>(),
-					provider.GetRequiredService<RazorLightProject>(),
-					options.Namespaces,
-					options.EnableDebugMode ?? false,
-					options);
-			});
-			services.TryAddSingleton<ITemplateFactoryProvider, TemplateFactoryProvider>();
-			services.TryAddSingleton<IMetadataReferenceManager>(provider =>
-			{
-				var options = provider.GetRequiredService<RazorLightOptionsSnapshot>().Options;
-				return new DefaultMetadataReferenceManager(
-					options.AdditionalMetadataReferences,
-					options.IncludedAssemblies,
-					options.ExcludedAssemblies,
-					options.MetadataReferenceDiscovery);
-			});
-			services.TryAddSingleton<ICompilationService>(provider =>
-			{
-				var options = provider.GetRequiredService<RazorLightOptionsSnapshot>().Options;
-				return new RoslynCompilationService(
-					provider.GetRequiredService<IMetadataReferenceManager>(),
-					options.OperatingAssembly ?? throw new InvalidOperationException("RazorLightOptions.OperatingAssembly must be configured."),
-					options.EnableDebugMode ?? false,
-					provider.GetService<IPrecompileCallback>());
-			});
-			services.TryAddSingleton<IRazorTemplateCompiler>(provider => new RazorTemplateCompiler(
-				provider.GetRequiredService<RazorSourceGenerator>(),
-				provider.GetRequiredService<ICompilationService>(),
-				provider.GetRequiredService<RazorLightProject>(),
-				provider.GetRequiredService<RazorLightOptionsSnapshot>().Options));
-			services.TryAddSingleton<IEngineHandler>(provider =>
-			{
-				var handler = new EngineHandler(
-					provider.GetRequiredService<RazorLightOptionsSnapshot>().Options,
-					provider.GetRequiredService<IRazorTemplateCompiler>(),
-					provider.GetRequiredService<ITemplateFactoryProvider>(),
-					provider.GetService<ICachingProvider>());
-				handler.ConfigureServices(
-					provider.GetRequiredService<IServiceScopeFactory>(),
-					provider.GetRequiredService<PropertyInjector>());
-				return handler;
-			});
-			services.TryAddSingleton<IRazorLightEngine, RazorLightEngine>();
+			services.TryAddSingleton<IRazorLightEngine>(CreateEngine);
 
 			RazorLightDependencyBuilder builder = new RazorLightDependencyBuilder(services);
 
 			return builder;
 		}
 
-		private static void ConfigureEngineServices(IRazorLightEngine engine, IServiceProvider services)
+		private static IRazorLightEngine CreateEngine(IServiceProvider provider)
+		{
+			var options = RazorLightOptionsSnapshot.Create(
+				provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RazorLightOptions>>().Value).Options;
+			var project = provider.GetRequiredService<RazorLightProject>();
+			var cache = provider.GetService<ICachingProvider>();
+			var sourceGenerator = new RazorSourceGenerator(
+				Razor6CompilerCompatibility.CreateEngine(),
+				project,
+				options.Namespaces,
+				options.EnableDebugMode ?? false,
+				options);
+			var metadataReferences = new DefaultMetadataReferenceManager(
+				options.AdditionalMetadataReferences,
+				options.IncludedAssemblies,
+				options.ExcludedAssemblies,
+				options.MetadataReferenceDiscovery);
+			var compilationService = new RoslynCompilationService(
+				metadataReferences,
+				options.OperatingAssembly ?? throw new InvalidOperationException("RazorLightOptions.OperatingAssembly must be configured."),
+				options.EnableDebugMode ?? false,
+				cache as IPrecompileCallback);
+			var compiler = new RazorTemplateCompiler(sourceGenerator, compilationService, project, options);
+			var handler = new EngineHandler(options, compiler, new TemplateFactoryProvider(), cache);
+			var propertyInjector = new PropertyInjector();
+			handler.ConfigureServices(provider.GetRequiredService<IServiceScopeFactory>(), propertyInjector);
+
+			return new RazorLightEngine(handler);
+		}
+
+		private static void ConfigureEngineServices(
+			IRazorLightEngine engine,
+			IServiceProvider services,
+			PropertyInjector propertyInjector)
 		{
 			if (engine is RazorLightEngine razorLightEngine)
 			{
 				razorLightEngine.ConfigureServices(
 					services.GetRequiredService<IServiceScopeFactory>(),
-					services.GetRequiredService<PropertyInjector>());
+					propertyInjector);
 			}
 		}
 	}

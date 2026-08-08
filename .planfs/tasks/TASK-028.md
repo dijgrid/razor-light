@@ -1,7 +1,7 @@
 ---
 id: TASK-028
 title: Define the stable engine and template-cache facade
-status: review
+status: done
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-library-quality
@@ -14,7 +14,7 @@ tags:
   - rendering
   - beta
 createdAt: 2026-08-08T04:17:55.367Z
-updatedAt: 2026-08-08T06:26:22.429Z
+updatedAt: 2026-08-08T08:44:00.267Z
 refinementState: ready
 ---
 

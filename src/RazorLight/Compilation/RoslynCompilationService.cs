@@ -18,7 +18,7 @@ using DependencyContextCompilationOptions = Microsoft.Extensions.DependencyModel
 
 namespace RazorLight.Compilation
 {
-	public class RoslynCompilationService : ICompilationService
+	internal class RoslynCompilationService : ICompilationService
 	{
 		private readonly IMetadataReferenceManager metadataReferenceManager;
 		private readonly bool isDevelopment;

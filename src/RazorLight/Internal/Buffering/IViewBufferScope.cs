@@ -5,7 +5,7 @@ namespace RazorLight.Internal.Buffering
 	/// <summary>
 	/// Creates and manages the lifetime of <see cref="T:ViewBufferValue[]"/> instances.
 	/// </summary>
-	public interface IViewBufferScope
+	internal interface IViewBufferScope
 	{
 		/// <summary>
 		/// Gets a <see cref="T:ViewBufferValue[]"/>.

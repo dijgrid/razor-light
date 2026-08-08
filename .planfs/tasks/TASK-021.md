@@ -1,7 +1,7 @@
 ---
 id: TASK-021
 title: Align dependency injection and ViewBag behavior
-status: review
+status: done
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-language-runtime-compatibility
@@ -15,7 +15,7 @@ tags:
   - viewbag
   - compatibility
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-08T06:47:11.752Z
+updatedAt: 2026-08-08T08:43:59.829Z
 refinementState: ready
 ---
 

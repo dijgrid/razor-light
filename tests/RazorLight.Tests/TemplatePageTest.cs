@@ -585,7 +585,7 @@ namespace RazorLight.Tests
 			return view.Object;
 		}
 
-		public static PageContext CreateViewContext(
+		private static PageContext CreateViewContext(
 			TextWriter? writer = null,
 			IViewBufferScope? bufferScope = null,
 			string? viewPath = null)
@@ -600,7 +600,7 @@ namespace RazorLight.Tests
 			};
 		}
 
-		public class TestViewBufferScope : IViewBufferScope
+		private sealed class TestViewBufferScope : IViewBufferScope
 		{
 			public IList<ViewBufferValue[]> CreatedBuffers { get; } = new List<ViewBufferValue[]>();
 

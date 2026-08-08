@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace RazorLight.Instrumentation
 {
-	public static class ModelDirective
+	internal static class ModelDirective
 	{
 		public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
 			"model",

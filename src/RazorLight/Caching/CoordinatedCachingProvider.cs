@@ -2,6 +2,7 @@ using Microsoft.Extensions.Primitives;
 using RazorLight.Compilation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RazorLight.Caching
 {
@@ -22,18 +23,16 @@ namespace RazorLight.Caching
 			_compilerCache = compilerCache ?? throw new ArgumentNullException(nameof(compilerCache));
 		}
 
-		public TemplateCacheLookupResult RetrieveTemplate(string key)
+		public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
 		{
 			string normalizedKey = _compilerCache.NormalizeKey(key);
-			TemplateCacheLookupResult result = _inner.RetrieveTemplate(normalizedKey);
-			if (result.Success)
+			if (_inner.TryGetTemplate(normalizedKey, out pageFactory))
 			{
-				return result;
+				return true;
 			}
 
-			return string.Equals(key, normalizedKey, StringComparison.Ordinal)
-				? result
-				: _inner.RetrieveTemplate(key);
+			return !string.Equals(key, normalizedKey, StringComparison.Ordinal) &&
+				_inner.TryGetTemplate(key, out pageFactory);
 		}
 
 		public bool Contains(string key)

@@ -47,6 +47,30 @@ contracts, page context, render delegates, final-content/helper types, injection
 template identity. Public visibility in this tier does not make compiler passes or buffers normal
 application extension points.
 
+## Supported 3.x surface after TASK-029
+
+Every exported RazorLight type belongs to one of these tiers:
+
+| Tier | Supported types and families | Compatibility meaning |
+| --- | --- | --- |
+| Application API | `IRazorLightEngine`, both builders, `RazorLightOptions`, built-in projects and caches, and public exceptions/diagnostics | Intended for normal application code and documented examples. Prefer interfaces and builders over concrete implementations. |
+| Supported extension point | `RazorLightProject`, `RazorLightProjectItem`, `ICachingProvider`, `IFileSystemCachingStrategy`, `IOutputEncoder`, and page initializers | Custom implementations are supported. Contracts are deliberately limited to source lookup, page-factory storage, encoding, and initialization. |
+| Generated-template ABI | `ITemplatePage`, `TemplatePageBase`, `TemplatePage`, `TemplatePage<T>`, `IPageContext`, `PageContext`, `ModelTypeInfo`, `RenderAsyncDelegate`, `RazorInjectAttribute`, `RazorLightHelperResult`, `RazorLightTemplateAttribute`, and the `RazorLight.Text` content contracts | Public so C# emitted or precompiled by the matching 3.x toolchain can link to the runtime. These are not compiler customization hooks. |
+| Implementation detail | Engine handlers, compiler and metadata orchestration, template factories, source generation and Razor passes, property injection, cache records, expression rewriting, and `RazorLight.Internal.Buffering` | Internal. Their construction, lifetime, and shape may change within 3.x without becoming consumer contracts. |
+
+The optional `Dijgrid.RazorLight.Html` package is an application integration layered on
+`IOutputEncoder`; its encoder is not part of the generic core's generated ABI.
+
+`ICachingProvider.TryGetTemplate` exchanges a nullable page factory directly. The inherited
+`TemplateCacheItem` and `TemplateCacheLookupResult` records were removed because they added mutable
+implementation state without enabling a useful extension scenario. Providers must remain safe for
+concurrent lookup, replacement, inspection, and removal.
+
+The built-in engine, compiler, generator, buffering, caching, and project implementations are
+sealed or hidden unless inheritance is the documented extension mechanism. In particular,
+applications receive `IRazorLightEngine`; custom source systems derive from `RazorLightProject` and
+`RazorLightProjectItem`, not from the built-in file or embedded implementations.
+
 ## Source migration examples
 
 TASK-027 removed the following inherited entry points before the first beta:
@@ -152,6 +176,27 @@ engine.InvalidateTemplate(templateKey);
 
 Cache provider configuration remains an extension point, but normal applications no longer handle
 compiled page factories merely to invalidate a template.
+
+Custom providers should replace the inherited lookup records with the direct factory contract:
+
+```csharp
+if (provider.TryGetTemplate(templateKey, out Func<ITemplatePage>? pageFactory))
+{
+    ITemplatePage page = pageFactory();
+}
+```
+
+`RetrieveTemplate`, `TemplateCacheLookupResult`, and `TemplateCacheItem` have no 3.x replacement
+beyond `TryGetTemplate`; the records were only wrappers around the returned factory.
+
+### Removed implementation extension points
+
+The inherited `IEngineHandler`, compiler-service and template-factory interfaces, metadata managers,
+`RazorSourceGenerator`, Razor instrumentation passes, property injector, and buffering types are no
+longer public. Applications should use the engine builders and `IRazorLightEngine`. Source lookup,
+output transformation, and cache storage remain customizable through the supported extension
+contracts listed above. There is intentionally no public hook for replacing individual compiler
+pipeline stages in the 3.x runtime.
 
 ### Configuration and page initialization
 
