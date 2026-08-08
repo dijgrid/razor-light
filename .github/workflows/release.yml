@@ -159,7 +159,7 @@ jobs:
       - name: Revalidate reviewed artifacts
         shell: pwsh
         run: |
-          ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version ${{ needs.build-and-verify.outputs.version }}
+          ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version ${{ needs.build-and-verify.outputs.version }} -SkipBuildOutputValidation
           Get-Content artifacts/packages/SHA256SUMS | ForEach-Object {
               $expected, $name = $_ -split '  ', 2
               $actual = Get-FileHash (Join-Path artifacts/packages $name) -Algorithm SHA256 |

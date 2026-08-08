@@ -1,7 +1,7 @@
 ---
 id: TASK-030
 title: Prepare and publish the 3.0.0-beta.1 release
-status: review
+status: in-progress
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-release-readiness
@@ -25,7 +25,7 @@ tags:
   - beta
   - compatibility
 createdAt: 2026-08-08T04:17:59.721Z
-updatedAt: 2026-08-08T20:03:31.616Z
+updatedAt: 2026-08-08T22:25:55.848Z
 refinementState: ready
 ---
 
@@ -68,3 +68,8 @@ performance, lifecycle, precompiled-runtime, and maintainability findings are co
   precompile tests with coverage floors; deployment-mode and deployment-diagnostic checks; dependency
   audit; deterministic builds; package/symbol validation; and clean-consumer smoke test. Source Link
   and the multi-OS suite remain to be verified by CI for the committed branch.
+- The `v3.0.0-beta.1` build-and-verify job succeeded, but its approved-artifact job stopped before
+  NuGet authentication because it tried to compare downloaded artifacts with absent local build output.
+  The release workflow now uses artifact-only validation for that job while retaining archive, symbol,
+  Source Link, and SHA-256 checks; a new prerelease tag is required because reruns use the workflow
+  definition recorded in the existing tag.
