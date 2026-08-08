@@ -491,6 +491,18 @@ The precompile path uses the same template generation and C# source composition 
 compilation. A template's `@compileSource` dependencies are compiled into its output assembly and are
 not emitted as standalone template artifacts.
 
+The default `FileHash` strategy uses a streamed SHA-256 identity. It includes the template key,
+relevant Razor and C# source files under the project root, and compiler, runtime, reference, and
+supported precompile-configuration markers. Missing source files are cache misses, including after
+the original template has been deleted, and stale artifacts can still be removed by template key.
+The compiler emits deterministic assemblies, so identical inputs produce identical cache paths and
+assembly bytes.
+
+`PrecompiledCachingProvider` exposes an immutable discovery map and diagnostics for assemblies that
+could not be inspected or did not contain RazorLight metadata. Its lookup follows the normal cache
+contract and returns `false` on a miss. The `render` command remains intentionally strict: every
+template and include must have a matching precompiled assembly.
+
 Run `razorlight-precompile help` for the current command syntax. The tool also supports cache
 directory and caching-strategy selection plus rendering with a JSON model.
 

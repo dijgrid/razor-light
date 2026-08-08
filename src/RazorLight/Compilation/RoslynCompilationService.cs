@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -121,7 +122,7 @@ namespace RazorLight.Compilation
 					"See " + DeploymentCompatibility.DocumentationUrl + ".");
 			}
 
-			string assemblyName = Path.GetRandomFileName();
+			string assemblyName = CreateDeterministicAssemblyName(razorTemplate);
 			var compilation = CreateCompilation(razorTemplate, assemblyName);
 
 			using (var assemblyStream = new MemoryStream())
@@ -225,6 +226,31 @@ namespace RazorLight.Compilation
 			return compilation;
 		}
 
+		private static string CreateDeterministicAssemblyName(IGeneratedRazorTemplate razorTemplate)
+		{
+			using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+			Append(razorTemplate.TemplateKey);
+			Append(razorTemplate.GeneratedCode);
+			if (razorTemplate is IGeneratedCSharpSourceContainer sourceContainer)
+			{
+				foreach (CSharpSourceDocument source in sourceContainer.CSharpSources
+					.OrderBy(source => source.Key, StringComparer.Ordinal))
+				{
+					Append(source.Key);
+					Append(source.Content);
+				}
+			}
+
+			return "RazorLight." + Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
+
+			void Append(string value)
+			{
+				byte[] bytes = Encoding.UTF8.GetBytes(value);
+				hash.AppendData(bytes);
+				hash.AppendData(new byte[] { 0 });
+			}
+		}
+
 		public CSharpCompilation CreateCompilation(string assemblyName)
 		{
 			return CSharpCompilation.Create(
@@ -280,7 +306,7 @@ namespace RazorLight.Compilation
 				csharpCompilationOptions = csharpCompilationOptions.WithGeneralDiagnosticOption(reportDiagnostic);
 			}
 
-			return csharpCompilationOptions;
+			return csharpCompilationOptions.WithDeterministic(true);
 		}
 
 		private CSharpParseOptions GetParseOptions(DependencyContextCompilationOptions dependencyContextOptions)

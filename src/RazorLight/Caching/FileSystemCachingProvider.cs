@@ -11,6 +11,7 @@ namespace RazorLight.Caching
 {
 	public sealed class FileSystemCachingProvider : ICachingProvider, IPrecompileCallback, IDisposable
 	{
+		private const string CacheKeyManifestSuffix = ".razorlight-cache-key";
 		private readonly MemoryCachingProvider m_cache = new MemoryCachingProvider();
 		private readonly string m_baseDir;
 		private readonly string m_cacheDir;
@@ -46,6 +47,7 @@ namespace RazorLight.Caching
 			Directory.CreateDirectory(Path.GetDirectoryName(asmFilePath)
 				?? throw new InvalidOperationException($"The cache path '{asmFilePath}' has no directory."));
 			File.WriteAllBytes(asmFilePath, rawAssembly);
+			File.WriteAllText(asmFilePath + CacheKeyManifestSuffix, generatedRazorTemplate.TemplateKey);
 			if (rawSymbolStore != null)
 			{
 				File.WriteAllBytes(pdbFilePath, rawSymbolStore);
@@ -57,8 +59,13 @@ namespace RazorLight.Caching
 			m_cache.CacheTemplate(key, pageFactory, expirationToken);
 		}
 
-		public bool Contains(string key) => m_cache.Contains(key) ||
-			m_fileSystemCachingStrategy.GetCachedFileInfo(key, GetSourceFilePath(key), m_cacheDir).UpToDate;
+		public bool Contains(string key)
+		{
+			if (m_cache.Contains(key)) return true;
+			string sourcePath = GetSourceFilePath(key);
+			return File.Exists(sourcePath) &&
+				m_fileSystemCachingStrategy.GetCachedFileInfo(key, sourcePath, m_cacheDir).UpToDate;
+		}
 
 		public void Remove(string key)
 		{
@@ -67,6 +74,8 @@ namespace RazorLight.Caching
 			var (_, asmFilePath, pdbFilePath) = m_fileSystemCachingStrategy.GetCachedFileInfo(key, srcFilePath, m_cacheDir);
 			File.Delete(asmFilePath);
 			File.Delete(pdbFilePath);
+			File.Delete(asmFilePath + CacheKeyManifestSuffix);
+			RemoveManifestedArtifacts(key);
 		}
 
 		public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
@@ -77,6 +86,12 @@ namespace RazorLight.Caching
 			}
 
 			var srcFilePath = GetSourceFilePath(key);
+			if (!File.Exists(srcFilePath))
+			{
+				pageFactory = null;
+				return false;
+			}
+
 			var (upToDate, asmFilePath, pdbFilePath) = m_fileSystemCachingStrategy.GetCachedFileInfo(key, srcFilePath, m_cacheDir);
 			if (upToDate)
 			{
@@ -118,6 +133,29 @@ namespace RazorLight.Caching
 
 		private string GetSourceFilePath(string key) =>
 			FileSystemRazorProjectHelper.ResolveContainedPath(m_baseDir, key, "template path");
+
+		private void RemoveManifestedArtifacts(string key)
+		{
+			if (!Directory.Exists(m_cacheDir)) return;
+
+			foreach (string manifestPath in Directory.EnumerateFiles(
+				m_cacheDir,
+				"*" + CacheKeyManifestSuffix,
+				SearchOption.AllDirectories))
+			{
+				if (!string.Equals(File.ReadAllText(manifestPath), key, StringComparison.Ordinal))
+				{
+					continue;
+				}
+
+				string assemblyPath = manifestPath.Substring(
+					0,
+					manifestPath.Length - CacheKeyManifestSuffix.Length);
+				File.Delete(assemblyPath);
+				File.Delete(Path.ChangeExtension(assemblyPath, ".pdb"));
+				File.Delete(manifestPath);
+			}
+		}
 
 		public void Dispose() => m_cache.Dispose();
 	}

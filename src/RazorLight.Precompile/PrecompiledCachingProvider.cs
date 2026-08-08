@@ -4,62 +4,102 @@ using RazorLight.Caching;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
 namespace RazorLight.Precompile
 {
-	public sealed class PrecompiledCachingProvider : ICachingProvider
+	public sealed class PrecompiledCachingProvider : ICachingProvider, IDisposable
 	{
-		public readonly IReadOnlyDictionary<string, string> Map;
+		public IReadOnlyDictionary<string, string> Map { get; }
+		public IReadOnlyList<string> Diagnostics { get; }
 		private readonly MemoryCachingProvider m_cache = new();
 		private readonly ConcurrentDictionary<string, string> m_map;
 
 		public PrecompiledCachingProvider(IEnumerable<string> precompiledTemplateFilePaths, StreamWriter? log)
 		{
-			m_map = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
-			foreach (var filePath in precompiledTemplateFilePaths)
+			if (precompiledTemplateFilePaths == null)
 			{
-				var templateKey = GetPrecompiledTemplateKey(filePath, log);
+				throw new ArgumentNullException(nameof(precompiledTemplateFilePaths));
+			}
+
+			var diagnostics = new List<string>();
+			var discovered = new SortedDictionary<string, string>(StringComparer.Ordinal);
+			foreach (string filePath in precompiledTemplateFilePaths
+				.Select(Path.GetFullPath)
+				.Distinct(StringComparer.Ordinal)
+				.OrderBy(path => path, StringComparer.Ordinal))
+			{
+				var templateKey = GetPrecompiledTemplateKey(filePath, log, diagnostics);
 				if (templateKey == null)
 				{
 					continue;
 				}
 
 				templateKey = NormalizeKey(templateKey);
-				if (!m_map.TryAdd(templateKey, filePath))
+				if (discovered.TryGetValue(templateKey, out string? duplicatePath))
 				{
-					string dupe = m_map[templateKey];
-					throw new RazorLightException($"The key {templateKey} is associated with at least two precompiled templates - {dupe} and {filePath}");
+					throw new RazorLightException(
+						$"The key {templateKey} is associated with multiple precompiled templates: " +
+						$"'{duplicatePath}' and '{filePath}'.");
 				}
+
+				discovered.Add(templateKey, filePath);
 			}
-			if (m_map.Count == 0)
+			if (discovered.Count == 0)
 			{
-				throw new RazorLightException($"Found no precompiled templates.");
+				throw new RazorLightException("Found no precompiled templates." +
+					(diagnostics.Count == 0 ? string.Empty : " " + string.Join(" ", diagnostics)));
 			}
-			Map = m_map;
+
+			m_map = new ConcurrentDictionary<string, string>(discovered, StringComparer.Ordinal);
+			Map = new ReadOnlyDictionary<string, string>(discovered);
+			Diagnostics = diagnostics.AsReadOnly();
 		}
 
-		private static string? GetPrecompiledTemplateKey(string filePath, StreamWriter? log)
+		private static string? GetPrecompiledTemplateKey(
+			string filePath,
+			StreamWriter? log,
+			ICollection<string> diagnostics)
 		{
 			try
 			{
 				using var asmDef = AssemblyDefinition.ReadAssembly(filePath);
-				var razorLightAttr = asmDef.CustomAttributes.SingleOrDefault(o => o.AttributeType.FullName == "RazorLight.Razor.RazorLightTemplateAttribute");
+				var attributes = asmDef.CustomAttributes
+					.Where(o => o.AttributeType.FullName == "RazorLight.Razor.RazorLightTemplateAttribute")
+					.ToArray();
+				if (attributes.Length > 1)
+				{
+					throw new RazorLightException(
+						$"Assembly '{filePath}' contains multiple RazorLight template attributes.");
+				}
+
+				var razorLightAttr = attributes.SingleOrDefault();
 				if (razorLightAttr != null)
 				{
 					var templateKey = razorLightAttr.ConstructorArguments[0].Value as string;
 					if (templateKey == null)
 					{
-						return null;
+						throw new RazorLightException(
+							$"Assembly '{filePath}' has a RazorLight template attribute without a string key.");
 					}
 					log?.WriteLine("GetPrecompiledTemplateKey(\"{0}\") = \"{1}\"", filePath, templateKey);
 					return templateKey;
 				}
 			}
-			catch { }
-			log?.WriteLine("GetPrecompiledTemplateKey(\"{0}\") = null", filePath);
+			catch (Exception exception) when (exception is not RazorLightException)
+			{
+				string diagnostic = $"Skipped assembly '{filePath}': {exception.GetType().Name}: {exception.Message}";
+				diagnostics.Add(diagnostic);
+				log?.WriteLine(diagnostic);
+				return null;
+			}
+
+			string message = $"Skipped assembly '{filePath}': no RazorLight template attribute was found.";
+			diagnostics.Add(message);
+			log?.WriteLine(message);
 			return null;
 		}
 
@@ -104,8 +144,11 @@ namespace RazorLight.Precompile
 					ITemplatePage CreateTemplatePage2() => FileSystemCachingProvider.NewTemplatePage(templatePageType);
 				}
 			}
-			throw new RazorLightException($"No precompiled template found for the key {key}");
+			pageFactory = null;
+			return false;
 		}
+
+		public void Dispose() => m_cache.Dispose();
 
 		private static string NormalizeKey(string key)
 		{

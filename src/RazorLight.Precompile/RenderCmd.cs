@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using RazorLight.Caching;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -40,7 +41,7 @@ namespace RazorLight.Precompile
 			var model = JsonModel.New(modelToken);
 
 			using var log = logFilePath == null ? null : new StreamWriter(logFilePath);
-			var cachingProvider = new PrecompiledCachingProvider(YieldFiles(path, searchOption), log);
+			using var cachingProvider = new PrecompiledCachingProvider(YieldFiles(path, searchOption), log);
 
 			if (key == null)
 			{
@@ -56,8 +57,8 @@ namespace RazorLight.Precompile
 				key = '/' + key;
 			}
 
-			var engine = new RazorLightEngineBuilder()
-				.UseCachingProvider(cachingProvider)
+			using var engine = new RazorLightEngineBuilder()
+				.UseCachingProvider(new StrictPrecompiledCachingProvider(cachingProvider))
 				.Build();
 
 			if (!cachingProvider.TryGetTemplate(key, out var pageFactory))
@@ -68,6 +69,34 @@ namespace RazorLight.Precompile
 			var templatePage = pageFactory();
 			Program.ConsoleOut.WriteLine(engine.RenderTemplateAsync(templatePage, model, cancellationToken).GetAwaiter().GetResult());
 			return 0;
+		}
+
+		private sealed class StrictPrecompiledCachingProvider : ICachingProvider
+		{
+			private readonly PrecompiledCachingProvider _inner;
+
+			public StrictPrecompiledCachingProvider(PrecompiledCachingProvider inner)
+			{
+				_inner = inner;
+			}
+
+			public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
+			{
+				if (_inner.TryGetTemplate(key, out pageFactory)) return true;
+				throw new RazorLightException($"No precompiled template found for the key {NormalizeKey(key)}");
+			}
+
+			public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, Microsoft.Extensions.Primitives.IChangeToken? expirationToken) =>
+				_inner.CacheTemplate(key, pageFactory, expirationToken);
+
+			public bool Contains(string key) => _inner.Contains(key);
+			public void Remove(string key) => _inner.Remove(key);
+
+			private static string NormalizeKey(string key)
+			{
+				key = key.Replace('\\', '/');
+				return key.Length > 0 && key[0] == '/' ? key : '/' + key;
+			}
 		}
 
 		private static IEnumerable<string> YieldFiles(string path, SearchOption searchOption)

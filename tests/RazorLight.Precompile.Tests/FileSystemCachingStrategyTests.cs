@@ -90,6 +90,64 @@ namespace RazorLight.Precompile.Tests
 				SimpleFileCachingStrategy.Instance.GetCachedFileInfo(key, "template.cshtml", cacheRoot));
 		}
 
+		[Test]
+		public void FileHash_Changes_With_Dependencies_And_Is_Stable_When_Inputs_Are_Unchanged()
+		{
+			string root = Path.Combine(TestContext.CurrentContext.WorkDirectory, Guid.NewGuid().ToString("N"));
+			Directory.CreateDirectory(root);
+			try
+			{
+				string templatePath = Path.Combine(root, "template.cshtml");
+				string sourcePath = Path.Combine(root, "Shared.cs");
+				string importsPath = Path.Combine(root, "_ViewImports.cshtml");
+				File.WriteAllText(templatePath, "@Model");
+				File.WriteAllText(sourcePath, "public static class Shared { public const int Value = 1; }");
+				File.WriteAllText(importsPath, "@using System");
+
+				string first = FileHashCachingStrategy.Instance
+					.GetCachedFileInfo("template.cshtml", templatePath, root).AssemblyFilePath;
+				string repeat = FileHashCachingStrategy.Instance
+					.GetCachedFileInfo("template.cshtml", templatePath, root).AssemblyFilePath;
+				File.WriteAllText(sourcePath, "public static class Shared { public const int Value = 2; }");
+				string changed = FileHashCachingStrategy.Instance
+					.GetCachedFileInfo("template.cshtml", templatePath, root).AssemblyFilePath;
+				File.WriteAllText(sourcePath, "public static class Shared { public const int Value = 1; }");
+				File.WriteAllText(importsPath, "@using System.Linq");
+				string importsChanged = FileHashCachingStrategy.Instance
+					.GetCachedFileInfo("template.cshtml", templatePath, root).AssemblyFilePath;
+
+				Assert.That(repeat, Is.EqualTo(first));
+				Assert.That(changed, Is.Not.EqualTo(first));
+				Assert.That(importsChanged, Is.Not.EqualTo(first));
+				Assert.That(Path.GetFileNameWithoutExtension(first), Has.Length.EqualTo(64));
+			}
+			finally
+			{
+				Directory.Delete(root, recursive: true);
+			}
+		}
+
+		[Test]
+		public void FileSystemProvider_Missing_Source_Is_A_Normal_Cache_Miss()
+		{
+			string root = Path.Combine(TestContext.CurrentContext.WorkDirectory, Guid.NewGuid().ToString("N"));
+			string cacheRoot = Path.Combine(root, "cache");
+			Directory.CreateDirectory(cacheRoot);
+			try
+			{
+				using var provider = new FileSystemCachingProvider(root, cacheRoot, FileHashCachingStrategy.Instance);
+
+				Assert.That(provider.Contains("missing.cshtml"), Is.False);
+				Assert.That(provider.TryGetTemplate("missing.cshtml", out var factory), Is.False);
+				Assert.That((object?)factory, Is.Null);
+				Assert.DoesNotThrow(() => provider.Remove("missing.cshtml"));
+			}
+			finally
+			{
+				Directory.Delete(root, recursive: true);
+			}
+		}
+
 		private static (string, string) GetAsmFilePaths(IFileSystemCachingStrategy s, string[] sepCombination)
 		{
 			var templateFilePath = "Samples/folder/MessageItem.cshtml";

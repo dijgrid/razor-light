@@ -92,8 +92,8 @@ namespace RazorLight.Precompile
 				Directory.CreateDirectory(cacheDir);
 			}
 
-			var provider = new FileSystemCachingProvider(baseDir, cacheDir, s_strategyMap[strategyName]);
-			var engine = new RazorLightEngineBuilder()
+			using var provider = new FileSystemCachingProvider(baseDir, cacheDir, s_strategyMap[strategyName]);
+			using var engine = new RazorLightEngineBuilder()
 				.UseFileSystemProject(baseDir, "")
 				.UseCachingProvider(provider)
 				.Build();

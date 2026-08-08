@@ -55,6 +55,30 @@ namespace RazorLight.Precompile.Tests
 			}));
 		}
 
+		[Test]
+		public void Precompile_Produces_Repeatable_Assembly_Bytes()
+		{
+			PrecompileTestCases.WithCache.Cleanup();
+			try
+			{
+				string firstPath = Helper.RunCommandTrimNewline(
+					"precompile", "-t", "Samples/FullMessage.cshtml", "-c", PrecompileTestCases.CACHE_DIR);
+				byte[] first = File.ReadAllBytes(firstPath);
+
+				PrecompileTestCases.WithCache.Cleanup();
+				string secondPath = Helper.RunCommandTrimNewline(
+					"precompile", "-t", "Samples/FullMessage.cshtml", "-c", PrecompileTestCases.CACHE_DIR);
+				byte[] second = File.ReadAllBytes(secondPath);
+
+				Assert.That(secondPath, Is.EqualTo(firstPath));
+				Assert.That(second, Is.EqualTo(first));
+			}
+			finally
+			{
+				PrecompileTestCases.WithCache.Cleanup();
+			}
+		}
+
 		public static string GetExpectedPrecompiledFilePath(string templateFilePath, TestScenario scenario)
 		{
 			var cacheDirectory = scenario.GetExpectedCacheDirectory(templateFilePath)
