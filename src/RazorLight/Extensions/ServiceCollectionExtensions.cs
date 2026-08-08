@@ -56,7 +56,8 @@ namespace RazorLight.Extensions
 					provider.GetRequiredService<RazorEngine>(),
 					provider.GetService<RazorLight.Razor.RazorLightProject>(),
 					options.Namespaces,
-					options.EnableDebugMode ?? false);
+					options.EnableDebugMode ?? false,
+					options);
 			});
 			services.TryAddSingleton<IRazorTemplateCompiler, RazorTemplateCompiler>();
 			services.TryAddSingleton<ITemplateFactoryProvider, TemplateFactoryProvider>();

@@ -111,5 +111,25 @@ namespace RazorLight
 			_services.Configure<RazorLightOptions>(x => x.AdditionalMetadataReferences = metadataReferences);
 			return this;
 		}
+
+		public RazorLightDependencyBuilder AddCSharpSource(string sourceKey)
+		{
+			if (string.IsNullOrWhiteSpace(sourceKey))
+			{
+				throw new ArgumentException("A C# source key is required.", nameof(sourceKey));
+			}
+
+			_services.Configure<RazorLightOptions>(options => options.CSharpSourceKeys.Add(sourceKey));
+			return this;
+		}
+
+		public RazorLightDependencyBuilder AddCSharpSource(string sourceKey, string sourceContent)
+		{
+			if (string.IsNullOrWhiteSpace(sourceKey)) throw new ArgumentException("A C# source key is required.", nameof(sourceKey));
+			if (sourceContent == null) throw new ArgumentNullException(nameof(sourceContent));
+
+			_services.Configure<RazorLightOptions>(options => options.DynamicCSharpSources[sourceKey] = sourceContent);
+			return AddCSharpSource(sourceKey);
+		}
 	}
 }

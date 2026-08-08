@@ -25,6 +25,7 @@ namespace RazorLight.Compatibility
 			{
 				Instrumentation.InjectDirective.Register(builder);
 				Instrumentation.ModelDirective.Register(builder);
+				CompileSourceDirective.Register(builder);
 
 				// In Razor language version 3.0 and later these directives are registered by default.
 				if (!RazorLanguageVersion.TryParse("3.0", out var razorLanguageVersion)

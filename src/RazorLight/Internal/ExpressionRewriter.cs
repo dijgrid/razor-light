@@ -44,6 +44,16 @@ namespace RazorLight.Internal
 			return compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(rewrittenTrees);
 		}
 
+		internal static CSharpCompilation Rewrite(CSharpCompilation compilation, SyntaxTree syntaxTree)
+		{
+			var semanticModel = compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: true);
+			var rewriter = new ExpressionRewriter(semanticModel);
+			SyntaxTree rewrittenTree = syntaxTree.WithRootAndOptions(
+				rewriter.Visit(syntaxTree.GetRoot()),
+				syntaxTree.Options);
+			return compilation.ReplaceSyntaxTree(syntaxTree, rewrittenTree);
+		}
+
 		public override SyntaxNode VisitClassDeclaration(ClassDeclarationSyntax node)
 		{
 			if (IsInsideClass)

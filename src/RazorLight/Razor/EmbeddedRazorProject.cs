@@ -49,6 +49,18 @@ namespace RazorLight.Razor
 			return Task.FromResult((RazorLightProjectItem)item);
 		}
 
+		public override Task<RazorLightProjectItem> GetSourceItemAsync(string sourceKey)
+		{
+			if (string.IsNullOrWhiteSpace(sourceKey))
+			{
+				throw new ArgumentNullException(nameof(sourceKey));
+			}
+
+			string resourceKey = sourceKey.TrimStart('/', '\\').Replace('/', '.').Replace('\\', '.');
+			return Task.FromResult<RazorLightProjectItem>(
+				new EmbeddedRazorProjectItem(Assembly, RootNamespace, resourceKey));
+		}
+
 		public override Task<IEnumerable<RazorLightProjectItem>> GetImportsAsync(string templateKey)
 		{
 			return Task.FromResult(Enumerable.Empty<RazorLightProjectItem>());

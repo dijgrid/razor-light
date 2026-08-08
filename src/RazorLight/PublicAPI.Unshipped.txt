@@ -656,3 +656,14 @@ virtual RazorLight.TemplatePageBase.Write(string? value) -> void
 virtual RazorLight.TemplatePageBase.WriteLiteral(object? value) -> void
 virtual RazorLight.TemplatePageBase.WriteLiteral(string? value) -> void
 virtual RazorLight.TemplateRenderer.RenderAsync(RazorLight.ITemplatePage! page) -> System.Threading.Tasks.Task!
+RazorLight.RazorLightOptions.CSharpSourceKeys.get -> System.Collections.Generic.ISet<string!>!
+RazorLight.RazorLightOptions.CSharpSourceKeys.set -> void
+RazorLight.RazorLightOptions.DynamicCSharpSources.get -> System.Collections.Generic.IDictionary<string!, string!>!
+RazorLight.RazorLightOptions.DynamicCSharpSources.set -> void
+override RazorLight.Razor.EmbeddedRazorProject.GetSourceItemAsync(string! sourceKey) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem!>!
+override RazorLight.Razor.FileSystemRazorProject.GetSourceItemAsync(string! sourceKey) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem!>!
+RazorLight.RazorLightDependencyBuilder.AddCSharpSource(string! sourceKey) -> RazorLight.RazorLightDependencyBuilder!
+RazorLight.RazorLightDependencyBuilder.AddCSharpSource(string! sourceKey, string! sourceContent) -> RazorLight.RazorLightDependencyBuilder!
+RazorLight.RazorLightEngineBuilder.AddCSharpSource(string! sourceKey) -> RazorLight.RazorLightEngineBuilder!
+RazorLight.RazorLightEngineBuilder.AddCSharpSource(string! sourceKey, string! sourceContent) -> RazorLight.RazorLightEngineBuilder!
+virtual RazorLight.Razor.RazorLightProject.GetSourceItemAsync(string! sourceKey) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem!>!

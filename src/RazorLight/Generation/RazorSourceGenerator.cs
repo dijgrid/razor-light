@@ -6,15 +6,18 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using RazorLight.Compilation;
+using RazorLight.Instrumentation;
 
 namespace RazorLight.Generation
 {
 	public class RazorSourceGenerator
 	{
 		private readonly bool includeDetailedDiagnostics;
+		private readonly RazorLightOptions options;
 
 		public RazorSourceGenerator(RazorEngine projectEngine, RazorLightProject? project = null, ISet<string>? namespaces = null)
-			: this(projectEngine, project, namespaces, includeDetailedDiagnostics: false)
+			: this(projectEngine, project, namespaces, includeDetailedDiagnostics: false, new RazorLightOptions())
 		{
 		}
 
@@ -22,7 +25,8 @@ namespace RazorLight.Generation
 			RazorEngine projectEngine,
 			RazorLightProject? project,
 			ISet<string>? namespaces,
-			bool includeDetailedDiagnostics)
+			bool includeDetailedDiagnostics,
+			RazorLightOptions? options = null)
 		{
 			if (projectEngine == null)
 			{
@@ -31,6 +35,7 @@ namespace RazorLight.Generation
 
 			Namespaces = namespaces ?? new HashSet<string>();
 			this.includeDetailedDiagnostics = includeDetailedDiagnostics;
+			this.options = options ?? new RazorLightOptions();
 
 			ProjectEngine = projectEngine;
 			Project = project;
@@ -116,7 +121,11 @@ namespace RazorLight.Generation
 					includeDetailedDiagnostics ? document.Diagnostics : Array.Empty<RazorDiagnostic>());
 			}
 
-			return new GeneratedRazorTemplate(projectItem, document);
+			IReadOnlyList<string> sourcePaths = CompileSourceDirective.GetSourcePaths(codeDocument);
+			var resolver = new CSharpSourceResolver(Project, options, includeDetailedDiagnostics);
+			IReadOnlyList<CSharpSourceDocument> sources = await resolver.ResolveAsync(projectItem, sourcePaths).ConfigureAwait(false);
+
+			return new GeneratedRazorTemplate(projectItem, document, sources);
 		}
 
 		/// <summary>

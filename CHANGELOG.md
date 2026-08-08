@@ -7,6 +7,12 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 
 ## Unreleased
 
+### Added
+
+- Templates can compose ordinary trusted C# source files through global `AddCSharpSource` builder
+  configuration or a per-template `@compileSource` directive. Sources compile as separate syntax
+  trees with mapped diagnostics and participate in project change-token invalidation.
+
 ### Changed
 
 - RazorLight is now a generic C# text-template engine: core expression output is plain text, HTML

@@ -108,6 +108,7 @@ namespace RazorLight.Precompile.Tests
 			new("Samples/FullMessage.cshtml", AllDefaults) { TestName = AllDefaults.Name },
 			new("Samples/folder/MessageItem.cshtml", AllDefaults) { TestName = AllDefaults.Name },
 			new("Samples/WorkItemComment.cshtml", AllDefaults) { TestName = AllDefaults.Name },
+			new("Samples/CSharpComposition.cshtml", AllDefaults) { TestName = "CSharp source composition" },
 			new("Samples/FullMessage.cshtml", WithCache) { TestName = WithCache.Name },
 			new("Samples/folder/MessageItem.cshtml", WithCache) { TestName = WithCache.Name },
 			new("Samples/FullMessage.cshtml", WithStrategyFileHash) { TestName = WithStrategyFileHash.Name },

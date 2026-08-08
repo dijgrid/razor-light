@@ -9,6 +9,11 @@ it does not restrict the C# statements, APIs, reflection, file access, network a
 template can use. Metadata-reference filtering likewise reduces accidental coupling; it is not a
 security sandbox.
 
+Sources added with `AddCSharpSource` or `@compileSource` are executable code under the same trust
+boundary. Project-root checks constrain source lookup, not what the compiled helper can do once it
+runs. Review and authorize changes to shared `.cs` sources exactly as you would changes to the host
+application or its Razor templates.
+
 ## Supported trust models
 
 | Template source | Supported architecture |

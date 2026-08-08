@@ -14,6 +14,14 @@ namespace RazorLight.Razor
 		public abstract Task<RazorLightProjectItem> GetItemAsync(string templateKey);
 
 		/// <summary>
+		/// Looks up a C# source item without applying a template extension.
+		/// </summary>
+		public virtual Task<RazorLightProjectItem> GetSourceItemAsync(string sourceKey)
+		{
+			return GetItemAsync(sourceKey);
+		}
+
+		/// <summary>
 		/// Looks up for the ViewImports content for the given template
 		/// </summary>
 		/// <param name="templateKey"></param>

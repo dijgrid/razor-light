@@ -162,6 +162,17 @@ namespace RazorLight.Compilation
 			ViewCompilerWorkItem item;
 			TaskCompletionSource<CompiledTemplateDescriptor> taskSource;
 			MemoryCacheEntryOptions cacheEntryOptions;
+			string normalizedKey = request.ModelType == null && !request.IsStringTemplate
+				? GetNormalizedKey(request.TemplateKey)
+				: request.CacheKey;
+			ViewCompilerWorkItem? runtimeItem = null;
+			if (!(request.ModelType == null && !request.IsStringTemplate &&
+				_precompiledViews.ContainsKey(normalizedKey)))
+			{
+				// Source generation and project I/O are intentionally outside the cache lock. A race can
+				// perform this work more than once, but only one compiled result is published.
+				runtimeItem = await CreateRuntimeCompilationWorkItem(request);
+			}
 
 			// Safe races cannot be allowed when compiling Razor pages. To ensure only one compilation request succeeds
 			// per file, we'll lock the creation of a cache entry. Creating the cache entry should be very quick. The
@@ -169,10 +180,6 @@ namespace RazorLight.Compilation
 			await _cacheLock.WaitAsync();
 			try
 			{
-				string normalizedKey = request.ModelType == null && !request.IsStringTemplate
-					? GetNormalizedKey(request.TemplateKey)
-					: request.CacheKey;
-
 				// Double-checked locking to handle a possible race.
 				if (_cache.TryGetValue(normalizedKey, out object? cachedValue) && cachedValue is Task<CompiledTemplateDescriptor> result)
 				{
@@ -191,7 +198,8 @@ namespace RazorLight.Compilation
 				}
 				else
 				{
-					item = await CreateRuntimeCompilationWorkItem(request);
+					item = runtimeItem
+						?? throw new InvalidOperationException("The runtime compilation work item was not prepared.");
 				}
 
 				// At this point, we've decided what to do - but we should create the cache entry and
@@ -244,9 +252,9 @@ namespace RazorLight.Compilation
 				{
 					var projectItem = item.ProjectItem
 						?? throw new InvalidOperationException("The compilation work item has no project item.");
-					CompiledTemplateDescriptor descriptor = request.ModelType == null
-						? await CompileAndEmitAsync(projectItem)
-						: await CompileAndEmitAsync(projectItem, request.ModelType);
+					var generatedTemplate = item.GeneratedTemplate
+						?? throw new InvalidOperationException("The compilation work item has no generated template.");
+					CompiledTemplateDescriptor descriptor = CompileAndEmit(projectItem, generatedTemplate);
 					descriptor.ExpirationToken = cacheEntryOptions.ExpirationTokens.FirstOrDefault();
 					taskSource.SetResult(descriptor);
 				}
@@ -288,6 +296,19 @@ namespace RazorLight.Compilation
 				throw templateNotFoundException;
 			}
 
+			IGeneratedRazorTemplate generatedTemplate = request.ModelType == null
+				? await _razorSourceGenerator.GenerateCodeAsync(projectItem)
+				: await _razorSourceGenerator.GenerateCodeAsync(projectItem, request.ModelType);
+			var expirationTokens = new List<IChangeToken>();
+			if (projectItem.ExpirationToken != null) expirationTokens.Add(projectItem.ExpirationToken);
+			if (generatedTemplate is IGeneratedCSharpSourceContainer sourceContainer)
+			{
+				foreach (CSharpSourceDocument source in sourceContainer.CSharpSources)
+				{
+					if (source.ExpirationToken != null) expirationTokens.Add(source.ExpirationToken);
+				}
+			}
+
 			return new ViewCompilerWorkItem
 			{
 				SupportsCompilation = true,
@@ -296,7 +317,13 @@ namespace RazorLight.Compilation
 				NormalizedKey = request.ModelType == null && !request.IsStringTemplate
 					? projectItem.Key
 					: request.CacheKey,
-				ExpirationToken = projectItem.ExpirationToken,
+				ExpirationToken = expirationTokens.Count switch
+				{
+					0 => null,
+					1 => expirationTokens[0],
+					_ => new CompositeChangeToken(expirationTokens),
+				},
+				GeneratedTemplate = generatedTemplate,
 			};
 		}
 
@@ -483,6 +510,8 @@ namespace RazorLight.Compilation
 			public CompiledTemplateDescriptor? Descriptor { get; set; }
 
 			public RazorLightProjectItem? ProjectItem { get; set; }
+
+			public IGeneratedRazorTemplate? GeneratedTemplate { get; set; }
 		}
 
 		#endregion
