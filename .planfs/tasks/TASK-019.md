@@ -1,7 +1,7 @@
 ---
 id: TASK-019
 title: Reduce or justify the ASP.NET Core runtime dependency
-status: review
+status: done
 priority: medium
 epic: EPIC-modernization
 milestone: MILESTONE-language-runtime-compatibility
@@ -14,7 +14,7 @@ tags:
   - packaging
   - compatibility
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-08T00:11:33.703Z
+updatedAt: 2026-08-08T04:13:23.224Z
 refinementState: ready
 ---
 

@@ -24,6 +24,10 @@ lifecycle, configuration, descriptor, and caching contracts. The inherited optio
 shape is excluded from the analyzer's design-only RS0026 and RS0027 rules; TASK-018 owns any redesign,
 while the API inventory and package validator continue to enforce the binary surface.
 
+The accepted [RazorLight 3.x API design](api-design-3.0.md) classifies the post-TASK-019 surface into
+application, extension, generated-template ABI, and implementation layers. TASK-027 through TASK-030
+turn that design into the first beta without weakening the compatibility gates described here.
+
 TASK-010 intentionally made the inherited `CompileRenderAsync(key, model, modelType)` entry point
 usable and added the corresponding string-content overload. These APIs select a compile-time model
 type without changing the generic overload's dynamic default. The addition and the resulting API
