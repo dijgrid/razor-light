@@ -7,8 +7,15 @@ using System.Threading.Tasks;
 
 namespace RazorLight
 {
-	public interface IRazorLightEngine
+	public interface IRazorLightEngine : IDisposable, IAsyncDisposable
 	{
+		void IDisposable.Dispose() { }
+
+		ValueTask IAsyncDisposable.DisposeAsync()
+		{
+			((IDisposable)this).Dispose();
+			return ValueTask.CompletedTask;
+		}
 		/// <summary>
 		/// Returns whether the engine has a cached template for <paramref name="key"/>.
 		/// </summary>
@@ -158,6 +165,19 @@ namespace RazorLight
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			return await CompileTemplateAsync(key).WaitAsync(cancellationToken).ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Compiles a template and returns a reusable handle that creates a fresh page for every render.
+		/// </summary>
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		async Task<RazorLightTemplate> CompileReusableTemplateAsync(
+			string key,
+			CancellationToken cancellationToken = default)
+		{
+			await CompileTemplateAsync(key, cancellationToken).ConfigureAwait(false);
+			return new RazorLightTemplate(this, key);
 		}
 
 		/// <summary>

@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace RazorLight.Caching
 {
-	public sealed class FileSystemCachingProvider : ICachingProvider, IPrecompileCallback
+	public sealed class FileSystemCachingProvider : ICachingProvider, IPrecompileCallback, IDisposable
 	{
 		private readonly MemoryCachingProvider m_cache = new MemoryCachingProvider();
 		private readonly string m_baseDir;
@@ -118,5 +118,7 @@ namespace RazorLight.Caching
 
 		private string GetSourceFilePath(string key) =>
 			FileSystemRazorProjectHelper.ResolveContainedPath(m_baseDir, key, "template path");
+
+		public void Dispose() => m_cache.Dispose();
 	}
 }

@@ -27,6 +27,14 @@ namespace RazorLight
 
 		public void InvalidateTemplate(string key) => _cache.Remove(key);
 
+		public void Dispose() => (_handler as IDisposable)?.Dispose();
+
+		public ValueTask DisposeAsync()
+		{
+			Dispose();
+			return ValueTask.CompletedTask;
+		}
+
 		internal void ConfigureServices(IServiceScopeFactory scopeFactory, PropertyInjector propertyInjector)
 		{
 			if (_handler is not EngineHandler engineHandler)

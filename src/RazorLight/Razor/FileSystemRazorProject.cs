@@ -12,11 +12,12 @@ namespace RazorLight.Razor
 	/// <summary>
 	/// Specifies RazorProject where templates are located in files
 	/// </summary>
-	public sealed class FileSystemRazorProject : RazorLightProject
+	public sealed class FileSystemRazorProject : RazorLightProject, IDisposable
 	{
 		public const string DefaultExtension = ".cshtml";
 		private readonly IFileProvider _fileProvider;
 		private readonly string _normalizedRoot;
+		private bool _disposed;
 
 		public FileSystemRazorProject(string root)
 			: this(root, DefaultExtension)
@@ -135,5 +136,14 @@ namespace RazorLight.Razor
 			return Task.FromResult(files);
 		}
 		public override string NormalizeKey(string templateKey) => FileSystemRazorProjectHelper.NormalizeKey(templateKey);
+
+		internal bool IsDisposed => _disposed;
+
+		public void Dispose()
+		{
+			if (_disposed) return;
+			(_fileProvider as IDisposable)?.Dispose();
+			_disposed = true;
+		}
 	}
 }

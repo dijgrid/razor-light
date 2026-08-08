@@ -16,7 +16,7 @@ using RazorLight.Razor;
 
 namespace RazorLight.Compilation
 {
-	internal class RazorTemplateCompiler : IRazorTemplateCompiler
+	internal class RazorTemplateCompiler : IRazorTemplateCompiler, IDisposable
 	{
 		private RazorSourceGenerator _razorSourceGenerator;
 		private ICompilationService _compiler;
@@ -80,6 +80,8 @@ namespace RazorLight.Compilation
 		internal IMemoryCache Cache => _cache;
 		internal int ActiveCompilationCount => _compilations.Count;
 		internal int CacheGenerationCount => _cacheGenerations.Count;
+		internal bool IsDisposed { get; private set; }
+		internal RazorLightProject Project => _razorProject;
 
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
@@ -515,6 +517,13 @@ namespace RazorLight.Compilation
 
 		internal Task<TemplateNotFoundException> CreateTemplateNotFoundException(RazorLightProjectItem projectItem) =>
 			CreateTemplateNotFoundException(projectItem, CancellationToken.None);
+
+		public void Dispose()
+		{
+			if (IsDisposed) return;
+			_cache.Dispose();
+			IsDisposed = true;
+		}
 
 		internal async Task<TemplateNotFoundException> CreateTemplateNotFoundException(
 			RazorLightProjectItem projectItem,

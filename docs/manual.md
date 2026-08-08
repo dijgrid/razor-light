@@ -47,7 +47,7 @@ A string template needs a key, content, and model. The key identifies one logica
 caching and invalidation:
 
 ```csharp
-var engine = new RazorLightEngineBuilder()
+await using IRazorLightEngine engine = new RazorLightEngineBuilder()
     .UseMemoryCachingProvider()
     .Build();
 
@@ -65,12 +65,25 @@ Reusing a string-template key with different content, model type, or configured 
 the prior compiled variant. Keys should nevertheless remain stable and describe one logical
 template.
 
-To compile a template once and render the returned page directly:
+`ITemplatePage` instances are mutable and single-use. Compile and render one directly when only one
+render is needed:
 
 ```csharp
 var page = await engine.CompileTemplateAsync("welcome");
 string rendered = await engine.RenderTemplateAsync(page, new { Name = "Ada" });
 ```
+
+For compile-once/render-many use, create a reusable handle. It reuses the compiled descriptor while
+creating a fresh page for every render, including concurrent renders:
+
+```csharp
+RazorLightTemplate template = await engine.CompileReusableTemplateAsync("welcome");
+string first = await template.RenderAsync(new { Name = "Ada" });
+string second = await template.RenderAsync(new { Name = "Grace" });
+```
+
+Rendering the same page twice—or concurrently—throws `InvalidOperationException` rather than
+leaking layout, section, writer, or model state from one render into another.
 
 ## Models, imports, and LINQ
 
@@ -356,6 +369,13 @@ Generated at @Clock.UtcNow
 Each top-level render creates and disposes one service scope. The entry page, layouts, sections, and
 includes share that scope, so scoped services retain one identity throughout a composed render.
 Builder-created engines do not imply a service provider and leave `@inject` properties unset.
+
+The engine implements `IDisposable` and `IAsyncDisposable`. Dispose manually built engines (normally
+with `using` or `await using`) to release compiler caches, builder-created caching providers, and
+file-system watchers. A builder owns projects and caches it creates through `UseNoProject`,
+`UseFileSystemProject`, `UseEmbeddedResourcesProject`, or `UseMemoryCachingProvider`; objects passed
+to `UseProject` or `UseCachingProvider` remain caller-owned. The dependency-injection container
+disposes its singleton engine and the services it owns.
 
 Code that needs to initialize every page without a service provider can register an initializer at
 construction time. It runs exactly once for each page instance, including layouts and includes:

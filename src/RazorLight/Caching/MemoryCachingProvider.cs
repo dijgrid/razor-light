@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace RazorLight.Caching
 {
-	public sealed class MemoryCachingProvider : ICachingProvider
+	public sealed class MemoryCachingProvider : ICachingProvider, IDisposable
 	{
 		public MemoryCachingProvider()
 		{
@@ -15,6 +15,7 @@ namespace RazorLight.Caching
 		}
 
 		private IMemoryCache LookupCache { get; }
+		internal bool IsDisposed { get; private set; }
 
 		public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
 		{
@@ -65,6 +66,13 @@ namespace RazorLight.Caching
 			}
 
 			LookupCache.Remove(key);
+		}
+
+		public void Dispose()
+		{
+			if (IsDisposed) return;
+			LookupCache.Dispose();
+			IsDisposed = true;
 		}
 	}
 }

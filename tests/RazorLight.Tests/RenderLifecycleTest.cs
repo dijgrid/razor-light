@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -10,6 +11,9 @@ using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
+using RazorLight.Caching;
+using RazorLight.Compilation;
 using RazorLight.Extensions;
 using RazorLight.Razor;
 using RazorLight.Tests.Integration;
@@ -183,6 +187,145 @@ namespace RazorLight.Tests
 		}
 
 		[Fact]
+		public async Task Null_Model_Replaces_Preexisting_Page_Model()
+		{
+			var engine = new RazorLightEngineBuilder()
+				.UseNoProject()
+				.AddDynamicTemplates(new Dictionary<string, string>
+				{
+					["nullable-model"] = "@model string\n@(Model ?? \"null\")",
+				})
+				.Build();
+			ITemplatePage page = await engine.CompileTemplateAsync("nullable-model");
+			page.SetModel("stale");
+
+			string result = await engine.RenderTemplateAsync<string?>(page, null);
+
+			Assert.Equal("null", result.Trim());
+		}
+
+		[Fact]
+		public async Task Page_Instances_Are_Single_Use()
+		{
+			var engine = new RazorLightEngineBuilder()
+				.UseNoProject()
+				.AddDynamicTemplates(new Dictionary<string, string>
+				{
+					["single-use"] = "@{ Layout = \"single-use-layout\"; }\n@section value {\ncontent\n}",
+					["single-use-layout"] = "@RenderSection(\"value\")",
+				})
+				.Build();
+			ITemplatePage page = await engine.CompileTemplateAsync("single-use");
+
+			Assert.Equal("content", (await engine.RenderTemplateAsync(page, new object())).Trim());
+			InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				engine.RenderTemplateAsync(page, new object()));
+			Assert.Contains("single-use", exception.Message, StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public async Task Concurrent_Page_Reuse_Is_Rejected_While_First_Render_Completes()
+		{
+			var page = new BlockingPage();
+			var engine = new RazorLightEngineBuilder().UseNoProject().Build();
+			Task<string> first = engine.RenderTemplateAsync(page, new object());
+			await page.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+			await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				engine.RenderTemplateAsync(page, new object()));
+			page.Release.TrySetResult();
+
+			Assert.Equal("complete", await first);
+		}
+
+		[Fact]
+		public async Task Reusable_Template_Creates_Fresh_Pages_For_Concurrent_Renders()
+		{
+			await using var engine = new RazorLightEngineBuilder()
+				.UseNoProject()
+				.AddDynamicTemplates(new Dictionary<string, string> { ["reusable"] = "@Model" })
+				.UseMemoryCachingProvider()
+				.Build();
+			RazorLightTemplate template = await engine.CompileReusableTemplateAsync("reusable");
+
+			string[] results = await Task.WhenAll(
+				template.RenderAsync("first"),
+				template.RenderAsync("second"));
+
+			Assert.Equal(new[] { "first", "second" }, results);
+		}
+
+		[Fact]
+		public void Builder_Disposes_Owned_Compiler_Cache_Project_And_Caching_Provider()
+		{
+			string root = Path.Combine(Path.GetTempPath(), "RazorLight.Tests", Guid.NewGuid().ToString("N"));
+			Directory.CreateDirectory(root);
+			try
+			{
+				var engine = (RazorLightEngine)new RazorLightEngineBuilder()
+					.UseFileSystemProject(root)
+					.UseMemoryCachingProvider()
+					.Build();
+				var handler = (EngineHandler)engine.Handler;
+				var compiler = (RazorTemplateCompiler)handler.Compiler;
+				var project = (FileSystemRazorProject)compiler.Project;
+				var cache = (MemoryCachingProvider)handler.OwnedCachingProvider!;
+
+				engine.Dispose();
+				engine.Dispose();
+
+				Assert.True(compiler.IsDisposed);
+				Assert.True(project.IsDisposed);
+				Assert.True(cache.IsDisposed);
+			}
+			finally
+			{
+				Directory.Delete(root, recursive: true);
+			}
+		}
+
+		[Fact]
+		public void Builder_Does_Not_Dispose_Caller_Owned_Project_Or_Cache()
+		{
+			var project = new DisposableProject();
+			var cache = new DisposableCache();
+			IRazorLightEngine engine = new RazorLightEngineBuilder()
+				.UseProject(project)
+				.UseCachingProvider(cache)
+				.Build();
+
+			engine.Dispose();
+
+			Assert.False(project.IsDisposed);
+			Assert.False(cache.IsDisposed);
+		}
+
+		[Fact]
+		public void Repeated_Engine_Creation_And_Disposal_Is_Safe()
+		{
+			for (int index = 0; index < 20; index++)
+			{
+				using IRazorLightEngine engine = new RazorLightEngineBuilder()
+					.UseNoProject()
+					.UseMemoryCachingProvider()
+					.Build();
+			}
+		}
+
+		[Fact]
+		public void Dependency_Injection_Disposes_The_Singleton_Engine_Compiler()
+		{
+			var probes = new ConcurrentBag<ScopedProbe>();
+			ServiceProvider provider = CreateServices(probes).BuildServiceProvider(validateScopes: true);
+			var engine = (RazorLightEngine)provider.GetRequiredService<IRazorLightEngine>();
+			var compiler = (RazorTemplateCompiler)engine.Handler.Compiler;
+
+			provider.Dispose();
+
+			Assert.True(compiler.IsDisposed);
+		}
+
+		[Fact]
 		public async Task Dependency_Injection_Options_Are_Snapshotted_Before_Runtime_Services()
 		{
 			var probes = new ConcurrentBag<ScopedProbe>();
@@ -282,6 +425,49 @@ namespace RazorLight.Tests
 			public override void SetModel(object? model) { }
 			public override void BeginContext(int position, int length, bool isLiteral) { }
 			public override void EndContext() { }
+		}
+
+		private sealed class BlockingPage : TemplatePage
+		{
+			public TaskCompletionSource Started { get; } =
+				new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			public TaskCompletionSource Release { get; } =
+				new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public override async Task ExecuteAsync()
+			{
+				Started.TrySetResult();
+				await Release.Task;
+				WriteLiteral("complete");
+			}
+
+			public override void SetModel(object? model) { }
+			public override void BeginContext(int position, int length, bool isLiteral) { }
+			public override void EndContext() { }
+		}
+
+		private sealed class DisposableProject : RazorLightProject, IDisposable
+		{
+			public bool IsDisposed { get; private set; }
+			public void Dispose() => IsDisposed = true;
+			public override Task<RazorLightProjectItem> GetItemAsync(string templateKey) =>
+				Task.FromResult<RazorLightProjectItem>(NoRazorProjectItem.Empty);
+			public override Task<IEnumerable<RazorLightProjectItem>> GetImportsAsync(string templateKey) =>
+				Task.FromResult<IEnumerable<RazorLightProjectItem>>(Array.Empty<RazorLightProjectItem>());
+		}
+
+		private sealed class DisposableCache : ICachingProvider, IDisposable
+		{
+			public bool IsDisposed { get; private set; }
+			public bool Contains(string key) => false;
+			public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken? expirationToken) { }
+			public void Dispose() => IsDisposed = true;
+			public void Remove(string key) { }
+			public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
+			{
+				pageFactory = null;
+				return false;
+			}
 		}
 
 		private sealed class DictionaryProject : RazorLightProject

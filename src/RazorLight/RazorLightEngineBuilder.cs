@@ -37,6 +37,8 @@ namespace RazorLight
 		protected RazorLightProject? project;
 
 		protected ICachingProvider? cachingProvider;
+		private bool ownsProject;
+		private bool ownsCachingProvider;
 
 		private IOutputEncoder? outputEncoder;
 
@@ -56,6 +58,7 @@ namespace RazorLight
 		public virtual RazorLightEngineBuilder UseProject(RazorLightProject razorLightProject)
 		{
 			project = razorLightProject ?? throw new ArgumentNullException(nameof(razorLightProject), $"Use {nameof(NoRazorProject)} instead of null.  See also {nameof(UseNoProject)}.");
+			ownsProject = false;
 
 			return this;
 		}
@@ -66,6 +69,7 @@ namespace RazorLight
 		public RazorLightEngineBuilder UseNoProject()
 		{
 			project = new NoRazorProject();
+			ownsProject = true;
 
 			return this;
 		}
@@ -78,6 +82,7 @@ namespace RazorLight
 		public RazorLightEngineBuilder UseFileSystemProject(string root)
 		{
 			project = new FileSystemRazorProject(root);
+			ownsProject = true;
 
 			return this;
 		}
@@ -91,6 +96,7 @@ namespace RazorLight
 		public RazorLightEngineBuilder UseFileSystemProject(string root, string extension)
 		{
 			project = new FileSystemRazorProject(root, extension);
+			ownsProject = true;
 
 			return this;
 		}
@@ -105,6 +111,7 @@ namespace RazorLight
 			if (rootType == null) throw new ArgumentNullException(nameof(rootType));
 
 			project = new EmbeddedRazorProject(rootType);
+			ownsProject = true;
 
 			return this;
 		}
@@ -118,6 +125,7 @@ namespace RazorLight
 		public RazorLightEngineBuilder UseEmbeddedResourcesProject(Assembly assembly, string? rootNamespace = null)
 		{
 			project = new EmbeddedRazorProject(assembly, rootNamespace);
+			ownsProject = true;
 
 			return this;
 		}
@@ -145,6 +153,7 @@ namespace RazorLight
 		public virtual RazorLightEngineBuilder UseMemoryCachingProvider()
 		{
 			cachingProvider = new MemoryCachingProvider();
+			ownsCachingProvider = true;
 
 			return this;
 		}
@@ -157,6 +166,7 @@ namespace RazorLight
 			}
 
 			cachingProvider = provider;
+			ownsCachingProvider = false;
 
 			return this;
 		}
@@ -437,7 +447,13 @@ namespace RazorLight
 			var templateCompiler = new RazorTemplateCompiler(sourceGenerator, compiler, project, buildOptions);
 			var templateFactoryProvider = new TemplateFactoryProvider();
 
-			var engineHandler = new EngineHandler(buildOptions, templateCompiler, templateFactoryProvider, buildOptions.CachingProvider);
+			var engineHandler = new EngineHandler(
+				buildOptions,
+				templateCompiler,
+				templateFactoryProvider,
+				buildOptions.CachingProvider,
+				ownsProject ? project as IDisposable : null,
+				ownsCachingProvider ? buildOptions.CachingProvider as IDisposable : null);
 
 			return new RazorLightEngine(engineHandler);
 		}

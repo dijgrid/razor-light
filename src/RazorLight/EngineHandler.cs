@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
@@ -13,21 +14,29 @@ using RazorLight.Internal.Buffering;
 
 namespace RazorLight
 {
-	internal sealed class EngineHandler : IEngineHandler
+	internal sealed class EngineHandler : IEngineHandler, IDisposable
 	{
 		private readonly ITemplateCompilerCache? _compilerCache;
 		private IServiceScopeFactory? _scopeFactory;
 		private PropertyInjector? _propertyInjector;
+		private readonly IDisposable? _ownedProject;
+		private readonly IDisposable? _ownedCachingProvider;
+		private static readonly ConditionalWeakTable<ITemplatePage, PageRenderState> PageRenderStates = new();
+		private int _disposed;
 
 		public EngineHandler(
 			RazorLightOptions options,
 			IRazorTemplateCompiler compiler,
 			ITemplateFactoryProvider factoryProvider,
-			ICachingProvider? cache)
+			ICachingProvider? cache,
+			IDisposable? ownedProject = null,
+			IDisposable? ownedCachingProvider = null)
 		{
 			Options = options ?? throw new ArgumentNullException(nameof(options));
 			Compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
 			FactoryProvider = factoryProvider ?? throw new ArgumentNullException(nameof(factoryProvider));
+			_ownedProject = ownedProject;
+			_ownedCachingProvider = ownedCachingProvider;
 
 			_compilerCache = compiler is RazorTemplateCompiler razorTemplateCompiler
 				? new RazorTemplateCompilerCache(razorTemplateCompiler)
@@ -48,9 +57,25 @@ namespace RazorLight
 		public ICachingProvider? Cache { get; }
 		public IRazorTemplateCompiler Compiler { get; }
 		public ITemplateFactoryProvider FactoryProvider { get; }
+		internal IDisposable? OwnedCachingProvider => _ownedCachingProvider;
 
 		[MemberNotNullWhen(true, nameof(Cache))]
 		public bool IsCachingEnabled => Cache != null;
+
+		public void Dispose()
+		{
+			if (Interlocked.Exchange(ref _disposed, 1) != 0)
+			{
+				return;
+			}
+
+			(Compiler as IDisposable)?.Dispose();
+			_ownedCachingProvider?.Dispose();
+			if (!ReferenceEquals(_ownedProject, _ownedCachingProvider))
+			{
+				_ownedProject?.Dispose();
+			}
+		}
 
 		/// <summary>
 		/// Search and compile a template with a given key
@@ -196,6 +221,7 @@ namespace RazorLight
 			CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
+			using PageRenderLease renderLease = BeginRender(templatePage);
 			SetModelContext(templatePage, textWriter, model, viewBag, cancellationToken);
 
 			using (var bufferScope = new MemoryPoolViewBufferScope())
@@ -410,6 +436,7 @@ namespace RazorLight
 			CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
+			using PageRenderLease renderLease = BeginRender(templatePage);
 			using (var writer = new StringWriter())
 			{
 				Type effectiveModelType = GetDeclaredModelType(templatePage) ?? modelType;
@@ -452,6 +479,11 @@ namespace RazorLight
 				templatePage.SetModel(pageModel);
 
 				pageContext.Model = pageModel;
+			}
+			else
+			{
+				templatePage.SetModel(null);
+				pageContext.Model = null;
 			}
 
 			templatePage.PageContext = pageContext;
@@ -554,6 +586,41 @@ namespace RazorLight
 			}
 
 			return null;
+		}
+
+		private PageRenderLease BeginRender(ITemplatePage page)
+		{
+			if (page == null)
+			{
+				throw new ArgumentNullException(nameof(page));
+			}
+
+			PageRenderState state = PageRenderStates.GetOrCreateValue(page);
+			if (Interlocked.CompareExchange(ref state.Status, 1, 0) != 0)
+			{
+				throw new InvalidOperationException(
+					"Template page instances are single-use and cannot be rendered concurrently or more than once. " +
+					"Use CompileReusableTemplateAsync to render a compiled template repeatedly.");
+			}
+
+			return new PageRenderLease(state);
+		}
+
+		private sealed class PageRenderState
+		{
+			public int Status;
+		}
+
+		private readonly struct PageRenderLease : IDisposable
+		{
+			private readonly PageRenderState _state;
+
+			public PageRenderLease(PageRenderState state)
+			{
+				_state = state;
+			}
+
+			public void Dispose() => Volatile.Write(ref _state.Status, 2);
 		}
 	}
 }
