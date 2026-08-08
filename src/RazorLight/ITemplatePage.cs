@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using System.Threading;
+
 namespace RazorLight
 {
 	public interface ITemplatePage
@@ -14,6 +16,9 @@ namespace RazorLight
 		/// Gets or sets the view context of the rendering template.
 		/// </summary>
 		PageContext? PageContext { get; set; }
+
+		/// <summary>Gets the cancellation token for the current render operation.</summary>
+		CancellationToken CancellationToken => PageContext?.CancellationToken ?? System.Threading.CancellationToken.None;
 
 		/// <summary>
 		/// Gets or sets the body content.

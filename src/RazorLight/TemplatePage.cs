@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using System.Threading;
+
 namespace RazorLight
 {
 	public abstract class TemplatePage : TemplatePageBase
@@ -14,8 +16,13 @@ namespace RazorLight
 		private bool _ignoreBody;
 		private HashSet<string>? _ignoredSections;
 
-		public async Task IncludeAsync(string key, object? model = null)
+		public Task IncludeAsync(string key, object? model = null) =>
+			IncludeAsync(key, model, CancellationToken);
+
+		/// <summary>Renders an included template while observing cancellation.</summary>
+		public async Task IncludeAsync(string key, object? model, CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (string.IsNullOrEmpty(key))
 			{
 				throw new ArgumentNullException(nameof(key));
@@ -26,7 +33,7 @@ namespace RazorLight
 				throw new InvalidOperationException(nameof(IncludeFunc) + " is not set");
 			}
 
-			await IncludeFunc(key, model);
+			await IncludeFunc(key, model).WaitAsync(cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -145,14 +152,18 @@ namespace RazorLight
 		/// <remarks>The method writes to the <see cref="TemplatePageBase.Output"/> and the value returned is a token
 		/// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
 		/// value does not represent the rendered content.</remarks>
-		public async Task<TemplateContent> RenderSectionAsync(string name)
+		public Task<TemplateContent> RenderSectionAsync(string name) =>
+			RenderSectionAsync(name, CancellationToken);
+
+		/// <summary>Renders a required section while observing cancellation.</summary>
+		public async Task<TemplateContent> RenderSectionAsync(string name, CancellationToken cancellationToken)
 		{
 			if (name == null)
 			{
 				throw new ArgumentNullException(nameof(name));
 			}
 
-			return (await RenderSectionAsync(name, required: true).ConfigureAwait(false))!;
+			return (await RenderSectionAsync(name, required: true, cancellationToken).ConfigureAwait(false))!;
 		}
 
 		/// <summary>
@@ -169,7 +180,11 @@ namespace RazorLight
 		/// value does not represent the rendered content.</remarks>
 		/// <exception cref="InvalidOperationException">if <paramref name="required"/> is <c>true</c> and the section
 		/// was not registered using the <c>@section</c> in the Razor page.</exception>
-		public Task<TemplateContent?> RenderSectionAsync(string name, bool required)
+		public Task<TemplateContent?> RenderSectionAsync(string name, bool required) =>
+			RenderSectionAsync(name, required, CancellationToken);
+
+		/// <summary>Renders a section while observing cancellation.</summary>
+		public Task<TemplateContent?> RenderSectionAsync(string name, bool required, CancellationToken cancellationToken)
 		{
 			if (name == null)
 			{
@@ -177,11 +192,15 @@ namespace RazorLight
 			}
 
 			EnsureMethodCanBeInvoked(nameof(RenderSectionAsync));
-			return RenderSectionAsyncCore(name, required);
+			return RenderSectionAsyncCore(name, required, cancellationToken);
 		}
 
-		private async Task<TemplateContent?> RenderSectionAsyncCore(string sectionName, bool required)
+		private async Task<TemplateContent?> RenderSectionAsyncCore(
+			string sectionName,
+			bool required,
+			CancellationToken cancellationToken = default)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (_renderedSections.Contains(sectionName))
 			{
 				throw new InvalidOperationException($"Section {sectionName} is already rendered");
@@ -192,7 +211,7 @@ namespace RazorLight
 			{
 				_renderedSections.Add(sectionName);
 
-				await renderDelegate();
+				await renderDelegate().WaitAsync(cancellationToken).ConfigureAwait(false);
 
 				// Return a token value that allows the Write call that wraps the RenderSection \ RenderSectionAsync
 				// to succeed.

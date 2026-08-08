@@ -12,6 +12,7 @@ package. For a short project overview, start with the [README](../README.md).
 - [Layouts, sections, and includes](#layouts-sections-and-includes)
 - [Composing templates with C# source](#composing-templates-with-c-source)
 - [Caching and invalidation](#caching-and-invalidation)
+- [Cancellation](#cancellation)
 - [Output encoding](#output-encoding)
 - [Compilation references](#compilation-references)
 - [Precompilation](#precompilation)
@@ -304,6 +305,34 @@ Invalidation clears both compilation and page-factory entries. When caching is d
 must support concurrent retrieval, insertion, replacement, and removal. See the complete
 [caching contract](caching.md) for cache identities, precompiled providers, and process-local
 limitations.
+
+## Cancellation
+
+All engine operations have `CancellationToken` overloads. Overloads without a token remain
+available and behave as if `CancellationToken.None` was supplied:
+
+```csharp
+using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+string result = await engine.CompileRenderAsync(
+    "Reports/Summary.cshtml",
+    model,
+    timeout.Token);
+```
+
+The active render token is available inside a template as `CancellationToken`, so template-owned
+asynchronous work can cooperate directly:
+
+```razor
+@{
+    ReportData data = await repository.LoadAsync(Model.Id, CancellationToken);
+}
+```
+
+The same token flows through layouts and `IncludeAsync`. Cancelling a wait for a shared compilation
+does not cancel compilation still needed by another caller. See the full
+[cancellation contract](cancellation.md) for project extensions, cache behavior, and synchronous
+operation limitations.
 
 ## Dependency injection and page initialization
 

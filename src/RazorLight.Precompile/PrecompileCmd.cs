@@ -4,6 +4,7 @@ using RazorLight.Caching;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace RazorLight.Precompile
 {
@@ -21,8 +22,11 @@ namespace RazorLight.Precompile
 			[StrategyName.FileHash] = FileHashCachingStrategy.Instance
 		};
 
-		public int Run(string[] args)
+		public int Run(string[] args) => Run(args, CancellationToken.None);
+
+		public int Run(string[] args, CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			var options = CommandLineArguments.Parse(args, new[]
 			{
 				"-t", "--template", "-c", "--cache", "-b", "--base", "-s", "--strategy",
@@ -91,7 +95,7 @@ namespace RazorLight.Precompile
 
 			if (modelFilePath == null)
 			{
-				engine.CompileTemplateAsync(templateKey).GetAwaiter().GetResult();
+				engine.CompileTemplateAsync(templateKey, cancellationToken).GetAwaiter().GetResult();
 				Program.ConsoleOut.WriteLine(provider.GetAssemblyFilePath(templateKey, templateFile));
 			}
 			else
@@ -103,7 +107,7 @@ namespace RazorLight.Precompile
 				}
 
 				var model = JsonModel.New(modelToken);
-				Program.ConsoleOut.WriteLine(engine.CompileRenderAsync(templateKey, model).GetAwaiter().GetResult());
+				Program.ConsoleOut.WriteLine(engine.CompileRenderAsync(templateKey, model, cancellationToken).GetAwaiter().GetResult());
 			}
 
 			return 0;

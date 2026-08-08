@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.DependencyInjection;
@@ -62,17 +63,25 @@ namespace RazorLight
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public async Task<ITemplatePage> CompileTemplateAsync(string key)
+			=> await CompileTemplateAsync(key, CancellationToken.None).ConfigureAwait(false);
+
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		public async Task<ITemplatePage> CompileTemplateAsync(string key, CancellationToken cancellationToken)
 		{
 			return await CompileTemplateAsync(TemplateCompilationRequest.ForProject(
 				NormalizeProjectKey(key),
 				modelType: null,
-				Options.Namespaces));
+				Options.Namespaces), cancellationToken).ConfigureAwait(false);
 		}
 
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
-		private async Task<ITemplatePage> CompileTemplateAsync(TemplateCompilationRequest request)
+		private async Task<ITemplatePage> CompileTemplateAsync(
+			TemplateCompilationRequest request,
+			CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			InvalidatePreviousStringTemplate(request);
 			var coordinatedCache = Cache as ICoordinatedCachingProvider;
 			long cacheVersion = coordinatedCache?.GetVersion(request.TemplateKey) ?? 0;
@@ -80,6 +89,7 @@ namespace RazorLight
 			ITemplatePage? templatePage = null;
 			if (Cache != null)
 			{
+				cancellationToken.ThrowIfCancellationRequested();
 				if (Cache.TryGetTemplate(request.CacheKey, out Func<ITemplatePage>? pageFactory))
 				{
 					templatePage = pageFactory();
@@ -88,21 +98,23 @@ namespace RazorLight
 
 			if (templatePage == null)
 			{
+				cancellationToken.ThrowIfCancellationRequested();
 				CompiledTemplateDescriptor templateDescriptor;
 				if (request.TemplateContent != null)
 				{
 					templateDescriptor = await Compiler.CompileAsync(
 						request.TemplateKey,
 						request.TemplateContent,
-						request.ModelType);
+						request.ModelType,
+						cancellationToken).ConfigureAwait(false);
 				}
 				else if (request.ModelType != null)
 				{
-					templateDescriptor = await Compiler.CompileAsync(request.TemplateKey, request.ModelType);
+					templateDescriptor = await Compiler.CompileAsync(request.TemplateKey, request.ModelType, cancellationToken).ConfigureAwait(false);
 				}
 				else
 				{
-					templateDescriptor = await Compiler.CompileAsync(request.TemplateKey);
+					templateDescriptor = await Compiler.CompileAsync(request.TemplateKey, cancellationToken).ConfigureAwait(false);
 				}
 
 				Func<ITemplatePage> templateFactory = FactoryProvider.CreateFactory(templateDescriptor);
@@ -142,10 +154,17 @@ namespace RazorLight
 		/// <param name="viewBag">Dynamic viewBag of the template</param>
 		/// <returns>Rendered string</returns>
 		public async Task<string> RenderTemplateAsync<T>(ITemplatePage templatePage, T model, ExpandoObject? viewBag = null)
+			=> await RenderTemplateAsync(templatePage, model, viewBag, CancellationToken.None).ConfigureAwait(false);
+
+		public async Task<string> RenderTemplateAsync<T>(
+			ITemplatePage templatePage,
+			T model,
+			ExpandoObject? viewBag,
+			CancellationToken cancellationToken)
 		{
 			using (var writer = new StringWriter())
 			{
-				await RenderTemplateAsync(templatePage, model, writer, viewBag);
+				await RenderTemplateAsync(templatePage, model, writer, viewBag, cancellationToken).ConfigureAwait(false);
 
 				return writer.ToString();
 			}
@@ -162,16 +181,25 @@ namespace RazorLight
 			ITemplatePage templatePage,
 			T model,
 			TextWriter textWriter,
-			ExpandoObject? viewBag = null)
+			ExpandoObject? viewBag = null) =>
+			await RenderTemplateAsync(templatePage, model, textWriter, viewBag, CancellationToken.None).ConfigureAwait(false);
+
+		public async Task RenderTemplateAsync<T>(
+			ITemplatePage templatePage,
+			T model,
+			TextWriter textWriter,
+			ExpandoObject? viewBag,
+			CancellationToken cancellationToken)
 		{
-			SetModelContext(templatePage, textWriter, model, viewBag);
+			cancellationToken.ThrowIfCancellationRequested();
+			SetModelContext(templatePage, textWriter, model, viewBag, cancellationToken);
 
 			using (var bufferScope = new MemoryPoolViewBufferScope())
 			{
 				if (_scopeFactory == null)
 				{
 					var renderer = new TemplateRenderer(this, bufferScope, InitializePage);
-					await renderer.RenderAsync(templatePage).ConfigureAwait(false);
+					await renderer.RenderAsync(templatePage, cancellationToken).ConfigureAwait(false);
 					return;
 				}
 
@@ -181,7 +209,7 @@ namespace RazorLight
 						this,
 						bufferScope,
 						page => InitializePage(page, renderScope.ServiceProvider));
-					await renderer.RenderAsync(templatePage).ConfigureAwait(false);
+					await renderer.RenderAsync(templatePage, cancellationToken).ConfigureAwait(false);
 				}
 			}
 		}
@@ -209,10 +237,11 @@ namespace RazorLight
 			T model,
 			TextWriter textWriter,
 			ExpandoObject? viewBag,
-			TemplateRenderer templateRenderer)
+			TemplateRenderer templateRenderer,
+			CancellationToken cancellationToken)
 		{
-			SetModelContext(templatePage, textWriter, model, viewBag);
-			await templateRenderer.RenderAsync(templatePage).ConfigureAwait(false);
+			SetModelContext(templatePage, textWriter, model, viewBag, cancellationToken);
+			await templateRenderer.RenderAsync(templatePage, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -225,10 +254,15 @@ namespace RazorLight
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public async Task<string> CompileRenderAsync<T>(string key, T model, ExpandoObject? viewBag = null)
-		{
-			ITemplatePage template = await CompileTemplateAsync(key).ConfigureAwait(false);
+			=> await CompileRenderAsync(key, model, viewBag, CancellationToken.None).ConfigureAwait(false);
 
-			return await RenderTemplateAsync(template, model, viewBag).ConfigureAwait(false);
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		public async Task<string> CompileRenderAsync<T>(string key, T model, ExpandoObject? viewBag, CancellationToken cancellationToken)
+		{
+			ITemplatePage template = await CompileTemplateAsync(key, cancellationToken).ConfigureAwait(false);
+
+			return await RenderTemplateAsync(template, model, viewBag, cancellationToken).ConfigureAwait(false);
 		}
 
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
@@ -237,8 +271,19 @@ namespace RazorLight
 			string key,
 			object? model,
 			Type modelType,
-			ExpandoObject? viewBag = null)
+			ExpandoObject? viewBag = null) =>
+			await CompileRenderAsync(key, model, modelType, viewBag, CancellationToken.None).ConfigureAwait(false);
+
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		public async Task<string> CompileRenderAsync(
+			string key,
+			object? model,
+			Type modelType,
+			ExpandoObject? viewBag,
+			CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (modelType == null)
 			{
 				throw new ArgumentNullException(nameof(modelType));
@@ -247,9 +292,9 @@ namespace RazorLight
 			ITemplatePage template = await CompileTemplateAsync(TemplateCompilationRequest.ForProject(
 				NormalizeProjectKey(key),
 				modelType,
-				Options.Namespaces)).ConfigureAwait(false);
+				Options.Namespaces), cancellationToken).ConfigureAwait(false);
 
-			return await RenderTemplateAsync(template, model, modelType, viewBag).ConfigureAwait(false);
+			return await RenderTemplateAsync(template, model, modelType, viewBag, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -265,8 +310,19 @@ namespace RazorLight
 			string key,
 			string content,
 			T model,
-			ExpandoObject? viewBag = null)
+			ExpandoObject? viewBag = null) =>
+			CompileRenderStringAsync(key, content, model, viewBag, CancellationToken.None);
+
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		public Task<string> CompileRenderStringAsync<T>(
+			string key,
+			string content,
+			T model,
+			ExpandoObject? viewBag,
+			CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (string.IsNullOrEmpty(key))
 			{
 				throw new ArgumentNullException(nameof(key));
@@ -278,7 +334,7 @@ namespace RazorLight
 			}
 
 			Options.DynamicTemplates[key] = content;
-			return CompileRenderStringCoreAsync(key, content, model, modelType: null, viewBag);
+			return CompileRenderStringCoreAsync(key, content, model, modelType: null, viewBag, cancellationToken);
 		}
 
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
@@ -288,8 +344,20 @@ namespace RazorLight
 			string content,
 			object? model,
 			Type modelType,
-			ExpandoObject? viewBag = null)
+			ExpandoObject? viewBag = null) =>
+			CompileRenderStringAsync(key, content, model, modelType, viewBag, CancellationToken.None);
+
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		public Task<string> CompileRenderStringAsync(
+			string key,
+			string content,
+			object? model,
+			Type modelType,
+			ExpandoObject? viewBag,
+			CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (string.IsNullOrEmpty(key))
 			{
 				throw new ArgumentNullException(nameof(key));
@@ -306,7 +374,7 @@ namespace RazorLight
 			}
 
 			Options.DynamicTemplates[key] = content;
-			return CompileRenderStringCoreAsync(key, content, model, modelType, viewBag);
+			return CompileRenderStringCoreAsync(key, content, model, modelType, viewBag, cancellationToken);
 		}
 
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
@@ -316,34 +384,37 @@ namespace RazorLight
 			string content,
 			object? model,
 			Type? modelType,
-			ExpandoObject? viewBag)
+			ExpandoObject? viewBag,
+			CancellationToken cancellationToken)
 		{
 			ITemplatePage template = await CompileTemplateAsync(TemplateCompilationRequest.ForString(
 				key,
 				content,
 				modelType,
-				Options.Namespaces)).ConfigureAwait(false);
+				Options.Namespaces), cancellationToken).ConfigureAwait(false);
 
 			return modelType == null
-				? await RenderTemplateAsync(template, model, viewBag).ConfigureAwait(false)
-				: await RenderTemplateAsync(template, model, modelType, viewBag).ConfigureAwait(false);
+				? await RenderTemplateAsync(template, model, viewBag, cancellationToken).ConfigureAwait(false)
+				: await RenderTemplateAsync(template, model, modelType, viewBag, cancellationToken).ConfigureAwait(false);
 		}
 
 		private async Task<string> RenderTemplateAsync(
 			ITemplatePage templatePage,
 			object? model,
 			Type modelType,
-			ExpandoObject? viewBag)
+			ExpandoObject? viewBag,
+			CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			using (var writer = new StringWriter())
 			{
 				Type effectiveModelType = GetDeclaredModelType(templatePage) ?? modelType;
-				SetModelContext(templatePage, writer, model, viewBag, effectiveModelType);
+				SetModelContext(templatePage, writer, model, viewBag, effectiveModelType, cancellationToken);
 
 				using (var scope = new MemoryPoolViewBufferScope())
 				{
 					var renderer = new TemplateRenderer(this, scope);
-					await renderer.RenderAsync(templatePage).ConfigureAwait(false);
+					await renderer.RenderAsync(templatePage, cancellationToken).ConfigureAwait(false);
 				}
 
 				return writer.ToString();
@@ -354,7 +425,8 @@ namespace RazorLight
 			ITemplatePage templatePage,
 			TextWriter textWriter,
 			T model,
-			ExpandoObject? viewBag)
+			ExpandoObject? viewBag,
+			CancellationToken cancellationToken)
 		{
 			if (textWriter == null)
 			{
@@ -363,6 +435,7 @@ namespace RazorLight
 
 			var pageContext = new PageContext(viewBag)
 			{
+				CancellationToken = cancellationToken,
 				ExecutingPageKey = templatePage.Key,
 				Writer = textWriter
 			};
@@ -385,7 +458,8 @@ namespace RazorLight
 			TextWriter textWriter,
 			object? model,
 			ExpandoObject? viewBag,
-			Type modelType)
+			Type modelType,
+			CancellationToken cancellationToken)
 		{
 			if (textWriter == null)
 			{
@@ -405,6 +479,7 @@ namespace RazorLight
 
 			templatePage.PageContext = new PageContext(viewBag)
 			{
+				CancellationToken = cancellationToken,
 				ExecutingPageKey = templatePage.Key,
 				Writer = textWriter,
 				ModelTypeInfo = modelTypeInfo,

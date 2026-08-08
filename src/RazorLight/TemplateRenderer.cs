@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using RazorLight.Internal.Buffering;
 
@@ -35,19 +36,26 @@ namespace RazorLight
 		///// </summary>
 		//public IReadOnlyList<ITemplatePage> ViewStartPages { get; }
 
-		public virtual async Task RenderAsync(ITemplatePage page)
-		{
-			var context = page.PageContext ?? throw new InvalidOperationException("The template page has no PageContext.");
+		public virtual Task RenderAsync(ITemplatePage page) =>
+			RenderAsync(page, page.PageContext?.CancellationToken ?? CancellationToken.None);
 
-			var bodyWriter = await RenderPageAsync(page, context, invokeViewStarts: false).ConfigureAwait(false);
-			await RenderLayoutAsync(page, context, bodyWriter).ConfigureAwait(false);
+		public virtual async Task RenderAsync(ITemplatePage page, CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			var context = page.PageContext ?? throw new InvalidOperationException("The template page has no PageContext.");
+			context.CancellationToken = cancellationToken;
+
+			var bodyWriter = await RenderPageAsync(page, context, invokeViewStarts: false, cancellationToken).ConfigureAwait(false);
+			await RenderLayoutAsync(page, context, bodyWriter, cancellationToken).ConfigureAwait(false);
 		}
 
 		private async Task<ViewBufferTextWriter> RenderPageAsync(
 			ITemplatePage page,
 			PageContext context,
-			bool invokeViewStarts)
+			bool invokeViewStarts,
+			CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			var writer = context.Writer as ViewBufferTextWriter;
 			if (writer == null)
 			{
@@ -84,10 +92,10 @@ namespace RazorLight
 				if (invokeViewStarts)
 				{
 					// Execute view starts using the same context + writer as the page to render.
-					await RenderViewStartsAsync(context).ConfigureAwait(false);
+					await RenderViewStartsAsync(context).WaitAsync(cancellationToken).ConfigureAwait(false);
 				}
 
-				await RenderPageCoreAsync(page, context).ConfigureAwait(false);
+				await RenderPageCoreAsync(page, context, cancellationToken).ConfigureAwait(false);
 				return writer;
 			}
 			finally
@@ -97,19 +105,25 @@ namespace RazorLight
 			}
 		}
 
-		private async Task RenderPageCoreAsync(ITemplatePage page, PageContext context)
+		private async Task RenderPageCoreAsync(ITemplatePage page, PageContext context, CancellationToken cancellationToken)
 		{
 			page.PageContext = context;
 			page.IncludeFunc = async (key, model) =>
 			{
-				ITemplatePage template = await _engineHandler.CompileTemplateAsync(key);
+				ITemplatePage template = await _engineHandler.CompileTemplateAsync(key, cancellationToken).ConfigureAwait(false);
 
-				await _engineHandler.RenderIncludedTemplateAsync(template, model, context.Writer, context.ViewBagData, this);
+				await _engineHandler.RenderIncludedTemplateAsync(
+					template,
+					model,
+					context.Writer,
+					context.ViewBagData,
+					this,
+					cancellationToken).ConfigureAwait(false);
 			};
 
 			//_pageActivator.Activate(page, context);
 
-			await page.ExecuteAsync().ConfigureAwait(false);
+			await page.ExecuteAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
 		}
 
 		private Task RenderViewStartsAsync(PageContext context)
@@ -154,7 +168,8 @@ namespace RazorLight
 		private async Task RenderLayoutAsync(
 			ITemplatePage page,
 			PageContext context,
-			ViewBufferTextWriter bodyWriter)
+			ViewBufferTextWriter bodyWriter,
+			CancellationToken cancellationToken)
 		{
 			// A layout page can specify another layout page. We'll need to continue
 			// looking for layout pages until they're no longer specified.
@@ -166,6 +181,7 @@ namespace RazorLight
 			// (including the layout page we just rendered).
 			while (!string.IsNullOrEmpty(previousPage.Layout))
 			{
+				cancellationToken.ThrowIfCancellationRequested();
 				if (!bodyWriter.IsBuffering)
 				{
 					// Once a call to RazorPage.FlushAsync is made, we can no longer render Layout pages - content has
@@ -176,7 +192,7 @@ namespace RazorLight
 					throw new InvalidOperationException("Layout can not be rendered");
 				}
 
-				ITemplatePage layoutPage = await _engineHandler.CompileTemplateAsync(previousPage.Layout).ConfigureAwait(false);
+				ITemplatePage layoutPage = await _engineHandler.CompileTemplateAsync(previousPage.Layout, cancellationToken).ConfigureAwait(false);
 				layoutPage.SetModel(context.Model);
 
 				if (renderedLayouts.Count > 0 &&
@@ -192,7 +208,7 @@ namespace RazorLight
 				previousPage.IsLayoutBeingRendered = true;
 				layoutPage.PreviousSectionWriters = previousPage.SectionWriters;
 				layoutPage.BodyContent = bodyWriter.Buffer;
-				bodyWriter = await RenderPageAsync(layoutPage, context, invokeViewStarts: false).ConfigureAwait(false);
+				bodyWriter = await RenderPageAsync(layoutPage, context, invokeViewStarts: false, cancellationToken).ConfigureAwait(false);
 
 				renderedLayouts.Add(layoutPage);
 				previousPage = layoutPage;
@@ -207,6 +223,7 @@ namespace RazorLight
 
 			if (bodyWriter.IsBuffering)
 			{
+				cancellationToken.ThrowIfCancellationRequested();
 				// If IsBuffering - then we've got a bunch of content in the view buffer. How to best deal with it
 				// really depends on whether or not we're writing directly to the output or if we're writing to
 				// another buffer.
@@ -217,7 +234,7 @@ namespace RazorLight
 					// Smooth synchronous writes of final template-content values.
 					using (var writer = _bufferScope.CreateWriter(context.Writer))
 					{
-						await bodyWriter.Buffer.WriteToAsync(writer).ConfigureAwait(false);
+						await bodyWriter.Buffer.WriteToAsync(writer).WaitAsync(cancellationToken).ConfigureAwait(false);
 					}
 				}
 				else

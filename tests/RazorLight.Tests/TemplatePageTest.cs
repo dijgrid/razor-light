@@ -12,6 +12,8 @@ using RazorLight.Internal.Buffering;
 using RazorLight.Tests.Utils;
 using Xunit;
 
+using System.Threading;
+
 namespace RazorLight.Tests
 {
 	public class TemplatePageTest
@@ -413,7 +415,7 @@ namespace RazorLight.Tests
 			await page.ExecuteAsync();
 
 			// Assert
-			writer.Verify(v => v.FlushAsync(), Times.Once());
+			writer.Verify(v => v.FlushAsync(CancellationToken.None), Times.Once());
 		}
 
 		[Fact]

@@ -7,13 +7,17 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace RazorLight.Precompile
 {
 	internal class RenderCmd
 	{
-		public int Run(string[] args)
+		public int Run(string[] args) => Run(args, CancellationToken.None);
+
+		public int Run(string[] args, CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			var options = CommandLineArguments.Parse(
 				args,
 				new[] { "-p", "--path", "-m", "--model", "-k", "--key", "-q", "--jsonQuery", "-l", "--log" },
@@ -62,7 +66,7 @@ namespace RazorLight.Precompile
 			}
 
 			var templatePage = pageFactory();
-			Program.ConsoleOut.WriteLine(engine.RenderTemplateAsync(templatePage, model).GetAwaiter().GetResult());
+			Program.ConsoleOut.WriteLine(engine.RenderTemplateAsync(templatePage, model, cancellationToken).GetAwaiter().GetResult());
 			return 0;
 		}
 

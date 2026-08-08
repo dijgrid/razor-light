@@ -8,6 +8,8 @@ using RazorLight.Internal;
 using RazorLight.Internal.Buffering;
 using RazorLight.Text;
 
+using System.Threading;
+
 namespace RazorLight
 {
 	public abstract class TemplatePageBase : ITemplatePage
@@ -19,6 +21,9 @@ namespace RazorLight
 
 		/// <inheritdoc />
 		public virtual PageContext? PageContext { get; set; }
+
+		/// <inheritdoc />
+		public CancellationToken CancellationToken => PageContext?.CancellationToken ?? CancellationToken.None;
 
 		/// <inheritdoc />
 		public ITemplateContent? BodyContent { get; set; }
@@ -84,10 +89,14 @@ namespace RazorLight
 		/// on the output writer, writing out any buffered content.
 		/// </summary>
 		/// <returns>A task that represents the asynchronous flush operation and returns an empty content token.</returns>
-		/// <remarks>The value returned is a token that allows <see cref="FlushAsync"/> to be used directly
+		/// <remarks>The value returned is a token that allows <see cref="FlushAsync()"/> to be used directly
 		/// in a template section. It does not represent rendered content.</remarks>
-		public virtual async Task<TemplateContent> FlushAsync()
+		public virtual Task<TemplateContent> FlushAsync() => FlushAsync(CancellationToken.None);
+
+		/// <summary>Flushes buffered output while observing cancellation.</summary>
+		public virtual async Task<TemplateContent> FlushAsync(CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			// Calls to Flush are allowed if the page does not specify a Layout or if it is executing a section in the
 			// Layout.
 			if (!IsLayoutBeingRendered && !string.IsNullOrEmpty(Layout))
@@ -95,7 +104,7 @@ namespace RazorLight
 				throw new InvalidOperationException();
 			}
 
-			await Output.FlushAsync();
+			await Output.FlushAsync(cancellationToken).ConfigureAwait(false);
 			return TemplateContent.Empty;
 		}
 

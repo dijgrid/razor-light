@@ -357,3 +357,40 @@ virtual RazorLight.Razor.RazorLightProject.GetSourceItemAsync(string! sourceKey)
 RazorLight.Caching.FileSystemCachingProvider.TryGetTemplate(string! key, out System.Func<RazorLight.ITemplatePage!>? pageFactory) -> bool
 RazorLight.Caching.ICachingProvider.TryGetTemplate(string! key, out System.Func<RazorLight.ITemplatePage!>? pageFactory) -> bool
 RazorLight.Caching.MemoryCachingProvider.TryGetTemplate(string! key, out System.Func<RazorLight.ITemplatePage!>? pageFactory) -> bool
+RazorLight.IPageContext.CancellationToken.get -> System.Threading.CancellationToken
+RazorLight.IRazorLightEngine.CompileRenderAsync<T>(string! key, T model, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
+RazorLight.PageContext.CancellationToken.get -> System.Threading.CancellationToken
+RazorLight.PageContext.CancellationToken.set -> void
+RazorLight.IRazorLightEngine.CompileRenderAsync<T>(string! key, T model, System.Dynamic.ExpandoObject? viewBag, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
+RazorLight.ITemplatePage.CancellationToken.get -> System.Threading.CancellationToken
+RazorLight.IRazorLightEngine.CompileRenderAsync(string! key, object? model, System.Type! modelType, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
+RazorLight.IRazorLightEngine.CompileRenderAsync(string! key, object? model, System.Type! modelType, System.Dynamic.ExpandoObject? viewBag, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
+RazorLight.IRazorLightEngine.CompileRenderStringAsync<T>(string! key, string! content, T model, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
+RazorLight.IRazorLightEngine.CompileRenderStringAsync<T>(string! key, string! content, T model, System.Dynamic.ExpandoObject? viewBag, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
+RazorLight.IRazorLightEngine.CompileRenderStringAsync(string! key, string! content, object? model, System.Type! modelType, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
+RazorLight.IRazorLightEngine.CompileRenderStringAsync(string! key, string! content, object? model, System.Type! modelType, System.Dynamic.ExpandoObject? viewBag, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
+RazorLight.IRazorLightEngine.CompileTemplateAsync(string! key, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<RazorLight.ITemplatePage!>!
+RazorLight.IRazorLightEngine.RenderTemplateAsync<T>(RazorLight.ITemplatePage! templatePage, T model, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
+RazorLight.IRazorLightEngine.RenderTemplateAsync<T>(RazorLight.ITemplatePage! templatePage, T model, System.IO.TextWriter! textWriter, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+RazorLight.IRazorLightEngine.RenderTemplateAsync<T>(RazorLight.ITemplatePage! templatePage, T model, System.Dynamic.ExpandoObject? viewBag, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
+RazorLight.IRazorLightEngine.RenderTemplateAsync<T>(RazorLight.ITemplatePage! templatePage, T model, System.IO.TextWriter! textWriter, System.Dynamic.ExpandoObject? viewBag, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+virtual RazorLight.Razor.RazorLightProject.GetItemAsync(string! templateKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem!>!
+virtual RazorLight.Razor.RazorLightProject.GetSourceItemAsync(string! sourceKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem!>!
+RazorLight.TemplatePage.IncludeAsync(string! key, object? model, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+override RazorLight.Razor.EmbeddedRazorProject.GetSourceItemAsync(string! sourceKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem!>!
+virtual RazorLight.Razor.RazorLightProject.GetImportsAsync(string! templateKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<RazorLight.Razor.RazorLightProjectItem!>!>!
+virtual RazorLight.Razor.RazorLightProject.GetKnownKeysAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string!>!>!
+override RazorLight.Razor.EmbeddedRazorProject.GetImportsAsync(string! templateKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<RazorLight.Razor.RazorLightProjectItem!>!>!
+virtual RazorLight.TemplatePageBase.FlushAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<RazorLight.Text.TemplateContent!>!
+override RazorLight.Razor.FileSystemRazorProject.GetItemAsync(string! templateKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem!>!
+override RazorLight.Razor.NoRazorProject.GetItemAsync(string! templateKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem!>!
+override RazorLight.Razor.NoRazorProject.GetImportsAsync(string! templateKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<RazorLight.Razor.RazorLightProjectItem!>!>!
+override RazorLight.Razor.NoRazorProject.GetKnownKeysAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string!>!>!
+override RazorLight.Razor.EmbeddedRazorProject.GetKnownKeysAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string!>!>!
+override RazorLight.Razor.FileSystemRazorProject.GetSourceItemAsync(string! sourceKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem!>!
+RazorLight.TemplatePage.RenderSectionAsync(string! name, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<RazorLight.Text.TemplateContent!>!
+override RazorLight.Razor.FileSystemRazorProject.GetImportsAsync(string! templateKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<RazorLight.Razor.RazorLightProjectItem!>!>!
+RazorLight.TemplatePage.RenderSectionAsync(string! name, bool required, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<RazorLight.Text.TemplateContent?>!
+override RazorLight.Razor.EmbeddedRazorProject.GetItemAsync(string! templateKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<RazorLight.Razor.RazorLightProjectItem!>!
+RazorLight.TemplatePageBase.CancellationToken.get -> System.Threading.CancellationToken
+override RazorLight.Razor.FileSystemRazorProject.GetKnownKeysAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string!>!>!

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RazorLight.Razor
@@ -33,7 +34,11 @@ namespace RazorLight.Razor
 		public string Extension { get; set; } = ".cshtml";
 
 		public override Task<RazorLightProjectItem> GetItemAsync(string templateKey)
+			=> GetItemAsync(templateKey, CancellationToken.None);
+
+		public override Task<RazorLightProjectItem> GetItemAsync(string templateKey, CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (string.IsNullOrEmpty(templateKey))
 			{
 				throw new ArgumentNullException(nameof(templateKey));
@@ -50,7 +55,11 @@ namespace RazorLight.Razor
 		}
 
 		public override Task<RazorLightProjectItem> GetSourceItemAsync(string sourceKey)
+			=> GetSourceItemAsync(sourceKey, CancellationToken.None);
+
+		public override Task<RazorLightProjectItem> GetSourceItemAsync(string sourceKey, CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (string.IsNullOrWhiteSpace(sourceKey))
 			{
 				throw new ArgumentNullException(nameof(sourceKey));
@@ -62,12 +71,20 @@ namespace RazorLight.Razor
 		}
 
 		public override Task<IEnumerable<RazorLightProjectItem>> GetImportsAsync(string templateKey)
+			=> GetImportsAsync(templateKey, CancellationToken.None);
+
+		public override Task<IEnumerable<RazorLightProjectItem>> GetImportsAsync(string templateKey, CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			return Task.FromResult(Enumerable.Empty<RazorLightProjectItem>());
 		}
 
 		public override Task<IEnumerable<string>> GetKnownKeysAsync()
+			=> GetKnownKeysAsync(CancellationToken.None);
+
+		public override Task<IEnumerable<string>> GetKnownKeysAsync(CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			var ignoredPrefix = string.IsNullOrEmpty(RootNamespace) ? Assembly.GetName().FullName ?? string.Empty : RootNamespace;
 			if (!ignoredPrefix.EndsWith(".")) ignoredPrefix += ".";
 

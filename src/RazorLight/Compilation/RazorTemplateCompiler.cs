@@ -80,16 +80,26 @@ namespace RazorLight.Compilation
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<CompiledTemplateDescriptor> CompileAsync(string templateKey)
+			=> CompileAsync(templateKey, CancellationToken.None);
+
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		public Task<CompiledTemplateDescriptor> CompileAsync(string templateKey, CancellationToken cancellationToken)
 		{
 			return CompileAsync(TemplateCompilationRequest.ForProject(
 				templateKey,
 				modelType: null,
-				_razorLightOptions.Namespaces));
+				_razorLightOptions.Namespaces), cancellationToken);
 		}
 
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<CompiledTemplateDescriptor> CompileAsync(string templateKey, Type modelType)
+			=> CompileAsync(templateKey, modelType, CancellationToken.None);
+
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		public Task<CompiledTemplateDescriptor> CompileAsync(string templateKey, Type modelType, CancellationToken cancellationToken)
 		{
 			if (modelType == null)
 			{
@@ -99,7 +109,7 @@ namespace RazorLight.Compilation
 			return CompileAsync(TemplateCompilationRequest.ForProject(
 				templateKey,
 				modelType,
-				_razorLightOptions.Namespaces));
+				_razorLightOptions.Namespaces), cancellationToken);
 		}
 
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
@@ -107,7 +117,16 @@ namespace RazorLight.Compilation
 		public Task<CompiledTemplateDescriptor> CompileAsync(
 			string templateKey,
 			string templateContent,
-			Type? modelType = null)
+			Type? modelType = null) =>
+			CompileAsync(templateKey, templateContent, modelType, CancellationToken.None);
+
+		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
+		public Task<CompiledTemplateDescriptor> CompileAsync(
+			string templateKey,
+			string templateContent,
+			Type? modelType,
+			CancellationToken cancellationToken)
 		{
 			if (templateContent == null)
 			{
@@ -118,12 +137,23 @@ namespace RazorLight.Compilation
 				templateKey,
 				templateContent,
 				modelType,
-				_razorLightOptions.Namespaces));
+				_razorLightOptions.Namespaces), cancellationToken);
 		}
 
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
-		private Task<CompiledTemplateDescriptor> CompileAsync(TemplateCompilationRequest request)
+		private async Task<CompiledTemplateDescriptor> CompileAsync(
+			TemplateCompilationRequest request,
+			CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			Task<CompiledTemplateDescriptor> sharedCompilation = GetOrCreateCompilationAsync(request, cancellationToken);
+			return await sharedCompilation.WaitAsync(cancellationToken).ConfigureAwait(false);
+		}
+
+		private Task<CompiledTemplateDescriptor> GetOrCreateCompilationAsync(
+			TemplateCompilationRequest request,
+			CancellationToken cancellationToken)
 		{
 			if (request.TemplateKey == null)
 			{
@@ -149,7 +179,7 @@ namespace RazorLight.Compilation
 			}
 
 			// Entry does not exist. Attempt to create one.
-			return OnCacheMissAsync(request);
+			return OnCacheMissAsync(request, cancellationToken);
 		}
 
 		/// <summary>
@@ -157,7 +187,9 @@ namespace RazorLight.Compilation
 		/// </summary>
 		internal Type ProjectType => _razorProject.GetType();
 
-		private async Task<CompiledTemplateDescriptor> OnCacheMissAsync(TemplateCompilationRequest request)
+		private async Task<CompiledTemplateDescriptor> OnCacheMissAsync(
+			TemplateCompilationRequest request,
+			CancellationToken cancellationToken)
 		{
 			ViewCompilerWorkItem item;
 			TaskCompletionSource<CompiledTemplateDescriptor> taskSource;
@@ -171,13 +203,13 @@ namespace RazorLight.Compilation
 			{
 				// Source generation and project I/O are intentionally outside the cache lock. A race can
 				// perform this work more than once, but only one compiled result is published.
-				runtimeItem = await CreateRuntimeCompilationWorkItem(request);
+				runtimeItem = await CreateRuntimeCompilationWorkItem(request, cancellationToken).ConfigureAwait(false);
 			}
 
 			// Safe races cannot be allowed when compiling Razor pages. To ensure only one compilation request succeeds
 			// per file, we'll lock the creation of a cache entry. Creating the cache entry should be very quick. The
 			// actual work for compiling files happens outside the critical section.
-			await _cacheLock.WaitAsync();
+			await _cacheLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 			try
 			{
 				// Double-checked locking to handle a possible race.
@@ -272,7 +304,9 @@ namespace RazorLight.Compilation
 			return await taskSource.Task;
 		}
 
-		private async Task<ViewCompilerWorkItem> CreateRuntimeCompilationWorkItem(TemplateCompilationRequest request)
+		private async Task<ViewCompilerWorkItem> CreateRuntimeCompilationWorkItem(
+			TemplateCompilationRequest request,
+			CancellationToken cancellationToken)
 		{
 			RazorLightProjectItem projectItem;
 
@@ -287,18 +321,18 @@ namespace RazorLight.Compilation
 			else
 			{
 				string normalizedKey = GetNormalizedKey(request.TemplateKey);
-				projectItem = await _razorProject.GetItemAsync(normalizedKey);
+				projectItem = await _razorProject.GetItemAsync(normalizedKey, cancellationToken).ConfigureAwait(false);
 			}
 
 			if (!projectItem.Exists)
 			{
-				var templateNotFoundException = await CreateTemplateNotFoundException(projectItem);
+				var templateNotFoundException = await CreateTemplateNotFoundException(projectItem, cancellationToken).ConfigureAwait(false);
 				throw templateNotFoundException;
 			}
 
 			IGeneratedRazorTemplate generatedTemplate = request.ModelType == null
-				? await _razorSourceGenerator.GenerateCodeAsync(projectItem)
-				: await _razorSourceGenerator.GenerateCodeAsync(projectItem, request.ModelType);
+				? await _razorSourceGenerator.GenerateCodeAsync(projectItem, cancellationToken).ConfigureAwait(false)
+				: await _razorSourceGenerator.GenerateCodeAsync(projectItem, request.ModelType, cancellationToken).ConfigureAwait(false);
 			var expirationTokens = new List<IChangeToken>();
 			if (projectItem.ExpirationToken != null) expirationTokens.Add(projectItem.ExpirationToken);
 			if (generatedTemplate is IGeneratedCSharpSourceContainer sourceContainer)
@@ -471,7 +505,12 @@ namespace RazorLight.Compilation
 			return normalizedPath;
 		}
 
-		internal async Task<TemplateNotFoundException> CreateTemplateNotFoundException(RazorLightProjectItem projectItem)
+		internal Task<TemplateNotFoundException> CreateTemplateNotFoundException(RazorLightProjectItem projectItem) =>
+			CreateTemplateNotFoundException(projectItem, CancellationToken.None);
+
+		internal async Task<TemplateNotFoundException> CreateTemplateNotFoundException(
+			RazorLightProjectItem projectItem,
+			CancellationToken cancellationToken)
 		{
 			var propNames = $"\"{nameof(TemplateNotFoundException.KnownDynamicTemplateKeys)}\" and \"{nameof(TemplateNotFoundException.KnownProjectTemplateKeys)}\"";
 
@@ -483,7 +522,7 @@ namespace RazorLight.Compilation
 
 				var dynamicKeys = _razorLightOptions.DynamicTemplates.Keys.ToList();
 
-				var projectKeys = await _razorProject.GetKnownKeysAsync();
+				var projectKeys = await _razorProject.GetKnownKeysAsync(cancellationToken).ConfigureAwait(false);
 				projectKeys = projectKeys?.ToList() ?? Enumerable.Empty<string>();
 
 				return new TemplateNotFoundException(msg, dynamicKeys, projectKeys);

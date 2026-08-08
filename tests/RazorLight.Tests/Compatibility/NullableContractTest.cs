@@ -18,7 +18,11 @@ namespace RazorLight.Tests.Compatibility
 		public void Rendering_contract_marks_only_optional_inputs_nullable()
 		{
 			var method = typeof(IRazorLightEngine).GetMethods()
-				.Single(candidate => candidate.Name == nameof(IRazorLightEngine.CompileRenderAsync) && candidate.IsGenericMethod);
+				.Single(candidate =>
+					candidate.Name == nameof(IRazorLightEngine.CompileRenderAsync) &&
+					candidate.IsGenericMethod &&
+					candidate.GetParameters().Length == 3 &&
+					candidate.GetParameters()[2].ParameterType == typeof(ExpandoObject));
 			var parameters = method.GetParameters();
 
 			Assert.Equal(NullabilityState.NotNull, NullabilityContext.Create(parameters[0]).WriteState);

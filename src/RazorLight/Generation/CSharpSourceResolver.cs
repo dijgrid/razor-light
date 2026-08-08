@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RazorLight.Generation
@@ -23,19 +24,20 @@ namespace RazorLight.Generation
 
 		public async Task<IReadOnlyList<CSharpSourceDocument>> ResolveAsync(
 			RazorLightProjectItem template,
-			IEnumerable<string> directivePaths)
+			IEnumerable<string> directivePaths,
+			CancellationToken cancellationToken)
 		{
 			var result = new List<CSharpSourceDocument>();
 			var seen = new HashSet<string>(StringComparer.Ordinal);
 
 			foreach (string sourceKey in options.CSharpSourceKeys)
 			{
-				await AddAsync(sourceKey, template, isRelative: false, seen, result).ConfigureAwait(false);
+				await AddAsync(sourceKey, template, isRelative: false, seen, result, cancellationToken).ConfigureAwait(false);
 			}
 
 			foreach (string sourceKey in directivePaths)
 			{
-				await AddAsync(sourceKey, template, isRelative: true, seen, result).ConfigureAwait(false);
+				await AddAsync(sourceKey, template, isRelative: true, seen, result, cancellationToken).ConfigureAwait(false);
 			}
 
 			return result;
@@ -46,8 +48,10 @@ namespace RazorLight.Generation
 			RazorLightProjectItem template,
 			bool isRelative,
 			ISet<string> seen,
-			ICollection<CSharpSourceDocument> result)
+			ICollection<CSharpSourceDocument> result,
+			CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			string normalizedKey = Normalize(sourceKey, isRelative ? template.Key : null);
 			if (!seen.Add(normalizedKey)) return;
 
@@ -63,7 +67,7 @@ namespace RazorLight.Generation
 				throw CreateResolutionException(normalizedKey, "no RazorLight project is configured");
 			}
 
-			RazorLightProjectItem item = await project.GetSourceItemAsync(normalizedKey).ConfigureAwait(false);
+			RazorLightProjectItem item = await project.GetSourceItemAsync(normalizedKey, cancellationToken).ConfigureAwait(false);
 			if (!item.Exists)
 			{
 				throw CreateResolutionException(normalizedKey, "the configured project did not contain it");
@@ -71,7 +75,10 @@ namespace RazorLight.Generation
 
 			using Stream stream = item.Read();
 			using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
-			result.Add(new CSharpSourceDocument(normalizedKey, await reader.ReadToEndAsync().ConfigureAwait(false), item.ExpirationToken));
+			result.Add(new CSharpSourceDocument(
+				normalizedKey,
+				await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false),
+				item.ExpirationToken));
 		}
 
 		private InvalidOperationException CreateResolutionException(string sourceKey, string reason)

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using RazorLight.Compilation;
 using RazorLight.Instrumentation;
+using System.Threading;
 
 namespace RazorLight.Generation
 {
@@ -55,8 +56,12 @@ namespace RazorLight.Generation
 		/// </summary>
 		/// <param name="key">The template path.</param>
 		/// <returns>The <see cref="IGeneratedRazorTemplate"/>.</returns>
-		public async Task<IGeneratedRazorTemplate> GenerateCodeAsync(string key)
+		public Task<IGeneratedRazorTemplate> GenerateCodeAsync(string key) =>
+			GenerateCodeAsync(key, CancellationToken.None);
+
+		public async Task<IGeneratedRazorTemplate> GenerateCodeAsync(string key, CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (string.IsNullOrEmpty(key))
 			{
 				throw new ArgumentException();
@@ -71,8 +76,8 @@ namespace RazorLight.Generation
 				throw new InvalidOperationException(_message);
 			}
 
-			RazorLightProjectItem projectItem = await Project.GetItemAsync(key).ConfigureAwait(false);
-			return await GenerateCodeAsync(projectItem);
+			RazorLightProjectItem projectItem = await Project.GetItemAsync(key, cancellationToken).ConfigureAwait(false);
+			return await GenerateCodeAsync(projectItem, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -80,15 +85,25 @@ namespace RazorLight.Generation
 		/// </summary>
 		/// <param name="projectItem">The <see cref="RazorLightProjectItem"/>.</param>
 		/// <returns>The <see cref="IGeneratedRazorTemplate"/>.</returns>
-		public async Task<IGeneratedRazorTemplate> GenerateCodeAsync(RazorLightProjectItem projectItem)
-		{
-			return await GenerateCodeAsync(projectItem, modelType: null);
-		}
+		public Task<IGeneratedRazorTemplate> GenerateCodeAsync(RazorLightProjectItem projectItem) =>
+			GenerateCodeAsync(projectItem, CancellationToken.None);
+
+		public Task<IGeneratedRazorTemplate> GenerateCodeAsync(
+			RazorLightProjectItem projectItem,
+			CancellationToken cancellationToken) =>
+			GenerateCodeAsync(projectItem, modelType: null, cancellationToken);
+
+		internal Task<IGeneratedRazorTemplate> GenerateCodeAsync(
+			RazorLightProjectItem projectItem,
+			Type? modelType) =>
+			GenerateCodeAsync(projectItem, modelType, CancellationToken.None);
 
 		internal async Task<IGeneratedRazorTemplate> GenerateCodeAsync(
 			RazorLightProjectItem projectItem,
-			Type? modelType)
+			Type? modelType,
+			CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (projectItem == null)
 			{
 				throw new ArgumentNullException(nameof(projectItem));
@@ -99,8 +114,10 @@ namespace RazorLight.Generation
 				throw CreateMissingProjectItemException(projectItem);
 			}
 
-			RazorCodeDocument codeDocument = await CreateCodeDocumentAsync(projectItem, modelType);
+			RazorCodeDocument codeDocument = await CreateCodeDocumentAsync(projectItem, modelType, cancellationToken).ConfigureAwait(false);
+			cancellationToken.ThrowIfCancellationRequested();
 			ProjectEngine.Process(codeDocument);
+			cancellationToken.ThrowIfCancellationRequested();
 
 			RazorCSharpDocument document = codeDocument.GetCSharpDocument();
 			if (document.Diagnostics.Count > 0)
@@ -123,7 +140,7 @@ namespace RazorLight.Generation
 
 			IReadOnlyList<string> sourcePaths = CompileSourceDirective.GetSourcePaths(codeDocument);
 			var resolver = new CSharpSourceResolver(Project, options, includeDetailedDiagnostics);
-			IReadOnlyList<CSharpSourceDocument> sources = await resolver.ResolveAsync(projectItem, sourcePaths).ConfigureAwait(false);
+			IReadOnlyList<CSharpSourceDocument> sources = await resolver.ResolveAsync(projectItem, sourcePaths, cancellationToken).ConfigureAwait(false);
 
 			return new GeneratedRazorTemplate(projectItem, document, sources);
 		}
@@ -133,15 +150,20 @@ namespace RazorLight.Generation
 		/// </summary>
 		/// <param name="projectItem">The <see cref="RazorLightProjectItem"/>.</param>
 		/// <returns>The created <see cref="RazorCodeDocument"/>.</returns>
-		public virtual async Task<RazorCodeDocument> CreateCodeDocumentAsync(RazorLightProjectItem projectItem)
-		{
-			return await CreateCodeDocumentAsync(projectItem, modelType: null);
-		}
+		public virtual Task<RazorCodeDocument> CreateCodeDocumentAsync(RazorLightProjectItem projectItem) =>
+			CreateCodeDocumentAsync(projectItem, modelType: null, CancellationToken.None);
+
+		internal Task<RazorCodeDocument> CreateCodeDocumentAsync(
+			RazorLightProjectItem projectItem,
+			Type? modelType) =>
+			CreateCodeDocumentAsync(projectItem, modelType, CancellationToken.None);
 
 		internal async Task<RazorCodeDocument> CreateCodeDocumentAsync(
 			RazorLightProjectItem projectItem,
-			Type? modelType)
+			Type? modelType,
+			CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (projectItem == null)
 			{
 				throw new ArgumentNullException(nameof(projectItem));
@@ -155,7 +177,7 @@ namespace RazorLight.Generation
 			using (var stream = projectItem.Read())
 			{
 				RazorSourceDocument source = RazorSourceDocument.ReadFrom(stream, projectItem.Key);
-				var imports = (await GetImportsAsync(projectItem)).ToList();
+				var imports = (await GetImportsAsync(projectItem, cancellationToken).ConfigureAwait(false)).ToList();
 				RejectTagHelperDirectives(source);
 				foreach (var import in imports)
 				{
@@ -210,8 +232,14 @@ namespace RazorLight.Generation
 		/// </summary>
 		/// <param name="projectItem">The <see cref="RazorLightProjectItem"/>.</param>
 		/// <returns>The sequence of applicable <see cref="RazorSourceDocument"/>.</returns>
-		public virtual async Task<IEnumerable<RazorSourceDocument>> GetImportsAsync(RazorLightProjectItem projectItem)
+		public virtual Task<IEnumerable<RazorSourceDocument>> GetImportsAsync(RazorLightProjectItem projectItem) =>
+			GetImportsAsync(projectItem, CancellationToken.None);
+
+		public virtual async Task<IEnumerable<RazorSourceDocument>> GetImportsAsync(
+			RazorLightProjectItem projectItem,
+			CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (projectItem == null)
 			{
 				throw new ArgumentNullException(nameof(projectItem));
@@ -221,9 +249,10 @@ namespace RazorLight.Generation
 
 			if (Project != null && projectItem is not TextSourceRazorProjectItem)
 			{
-				IEnumerable<RazorLightProjectItem> importProjectItems = await Project.GetImportsAsync(projectItem.Key);
+				IEnumerable<RazorLightProjectItem> importProjectItems = await Project.GetImportsAsync(projectItem.Key, cancellationToken).ConfigureAwait(false);
 				foreach (var importItem in importProjectItems)
 				{
+					cancellationToken.ThrowIfCancellationRequested();
 					if (importItem.Exists)
 					{
 						using (var stream = importItem.Read())

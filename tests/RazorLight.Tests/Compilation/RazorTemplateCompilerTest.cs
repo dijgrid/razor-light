@@ -2,17 +2,70 @@
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.Extensions.Caching.Memory;
 using RazorLight.Compilation;
 using RazorLight.Compatibility;
 using RazorLight.Generation;
 using RazorLight.Razor;
+using RazorLight.Tests.Razor;
 using Xunit;
 
 namespace RazorLight.Tests.Compilation
 {
 	public class RazorTemplateCompilerTest
 	{
+		[Fact]
+		public async Task Cancelling_One_Cache_Waiter_Does_Not_Cancel_Shared_Compilation()
+		{
+			var compiler = TestRazorTemplateCompiler.Create();
+			var sharedSource = new TaskCompletionSource<CompiledTemplateDescriptor>(TaskCreationOptions.RunContinuationsAsynchronously);
+			_ = compiler.Cache.Set("shared", sharedSource.Task);
+			using var cancellationSource = new CancellationTokenSource();
+
+			Task<CompiledTemplateDescriptor> cancelledWaiter = compiler.CompileAsync("shared", cancellationSource.Token);
+			Task<CompiledTemplateDescriptor> survivingWaiter = compiler.CompileAsync("shared");
+			cancellationSource.Cancel();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelledWaiter);
+			Assert.False(survivingWaiter.IsCompleted);
+
+			var descriptor = new CompiledTemplateDescriptor { TemplateKey = "shared" };
+			sharedSource.SetResult(descriptor);
+			Assert.Same(descriptor, await survivingWaiter);
+		}
+
+		[Fact]
+		public async Task Cancellation_While_Waiting_For_Compile_Lock_Allows_Retry()
+		{
+			var project = new TestRazorProject
+			{
+				Value = new TextSourceRazorProjectItem("locked", "completed"),
+			};
+			var compiler = TestRazorTemplateCompiler.Create(project: project);
+			var cacheLock = (SemaphoreSlim)typeof(RazorTemplateCompiler)
+				.GetField("_cacheLock", BindingFlags.Instance | BindingFlags.NonPublic)!
+				.GetValue(compiler)!;
+			await cacheLock.WaitAsync();
+			using var cancellationSource = new CancellationTokenSource();
+
+			try
+			{
+				Task<CompiledTemplateDescriptor> cancelled = compiler.CompileAsync("locked", cancellationSource.Token);
+				await Task.Delay(200);
+				Assert.False(cancelled.IsCompleted);
+				cancellationSource.Cancel();
+
+				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelled);
+			}
+			finally
+			{
+				cacheLock.Release();
+			}
+
+			Assert.Equal("locked", (await compiler.CompileAsync("locked")).TemplateKey);
+		}
+
 		[Fact]
 		public void Ensure_Throws_OnNull_Constructor_Dependencies()
 		{

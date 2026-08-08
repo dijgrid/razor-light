@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using RazorLight.Internal.Buffering;
@@ -64,7 +65,7 @@ namespace RazorLight.Tests
 			});
 
 			var engineMock = new Mock<IEngineHandler>();
-			engineMock.Setup(t => t.CompileTemplateAsync(It.IsAny<string>()))
+			engineMock.Setup(t => t.CompileTemplateAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
 				.Returns(new Func<Task<ITemplatePage>>(() => { return Task.FromResult((ITemplatePage)layout); }));
 
 			engineMock.SetupGet(t => t.Options).Returns(new RazorLightOptions());

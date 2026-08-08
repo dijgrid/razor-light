@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace RazorLight.Precompile
 {
@@ -10,19 +11,37 @@ namespace RazorLight.Precompile
 
 		public static int Main(string[] args)
 		{
+			using var cancellationSource = new CancellationTokenSource();
+			ConsoleCancelEventHandler cancelHandler = (_, eventArgs) =>
+			{
+				eventArgs.Cancel = true;
+				cancellationSource.Cancel();
+			};
+			Console.CancelKeyPress += cancelHandler;
 			try
 			{
-				return DoRun(args);
+				return DoRun(args, cancellationSource.Token);
+			}
+			catch (OperationCanceledException) when (cancellationSource.IsCancellationRequested)
+			{
+				return 130;
 			}
 			catch (Exception exc)
 			{
 				Console.Error.WriteLine(exc);
 				return 1;
 			}
+			finally
+			{
+				Console.CancelKeyPress -= cancelHandler;
+			}
 		}
 
-		public static int DoRun(string[] args)
+		public static int DoRun(string[] args) => DoRun(args, CancellationToken.None);
+
+		public static int DoRun(string[] args, CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (args == null || args.Length == 0)
 			{
 				WriteUsage();
@@ -33,9 +52,9 @@ namespace RazorLight.Precompile
 			switch (args[0].ToLowerInvariant())
 			{
 				case "precompile":
-					return new PrecompileCmd().Run(commandArgs);
+					return new PrecompileCmd().Run(commandArgs, cancellationToken);
 				case "render":
-					return new RenderCmd().Run(commandArgs);
+					return new RenderCmd().Run(commandArgs, cancellationToken);
 				case "help":
 				case "--help":
 				case "-h":

@@ -30,7 +30,7 @@ namespace RazorLight.Tests.Compatibility
 			}
 
 			Assert.True(
-				actualHash == "bd51f5341e4177f9c939c8bca864a14c13f5a6e875e6b5188c8fcd83be459c6c",
+				actualHash == "7354750a67767cb12d8f82180750d76f3178506831ae6d2779beec75d3d03cc8",
 				"Actual public API hash: " + actualHash);
 		}
 

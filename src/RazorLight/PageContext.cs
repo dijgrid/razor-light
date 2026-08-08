@@ -1,6 +1,8 @@
 ﻿using System.Dynamic;
 using System.IO;
 
+using System.Threading;
+
 namespace RazorLight
 {
 	public sealed class PageContext : IPageContext
@@ -23,6 +25,8 @@ namespace RazorLight
 		}
 
 		public TextWriter Writer { get; set; }
+
+		public CancellationToken CancellationToken { get; set; }
 
 		public dynamic ViewBag => _viewBag;
 		internal ExpandoObject ViewBagData => _viewBagData;

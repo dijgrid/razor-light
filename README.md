@@ -23,6 +23,7 @@ is optional; the core library treats output as text.
 - Compose templates with trusted ordinary C# helper files through `AddCSharpSource` or
   `@compileSource`.
 - Cache compiled templates and invalidate dependent templates when project sources change.
+- Cancel template lookup, compilation waits, rendering, layouts, and includes cooperatively.
 - Precompile templates with the `Dijgrid.RazorLight.Precompile` command-line tool.
 - Select plain-text output, optional HTML encoding, or a custom output encoder.
 - Control namespaces, metadata references, dependency discovery, diagnostics, and integration with
@@ -114,6 +115,7 @@ an in-process sandbox for untrusted authors; see the
 - [Framework support and migration](docs/framework-support.md)
 - [Template language compatibility](docs/template-language-compatibility.md)
 - [Caching and invalidation](docs/caching.md)
+- [Cancellation](docs/cancellation.md)
 - [Deployment compatibility](docs/deployment.md)
 - [Template security](docs/template-security.md)
 - [Public API design](docs/api-design-3.0.md)
