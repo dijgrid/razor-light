@@ -9,14 +9,15 @@ namespace RazorLight
 	public interface IRazorLightEngine
 	{
 		/// <summary>
-		/// The Options used to configure RazorLightEngine.
+		/// Returns whether the engine has a cached template for <paramref name="key"/>.
 		/// </summary>
-		/// <remarks>
-		/// Do not call this from your code.  If you need to, use the <see cref="Handler"/> property instead.
-		/// </remarks>
-		RazorLightOptions Options { get; }
+		bool IsTemplateCached(string key);
 
-		IEngineHandler Handler { get; }
+		/// <summary>
+		/// Invalidates all compiled variants and page factories associated with
+		/// <paramref name="key"/>. Invalidating an unknown key is safe.
+		/// </summary>
+		void InvalidateTemplate(string key);
 
 		/// <summary>
 		/// Compiles and renders a template with a given <paramref name="key"/>

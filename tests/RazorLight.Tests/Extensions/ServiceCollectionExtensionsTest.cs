@@ -283,9 +283,11 @@ namespace RazorLight.Tests.Extensions
 				_compileAction = compileAction;
 			}
 
-			public RazorLightOptions Options => new RazorLightOptions();
+			public bool IsTemplateCached(string key) => false;
 
-			public IEngineHandler Handler => throw new NotImplementedException();
+			public void InvalidateTemplate(string key)
+			{
+			}
 
 			public Task<string> CompileRenderAsync<T>(string key, T model, ExpandoObject? viewBag = null)
 			{

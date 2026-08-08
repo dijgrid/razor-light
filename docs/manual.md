@@ -64,17 +64,11 @@ Reusing a string-template key with different content, model type, or configured 
 the prior compiled variant. Keys should nevertheless remain stable and describe one logical
 template.
 
-To render an already cached template page directly:
+To compile a template once and render the returned page directly:
 
 ```csharp
-var cacheResult = engine.Handler.Cache?.RetrieveTemplate("welcome")
-    ?? throw new InvalidOperationException("Caching is not configured.");
-
-if (cacheResult.Success)
-{
-    var page = cacheResult.Template.TemplatePageFactory();
-    string rendered = await engine.RenderTemplateAsync(page, new { Name = "Ada" });
-}
+var page = await engine.CompileTemplateAsync("welcome");
+string rendered = await engine.RenderTemplateAsync(page, new { Name = "Ada" });
 ```
 
 ## Models, imports, and LINQ
@@ -296,7 +290,17 @@ The caches share an invalidation contract. Explicit removal or replacement, proj
 and failed-compilation retries cannot permanently retain a stale compiled template. Project-backed
 layouts, includes, and imported C# sources contribute dependency change tokens.
 
-Applications can remove a logical template through `engine.Handler.Cache`. Custom caching providers
+Applications can inspect and invalidate logical templates without accessing provider internals:
+
+```csharp
+if (engine.IsTemplateCached("Reports/Summary.cshtml"))
+{
+    engine.InvalidateTemplate("Reports/Summary.cshtml");
+}
+```
+
+Invalidation clears both compilation and page-factory entries. When caching is disabled,
+`IsTemplateCached` returns `false` and `InvalidateTemplate` is a safe no-op. Custom caching providers
 must support concurrent retrieval, insertion, replacement, and removal. See the complete
 [caching contract](caching.md) for cache identities, precompiled providers, and process-local
 limitations.

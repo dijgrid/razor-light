@@ -15,6 +15,9 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 
 ### Changed
 
+- `RazorLightEngineBuilder.Build()` now returns `IRazorLightEngine`. The engine exposes direct
+  `IsTemplateCached` and `InvalidateTemplate` operations instead of public handler/options graphs,
+  and builder configuration is copied when the engine is built.
 - Removed inherited obsolete/error-only factories and render overloads, the retired .NET Framework
   assembly-path workaround, and the redundant file-system engine factory before the 3.0 beta API
   becomes a compatibility commitment. Supported replacements use `RazorLightEngineBuilder`, generic

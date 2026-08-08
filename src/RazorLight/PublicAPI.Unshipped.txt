@@ -346,8 +346,8 @@ RazorLight.IRazorLightEngine.CompileRenderAsync<T>(string! key, T model, System.
 RazorLight.IRazorLightEngine.CompileRenderStringAsync(string! key, string! content, object? model, System.Type! modelType, System.Dynamic.ExpandoObject? viewBag = null) -> System.Threading.Tasks.Task<string!>!
 RazorLight.IRazorLightEngine.CompileRenderStringAsync<T>(string! key, string! content, T model, System.Dynamic.ExpandoObject? viewBag = null) -> System.Threading.Tasks.Task<string!>!
 RazorLight.IRazorLightEngine.CompileTemplateAsync(string! key) -> System.Threading.Tasks.Task<RazorLight.ITemplatePage!>!
-RazorLight.IRazorLightEngine.Handler.get -> RazorLight.IEngineHandler!
-RazorLight.IRazorLightEngine.Options.get -> RazorLight.RazorLightOptions!
+RazorLight.IRazorLightEngine.InvalidateTemplate(string! key) -> void
+RazorLight.IRazorLightEngine.IsTemplateCached(string! key) -> bool
 RazorLight.IRazorLightEngine.RenderTemplateAsync<T>(RazorLight.ITemplatePage! templatePage, T model, System.Dynamic.ExpandoObject? viewBag = null) -> System.Threading.Tasks.Task<string!>!
 RazorLight.IRazorLightEngine.RenderTemplateAsync<T>(RazorLight.ITemplatePage! templatePage, T model, System.IO.TextWriter! textWriter, System.Dynamic.ExpandoObject? viewBag = null) -> System.Threading.Tasks.Task!
 RazorLight.ITemplatePage
@@ -449,8 +449,8 @@ RazorLight.RazorLightEngine.CompileRenderAsync<T>(string! key, T model, System.D
 RazorLight.RazorLightEngine.CompileRenderStringAsync(string! key, string! content, object? model, System.Type! modelType, System.Dynamic.ExpandoObject? viewBag = null) -> System.Threading.Tasks.Task<string!>!
 RazorLight.RazorLightEngine.CompileRenderStringAsync<T>(string! key, string! content, T model, System.Dynamic.ExpandoObject? viewBag = null) -> System.Threading.Tasks.Task<string!>!
 RazorLight.RazorLightEngine.CompileTemplateAsync(string! key) -> System.Threading.Tasks.Task<RazorLight.ITemplatePage!>!
-RazorLight.RazorLightEngine.Handler.get -> RazorLight.IEngineHandler!
-RazorLight.RazorLightEngine.Options.get -> RazorLight.RazorLightOptions!
+RazorLight.RazorLightEngine.InvalidateTemplate(string! key) -> void
+RazorLight.RazorLightEngine.IsTemplateCached(string! key) -> bool
 RazorLight.RazorLightEngine.RazorLightEngine(RazorLight.IEngineHandler! handler) -> void
 RazorLight.RazorLightEngine.RenderTemplateAsync<T>(RazorLight.ITemplatePage! templatePage, T model, System.Dynamic.ExpandoObject? viewBag = null) -> System.Threading.Tasks.Task<string!>!
 RazorLight.RazorLightEngine.RenderTemplateAsync<T>(RazorLight.ITemplatePage! templatePage, T model, System.IO.TextWriter! textWriter, System.Dynamic.ExpandoObject? viewBag = null) -> System.Threading.Tasks.Task!
@@ -599,7 +599,7 @@ virtual RazorLight.RazorLightEngineBuilder.AddDefaultNamespaces(params string![]
 virtual RazorLight.RazorLightEngineBuilder.AddDynamicTemplates(System.Collections.Generic.IDictionary<string!, string!>! dynamicTemplates) -> RazorLight.RazorLightEngineBuilder!
 virtual RazorLight.RazorLightEngineBuilder.AddMetadataReferences(params Microsoft.CodeAnalysis.MetadataReference![]! metadata) -> RazorLight.RazorLightEngineBuilder!
 virtual RazorLight.RazorLightEngineBuilder.AddPrerenderCallbacks(params System.Action<RazorLight.ITemplatePage!>![]! callbacks) -> RazorLight.RazorLightEngineBuilder!
-virtual RazorLight.RazorLightEngineBuilder.Build() -> RazorLight.RazorLightEngine!
+virtual RazorLight.RazorLightEngineBuilder.Build() -> RazorLight.IRazorLightEngine!
 virtual RazorLight.RazorLightEngineBuilder.EnableDebugMode(bool enableDebugMode = true) -> RazorLight.RazorLightEngineBuilder!
 virtual RazorLight.RazorLightEngineBuilder.ExcludeAssemblies(params string![]! assemblyNames) -> RazorLight.RazorLightEngineBuilder!
 virtual RazorLight.RazorLightEngineBuilder.IncludeAssemblies(params string![]! assemblyNames) -> RazorLight.RazorLightEngineBuilder!

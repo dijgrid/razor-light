@@ -19,6 +19,51 @@ namespace RazorLight.Tests.Caching
 	public class CacheCoherenceTest
 	{
 		[Fact]
+		public async Task Cache_Facade_Inspects_And_Invalidates_String_Templates()
+		{
+			var engine = new RazorLightEngineBuilder()
+				.UseNoProject()
+				.UseMemoryCachingProvider()
+				.Build();
+
+			Assert.False(engine.IsTemplateCached("template"));
+			Assert.Equal("first", await engine.CompileRenderStringAsync("template", "first", new object()));
+			Assert.True(engine.IsTemplateCached("template"));
+
+			engine.InvalidateTemplate("template");
+
+			Assert.False(engine.IsTemplateCached("template"));
+			Assert.Equal("second", await engine.CompileRenderStringAsync("template", "second", new object()));
+		}
+
+		[Fact]
+		public void Cache_Facade_Is_Safe_When_Caching_Is_Disabled()
+		{
+			var engine = new RazorLightEngineBuilder().UseNoProject().Build();
+
+			Assert.False(engine.IsTemplateCached("template"));
+			engine.InvalidateTemplate("template");
+			Assert.False(engine.IsTemplateCached("template"));
+		}
+
+		[Fact]
+		public async Task Cache_Facade_Inspects_And_Invalidates_Embedded_Templates()
+		{
+			var engine = new RazorLightEngineBuilder()
+				.UseEmbeddedResourcesProject(
+					typeof(CacheCoherenceTest).Assembly,
+					"RazorLight.Tests.Assets.Embedded")
+				.UseMemoryCachingProvider()
+				.Build();
+
+			await engine.CompileRenderAsync("Empty.cshtml", new object());
+			Assert.True(engine.IsTemplateCached("Empty.cshtml"));
+
+			engine.InvalidateTemplate("Empty.cshtml");
+			Assert.False(engine.IsTemplateCached("Empty.cshtml"));
+		}
+
+		[Fact]
 		public async Task Remove_Invalidates_Page_And_Compilation_Caches()
 		{
 			var project = new MutableRazorProject();
@@ -30,7 +75,7 @@ namespace RazorLight.Tests.Caching
 			project.Set("template", "second", expirePrevious: false);
 			Assert.Equal("first", await engine.CompileRenderAsync("template", new object()));
 
-			engine.Handler.Cache!.Remove("template");
+			engine.InvalidateTemplate("template");
 
 			Assert.Equal("second", await engine.CompileRenderAsync("template", new object()));
 		}
@@ -119,6 +164,9 @@ namespace RazorLight.Tests.Caching
 				Assert.Equal("direct-v1", await engine.CompileRenderAsync("direct.cshtml", new object()));
 				Assert.Equal("start-include-v1-end", await engine.CompileRenderAsync("parent.cshtml", new object()));
 				Assert.Equal("layout-v1:body", await engine.CompileRenderAsync("page.cshtml", new object()));
+				Assert.True(engine.IsTemplateCached("direct.cshtml"));
+				Assert.True(engine.IsTemplateCached("include.cshtml"));
+				Assert.True(engine.IsTemplateCached("layout.cshtml"));
 
 				File.WriteAllText(directPath, "direct-v2");
 				File.WriteAllText(includePath, "include-v2");
@@ -202,7 +250,7 @@ namespace RazorLight.Tests.Caching
 			Assert.False(cache.Contains("folder/Template.cshtml"));
 		}
 
-		private static RazorLightEngine CreateEngine(RazorLightProject project)
+		private static IRazorLightEngine CreateEngine(RazorLightProject project)
 		{
 			return new RazorLightEngineBuilder()
 				.UseProject(project)

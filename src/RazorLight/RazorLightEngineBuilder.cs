@@ -314,133 +314,153 @@ namespace RazorLight
 			return this;
 		}
 
-		public virtual RazorLightEngine Build()
+		public virtual IRazorLightEngine Build()
 		{
-			options = options ?? new RazorLightOptions();
+			var buildOptions = CloneOptions(options ?? new RazorLightOptions());
 			project = project ?? new NoRazorProject();
 
 			if (namespaces != null)
 			{
-				if(namespaces.Count > 0 && options.Namespaces.Count > 0)
+				if(namespaces.Count > 0 && buildOptions.Namespaces.Count > 0)
 					ThrowIfHasBeenSetExplicitly(nameof(namespaces));
 				
-				options.Namespaces = namespaces;
+				buildOptions.Namespaces = new HashSet<string>(namespaces);
 			}
 
 			if (dynamicTemplates != null)
 			{
-				if(dynamicTemplates.Count > 0 && options.DynamicTemplates.Count > 0)
+				if(dynamicTemplates.Count > 0 && buildOptions.DynamicTemplates.Count > 0)
 					ThrowIfHasBeenSetExplicitly(nameof(dynamicTemplates));
 
-				options.DynamicTemplates = dynamicTemplates;
+				buildOptions.DynamicTemplates = new ConcurrentDictionary<string, string>(dynamicTemplates);
 			}
 
 			if (csharpSourceKeys != null)
 			{
-				if (csharpSourceKeys.Count > 0 && options.CSharpSourceKeys.Count > 0)
+				if (csharpSourceKeys.Count > 0 && buildOptions.CSharpSourceKeys.Count > 0)
 					ThrowIfHasBeenSetExplicitly(nameof(csharpSourceKeys));
 
-				options.CSharpSourceKeys = csharpSourceKeys;
+				buildOptions.CSharpSourceKeys = new HashSet<string>(csharpSourceKeys, StringComparer.Ordinal);
 			}
 
 			if (dynamicCSharpSources != null)
 			{
-				if (dynamicCSharpSources.Count > 0 && options.DynamicCSharpSources.Count > 0)
+				if (dynamicCSharpSources.Count > 0 && buildOptions.DynamicCSharpSources.Count > 0)
 					ThrowIfHasBeenSetExplicitly(nameof(dynamicCSharpSources));
 
-				options.DynamicCSharpSources = dynamicCSharpSources;
+				buildOptions.DynamicCSharpSources = new ConcurrentDictionary<string, string>(dynamicCSharpSources, StringComparer.Ordinal);
 			}
 
 			if (metadataReferences != null)
 			{
-				if (metadataReferences.Count > 0 && options.AdditionalMetadataReferences.Count > 0)
+				if (metadataReferences.Count > 0 && buildOptions.AdditionalMetadataReferences.Count > 0)
 					ThrowIfHasBeenSetExplicitly(nameof(metadataReferences));
 
-				options.AdditionalMetadataReferences = metadataReferences;
+				buildOptions.AdditionalMetadataReferences = new HashSet<MetadataReference>(metadataReferences);
 			}
 
 			if (excludedAssemblies != null)
 			{
-				if(excludedAssemblies.Count > 0 && options.ExcludedAssemblies.Count > 0)
+				if(excludedAssemblies.Count > 0 && buildOptions.ExcludedAssemblies.Count > 0)
 					ThrowIfHasBeenSetExplicitly(nameof(excludedAssemblies));
 
-				options.ExcludedAssemblies = excludedAssemblies;
+				buildOptions.ExcludedAssemblies = new HashSet<string>(excludedAssemblies);
 			}
 
 			if (includedAssemblies != null)
 			{
-				if(includedAssemblies.Count > 0 && options.IncludedAssemblies.Count > 0)
+				if(includedAssemblies.Count > 0 && buildOptions.IncludedAssemblies.Count > 0)
 					ThrowIfHasBeenSetExplicitly(nameof(includedAssemblies));
 
-				options.IncludedAssemblies = includedAssemblies;
+				buildOptions.IncludedAssemblies = new HashSet<string>(includedAssemblies, StringComparer.OrdinalIgnoreCase);
 			}
 
 			if (metadataReferenceDiscovery.HasValue)
 			{
-				if (options.MetadataReferenceDiscovery != MetadataReferenceDiscoveryMode.Minimal)
+				if (buildOptions.MetadataReferenceDiscovery != MetadataReferenceDiscoveryMode.Minimal)
 					ThrowIfHasBeenSetExplicitly(nameof(metadataReferenceDiscovery));
 
-				options.MetadataReferenceDiscovery = metadataReferenceDiscovery.Value;
+				buildOptions.MetadataReferenceDiscovery = metadataReferenceDiscovery.Value;
 			}
 
 			if (prerenderCallbacks != null)
 			{
-				if(prerenderCallbacks.Count > 0 && options.PreRenderCallbacks.Count > 0)
+				if(prerenderCallbacks.Count > 0 && buildOptions.PreRenderCallbacks.Count > 0)
 					ThrowIfHasBeenSetExplicitly(nameof(prerenderCallbacks));
 
-				options.PreRenderCallbacks = prerenderCallbacks;
+				buildOptions.PreRenderCallbacks = new List<Action<ITemplatePage>>(prerenderCallbacks);
 			}
 
 			if (cachingProvider != null)
 			{
-				if(options.CachingProvider != null)
+				if(buildOptions.CachingProvider != null)
 					ThrowIfHasBeenSetExplicitly(nameof(cachingProvider));
 
-				options.CachingProvider = cachingProvider;
+				buildOptions.CachingProvider = cachingProvider;
 			}
 
 			if (outputEncoder != null)
 			{
-				if (!ReferenceEquals(options.OutputEncoder, PlainTextEncoder.Default))
+				if (!ReferenceEquals(buildOptions.OutputEncoder, PlainTextEncoder.Default))
 					ThrowIfHasBeenSetExplicitly(nameof(outputEncoder));
 
-				options.OutputEncoder = outputEncoder;
+				buildOptions.OutputEncoder = outputEncoder;
 			}
 
-			if (enableDebugMode.HasValue && options.EnableDebugMode.HasValue)
+			if (enableDebugMode.HasValue && buildOptions.EnableDebugMode.HasValue)
 			{
 				ThrowIfHasBeenSetExplicitly(nameof(enableDebugMode));
 			}
 			else
 			{
-				options.EnableDebugMode = options.EnableDebugMode ?? enableDebugMode ?? false;
+				buildOptions.EnableDebugMode = buildOptions.EnableDebugMode ?? enableDebugMode ?? false;
 			}
 
 			var metadataReferenceManager = new DefaultMetadataReferenceManager(
-				options.AdditionalMetadataReferences,
-				options.IncludedAssemblies,
-				options.ExcludedAssemblies,
-				options.MetadataReferenceDiscovery);
+				buildOptions.AdditionalMetadataReferences,
+				buildOptions.IncludedAssemblies,
+				buildOptions.ExcludedAssemblies,
+				buildOptions.MetadataReferenceDiscovery);
 			var assembly = operatingAssembly ?? Assembly.GetEntryAssembly()
 				?? throw new InvalidOperationException("An operating assembly could not be determined. Configure one with SetOperatingAssembly.");
 			var compiler = new RoslynCompilationService(
 				metadataReferenceManager,
 				assembly,
-				options.EnableDebugMode ?? false,
-				cachingProvider as IPrecompileCallback);
+				buildOptions.EnableDebugMode ?? false,
+				buildOptions.CachingProvider as IPrecompileCallback);
 
 			var sourceGenerator = new RazorSourceGenerator(
 				Razor6CompilerCompatibility.CreateEngine(),
 				project,
-				options.Namespaces,
-				options.EnableDebugMode ?? false,
-				options);
-			var templateCompiler = new RazorTemplateCompiler(sourceGenerator, compiler, project, options);
+				buildOptions.Namespaces,
+				buildOptions.EnableDebugMode ?? false,
+				buildOptions);
+			var templateCompiler = new RazorTemplateCompiler(sourceGenerator, compiler, project, buildOptions);
 			var templateFactoryProvider = new TemplateFactoryProvider();
 
-			var engineHandler = new EngineHandler(options, templateCompiler, templateFactoryProvider, cachingProvider);
+			var engineHandler = new EngineHandler(buildOptions, templateCompiler, templateFactoryProvider, buildOptions.CachingProvider);
 
 			return new RazorLightEngine(engineHandler);
+		}
+
+		private static RazorLightOptions CloneOptions(RazorLightOptions source)
+		{
+			return new RazorLightOptions
+			{
+				Namespaces = new HashSet<string>(source.Namespaces),
+				DynamicTemplates = new ConcurrentDictionary<string, string>(source.DynamicTemplates),
+				CSharpSourceKeys = new HashSet<string>(source.CSharpSourceKeys, StringComparer.Ordinal),
+				DynamicCSharpSources = new ConcurrentDictionary<string, string>(source.DynamicCSharpSources, StringComparer.Ordinal),
+				AdditionalMetadataReferences = new HashSet<MetadataReference>(source.AdditionalMetadataReferences),
+				IncludedAssemblies = new HashSet<string>(source.IncludedAssemblies, StringComparer.OrdinalIgnoreCase),
+				ExcludedAssemblies = new HashSet<string>(source.ExcludedAssemblies),
+				MetadataReferenceDiscovery = source.MetadataReferenceDiscovery,
+				PreRenderCallbacks = new List<Action<ITemplatePage>>(source.PreRenderCallbacks),
+				CachingProvider = source.CachingProvider,
+				OperatingAssembly = source.OperatingAssembly,
+				OutputEncoder = source.OutputEncoder,
+				EnableDebugMode = source.EnableDebugMode,
+			};
 		}
 
 		private void ThrowIfHasBeenSetExplicitly(string option)

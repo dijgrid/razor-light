@@ -146,6 +146,7 @@ TASK-028 will replace the handler traversal with an engine-level operation:
 engine.Handler.Cache?.Remove(templateKey);
 
 // 3.x facade
+bool cached = engine.IsTemplateCached(templateKey);
 engine.InvalidateTemplate(templateKey);
 ```
 
@@ -168,8 +169,9 @@ IRazorLightEngine engine = new RazorLightEngineBuilder()
     .Build();
 ```
 
-TASK-021 owns the final initializer name and DI scope implementation. The design requirement is that
-configuration is frozen before the engine is used.
+TASK-021 owns the final initializer name and DI scope implementation. Builder options are copied
+when `Build()` is called, so later mutation of a supplied `RazorLightOptions` instance does not alter
+the engine.
 
 ## Binary and package migration
 
