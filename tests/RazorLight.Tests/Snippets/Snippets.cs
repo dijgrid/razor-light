@@ -33,7 +33,7 @@ namespace RazorLight.Tests.Snippets
 			#endregion
 
 			Assert.Equal("Hello, John Doe. Welcome to RazorLight repository", result);
-			Assert.True(engine.Handler.Cache?.RetrieveTemplate("templateKey").Success);
+			Assert.True(engine.IsTemplateCached("templateKey"));
 		}
 
 		[Fact]
@@ -55,16 +55,11 @@ namespace RazorLight.Tests.Snippets
 			Assert.Equal("THREE", result);
 		}
 
-		async Task RenderCompiledTemplate(RazorLightEngine engine, object model)
+		async Task RenderCompiledTemplate(IRazorLightEngine engine, object model)
 		{
 			#region RenderCompiledTemplate
-			var cacheResult = engine.Handler.Cache?.RetrieveTemplate("templateKey")
-				?? throw new System.InvalidOperationException("Caching is not configured.");
-			if(cacheResult.Success)
-			{
-				var templatePage = cacheResult.Template.TemplatePageFactory();
-				string result = await engine.RenderTemplateAsync(templatePage, model);
-			}
+			var templatePage = await engine.CompileTemplateAsync("templateKey");
+			string result = await engine.RenderTemplateAsync(templatePage, model);
 			#endregion
 		}
 

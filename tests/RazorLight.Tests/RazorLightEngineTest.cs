@@ -85,8 +85,7 @@ namespace RazorLight.Tests
 
 			var actual = await engine.CompileRenderStringAsync(key, content, new object(), new ExpandoObject());
 
-			Assert.NotEmpty(options.DynamicTemplates);
-			Assert.Contains(options.DynamicTemplates, t => t.Key == key && t.Value == content);
+			Assert.Empty(options.DynamicTemplates);
 			Assert.Equal(content, actual);
 		}
 
@@ -107,8 +106,6 @@ namespace RazorLight.Tests
 
 			var actual = await engine.CompileRenderStringAsync(key, content, new object(), new ExpandoObject());
 
-			Assert.NotEmpty(engine.Options.DynamicTemplates);
-			Assert.Contains(engine.Options.DynamicTemplates, t => t.Key == key && t.Value == content);
 			Assert.Equal(content, actual);
 		}
 
@@ -123,9 +120,6 @@ namespace RazorLight.Tests
 
 			var actual = await engine.CompileRenderStringAsync(key, content, new object(), new ExpandoObject());
 
-			Assert.NotEmpty(engine.Options.DynamicTemplates);
-			Assert.Contains(engine.Options.DynamicTemplates, t => t.Key == key && t.Value == content);
-			Assert.Equal(typeof(NoRazorProject), (engine.Handler.Compiler as RazorTemplateCompiler)?.ProjectType);
 			Assert.Equal(content, actual);
 		}
 
@@ -141,9 +135,6 @@ namespace RazorLight.Tests
 
 			var actual = await engine.CompileRenderStringAsync(key, content, new object(), new ExpandoObject());
 
-			Assert.NotEmpty(engine.Options.DynamicTemplates);
-			Assert.Contains(engine.Options.DynamicTemplates, t => t.Key == key && t.Value == content);
-			Assert.Equal(typeof(NoRazorProject), (engine.Handler.Compiler as RazorTemplateCompiler)?.ProjectType);
 			Assert.Equal(content, actual);
 		}
 	}

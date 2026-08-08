@@ -9,15 +9,25 @@ namespace RazorLight
 	public class RazorLightEngine : IRazorLightEngine
 	{
 		private readonly IEngineHandler _handler;
+		private readonly TemplateCache _cache;
 
 		public RazorLightEngine(IEngineHandler handler)
 		{
 			_handler = handler ?? throw new ArgumentNullException(nameof(handler));
+			_cache = new TemplateCache(_handler.Cache);
 		}
 
-		public RazorLightOptions Options => Handler.Options;
+		internal IEngineHandler Handler => _handler;
+		internal RazorLightOptions Options => _handler.Options;
 
-		public IEngineHandler Handler => _handler;
+		public bool IsTemplateCached(string key) => _cache.Contains(key);
+
+		public void InvalidateTemplate(string key) => _cache.Remove(key);
+
+		internal void AddPreRenderCallback(Action<ITemplatePage> callback)
+		{
+			_handler.Options.PreRenderCallbacks.Add(callback);
+		}
 
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]

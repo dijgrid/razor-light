@@ -267,22 +267,25 @@ namespace RazorLight.Tests.Compatibility
 		}
 
 		[Fact]
-		public async Task Configured_Namespaces_Participate_In_String_Cache_Identity()
+		public async Task Configuration_Is_Snapshotted_When_Engine_Is_Built()
 		{
 			const string template = "@model CompatibilityModel\n@Model.Items[0]";
+			var options = new RazorLightOptions();
+			options.Namespaces.Add("RazorLight.Tests.Compatibility");
 			var engine = new RazorLightEngineBuilder()
 				.UseNoProject()
 				.UseMemoryCachingProvider()
-				.AddDefaultNamespaces("RazorLight.Tests.Compatibility")
+				.UseOptions(options)
 				.Build();
 
 			Assert.Equal(
 				"a",
 				(await engine.CompileRenderStringAsync("namespace-identity", template, NewModel())).Trim());
 
-			engine.Options.Namespaces.Clear();
-			await Assert.ThrowsAsync<TemplateCompilationException>(() =>
-				engine.CompileRenderStringAsync("namespace-identity", template, NewModel()));
+			options.Namespaces.Clear();
+			Assert.Equal(
+				"a",
+				(await engine.CompileRenderStringAsync("namespace-snapshot", template, NewModel())).Trim());
 		}
 
 		private static async Task<string> RenderMatrixCaseAsync(string source, string import)
@@ -351,7 +354,7 @@ namespace RazorLight.Tests.Compatibility
 				+ "@(Model.Items.Any())|@(filtered.FirstOrDefault())";
 		}
 
-		private static RazorLightEngine NewStringEngine(bool useMemoryCache = false, bool enableDebugMode = false)
+		private static IRazorLightEngine NewStringEngine(bool useMemoryCache = false, bool enableDebugMode = false)
 		{
 			var builder = new RazorLightEngineBuilder().UseNoProject();
 			if (useMemoryCache)
@@ -379,7 +382,7 @@ namespace RazorLight.Tests.Compatibility
 		}
 
 		private static Task<string> RenderDynamicAsync(
-			RazorLightEngine engine,
+			IRazorLightEngine engine,
 			string key,
 			string template,
 			dynamic model)

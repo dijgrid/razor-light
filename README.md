@@ -69,6 +69,15 @@ string result = await engine.CompileRenderAsync(
     new { Title = "Quarterly summary" });
 ```
 
+The engine exposes cache administration without leaking compiled-page factories:
+
+```csharp
+if (engine.IsTemplateCached("Reports/Summary.cshtml"))
+{
+    engine.InvalidateTemplate("Reports/Summary.cshtml");
+}
+```
+
 Templates can also select ordinary C# helper code:
 
 ```razor

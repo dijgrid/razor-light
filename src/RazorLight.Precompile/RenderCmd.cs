@@ -57,7 +57,7 @@ namespace RazorLight.Precompile
 				.Build();
 
 			var templatePage = cachingProvider.RetrieveTemplate(key).Template.TemplatePageFactory();
-			Program.ConsoleOut.WriteLine(engine.Handler.RenderTemplateAsync(templatePage, model).GetAwaiter().GetResult());
+			Program.ConsoleOut.WriteLine(engine.RenderTemplateAsync(templatePage, model).GetAwaiter().GetResult());
 			return 0;
 		}
 

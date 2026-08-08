@@ -77,7 +77,10 @@ namespace RazorLight.Extensions
 		{
 			var injector = services.GetRequiredService<PropertyInjector>();
 
-			engine.Options.PreRenderCallbacks.Add(template => injector.Inject(template));
+			if (engine is RazorLightEngine razorLightEngine)
+			{
+				razorLightEngine.AddPreRenderCallback(template => injector.Inject(template));
+			}
 		}
 	}
 }

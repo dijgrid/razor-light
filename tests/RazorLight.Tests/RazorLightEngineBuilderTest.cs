@@ -161,7 +161,7 @@ namespace RazorLight.Tests
 				.UseEmbeddedResourcesProject(typeof(Root))
 				.Build();
 			
-			Assert.Same(PlainTextEncoder.Default, engine.Options.OutputEncoder);
+			Assert.Same(PlainTextEncoder.Default, GetOptions(engine).OutputEncoder);
 		}
 
 		[Fact]
@@ -173,39 +173,39 @@ namespace RazorLight.Tests
 			// Default
 			var engine = GetEngine()
 				.Build();
-			Assert.False(engine.Options.EnableDebugMode);
+			Assert.False(GetOptions(engine).EnableDebugMode);
 
 			// Set with EnableDebugMode
 			engine = GetEngine()
 				.EnableDebugMode()
 				.Build();
-			Assert.True(engine.Options.EnableDebugMode);
+			Assert.True(GetOptions(engine).EnableDebugMode);
 
 			engine = GetEngine()
 				.EnableDebugMode(true)
 				.Build();
-			Assert.True(engine.Options.EnableDebugMode);
+			Assert.True(GetOptions(engine).EnableDebugMode);
 
 			engine = GetEngine()
 				.EnableDebugMode(false)
 				.Build();
-			Assert.False(engine.Options.EnableDebugMode);
+			Assert.False(GetOptions(engine).EnableDebugMode);
 
 			// Set with UseOptions
 			engine = GetEngine()
 				.UseOptions(new RazorLightOptions { EnableDebugMode = true })
 				.Build();
-			Assert.True(engine.Options.EnableDebugMode);
+			Assert.True(GetOptions(engine).EnableDebugMode);
 
 			engine = GetEngine()
 				.UseOptions(new RazorLightOptions { EnableDebugMode = false })
 				.Build();
-			Assert.False(engine.Options.EnableDebugMode);
+			Assert.False(GetOptions(engine).EnableDebugMode);
 
 			engine = GetEngine()
 				.UseOptions(new RazorLightOptions())
 				.Build();
-			Assert.False(engine.Options.EnableDebugMode);
+			Assert.False(GetOptions(engine).EnableDebugMode);
 		}
 
 		[Fact]
@@ -218,9 +218,9 @@ namespace RazorLight.Tests
 				.UseAllDependencyContextMetadataReferences()
 				.Build();
 
-			Assert.Contains("Application.TemplateContracts", engine.Options.IncludedAssemblies);
-			Assert.Contains("Application.Internal.Data", engine.Options.ExcludedAssemblies);
-			Assert.Equal(MetadataReferenceDiscoveryMode.All, engine.Options.MetadataReferenceDiscovery);
+			Assert.Contains("Application.TemplateContracts", GetOptions(engine).IncludedAssemblies);
+			Assert.Contains("Application.Internal.Data", GetOptions(engine).ExcludedAssemblies);
+			Assert.Equal(MetadataReferenceDiscoveryMode.All, GetOptions(engine).MetadataReferenceDiscovery);
 		}
 
 		[Fact]
@@ -236,14 +236,19 @@ namespace RazorLight.Tests
 				.AddDefaultNamespaces(namespaces.ToArray())
 				.Build();
 
-			Assert.Equal(namespaces, engine.Options.Namespaces);
+			Assert.Equal(namespaces, GetOptions(engine).Namespaces);
 
 			// Set namespaces with UseOptions
 			engine = GetEngine()
 				.UseOptions(new RazorLightOptions { Namespaces = namespaces.ToHashSet()})
 				.Build();
 
-			Assert.Equal(namespaces, engine.Options.Namespaces);
+			Assert.Equal(namespaces, GetOptions(engine).Namespaces);
+		}
+
+		private static RazorLightOptions GetOptions(IRazorLightEngine engine)
+		{
+			return Assert.IsType<RazorLightEngine>(engine).Options;
 		}
 
 		//[Fact]

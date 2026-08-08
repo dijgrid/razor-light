@@ -6,12 +6,12 @@ observable invalidation contract:
 | Layer | Contents | Owner |
 | --- | --- | --- |
 | Compilation cache | In-flight and completed `CompiledTemplateDescriptor` tasks | Internal `RazorTemplateCompiler` |
-| Page-factory cache | Factories that create executable `ITemplatePage` instances | The configured `ICachingProvider` exposed by `engine.Handler.Cache` |
+| Page-factory cache | Factories that create executable `ITemplatePage` instances | The configured `ICachingProvider`, hidden behind the engine facade |
 
-The built-in compiler and engine coordinate these layers. Calling
-`engine.Handler.Cache.Remove(key)` removes all known compiled variants and page factories for that
-logical key. Calling `CacheTemplate` through the
-same property is a replacement: it invalidates the old compiler and provider entries before storing
+The built-in compiler and engine coordinate these layers. Calling `engine.InvalidateTemplate(key)`
+removes all known compiled variants and page factories for that logical key. Applications can call
+`engine.IsTemplateCached(key)` without receiving the provider's page-factory records. Provider-level
+`CacheTemplate` is a replacement: it invalidates old compiler and provider entries before storing
 the supplied factory. A compilation that was already in flight when a key was removed or replaced
 cannot repopulate the page-factory cache with its stale result.
 
@@ -48,4 +48,4 @@ can add or replace a runtime page factory, and `Remove` deletes both that runtim
 matching precompiled entry from that provider instance. Removing an unknown key is idempotent.
 
 This coordination is process-local. Distributed applications that change shared template sources
-must still deliver a project change token or call `Remove` in each process.
+must still deliver a project change token or call `InvalidateTemplate` in each process.
