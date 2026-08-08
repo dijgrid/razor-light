@@ -1,4 +1,5 @@
-﻿using System.IO;
+using RazorLight.Razor;
+using System.IO;
 
 namespace RazorLight.Caching
 {
@@ -10,13 +11,8 @@ namespace RazorLight.Caching
 
 		public CachedFileInfo GetCachedFileInfo(string key, string templateFilePath, string cacheDir)
 		{
-			if (key[0] == '/' || key[0] == '\\')
-			{
-				key = key.Substring(1);
-			}
-			
-			var asmFilePath = Path.Combine(cacheDir, key + ".dll");
-			var pdbFilePath = Path.Combine(cacheDir, key + ".pdb");
+			var asmFilePath = ResolveCachePath(key + ".dll", "cached assembly path");
+			var pdbFilePath = ResolveCachePath(key + ".pdb", "cached symbol path");
 			var upToDate = false;
 			if (File.Exists(asmFilePath))
 			{
@@ -25,6 +21,18 @@ namespace RazorLight.Caching
 				upToDate = templateFileTime < asmFileTime;
 			}
 			return new CachedFileInfo(upToDate, asmFilePath, pdbFilePath);
+
+			string ResolveCachePath(string cacheKey, string parameterDescription)
+			{
+				var fullPath = FileSystemRazorProjectHelper.ResolveContainedPath(
+					cacheDir,
+					cacheKey,
+					parameterDescription);
+
+				return Path.IsPathFullyQualified(cacheDir)
+					? fullPath
+					: Path.GetRelativePath(System.Environment.CurrentDirectory, fullPath);
+			}
 		}
 	}
 }

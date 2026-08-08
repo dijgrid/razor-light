@@ -16,6 +16,7 @@ namespace RazorLight.Razor
 	{
 		public const string DefaultExtension = ".cshtml";
 		private readonly IFileProvider _fileProvider;
+		private readonly string _normalizedRoot;
 
 		public FileSystemRazorProject(string root)
 			: this(root, DefaultExtension)
@@ -32,7 +33,8 @@ namespace RazorLight.Razor
 			}
 
 			Root = root;
-			_fileProvider = new PhysicalFileProvider(Root);
+			_normalizedRoot = FileSystemRazorProjectHelper.NormalizeRoot(root);
+			_fileProvider = new PhysicalFileProvider(_normalizedRoot);
 		}
 
 		public string Extension { get; set; }
@@ -53,7 +55,7 @@ namespace RazorLight.Razor
 				throw new ArgumentNullException(nameof(templateKey));
 			}
 
-			if (!templateKey.EndsWith(Extension))
+			if (!templateKey.EndsWith(Extension, StringComparison.Ordinal))
 			{
 				templateKey = templateKey + Extension;
 			}
@@ -80,17 +82,11 @@ namespace RazorLight.Razor
 				throw new ArgumentNullException(nameof(sourceKey));
 			}
 
-			string relativePath = sourceKey.TrimStart('/', '\\')
-				.Replace('/', Path.DirectorySeparatorChar)
-				.Replace('\\', Path.DirectorySeparatorChar);
-			string rootPath = Path.GetFullPath(Root);
-			string sourcePath = Path.GetFullPath(Path.Combine(rootPath, relativePath));
-			string rootPrefix = rootPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-				+ Path.DirectorySeparatorChar;
-			if (!sourcePath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
-			{
-				throw new InvalidOperationException("C# source paths must remain inside the project root.");
-			}
+			string relativePath = sourceKey.TrimStart('/', '\\');
+			string sourcePath = FileSystemRazorProjectHelper.ResolveContainedPath(
+				_normalizedRoot,
+				relativePath,
+				"C# source path");
 
 			var item = new FileSystemRazorProjectItem(sourceKey, new FileInfo(sourcePath));
 			if (item.Exists)
@@ -113,20 +109,10 @@ namespace RazorLight.Razor
 				throw new ArgumentNullException(nameof(templateKey));
 			}
 
-			var absolutePath = templateKey;
-			if (!absolutePath.StartsWith(Root, StringComparison.OrdinalIgnoreCase))
-			{
-				if (templateKey[0] == '/' || templateKey[0] == '\\')
-				{
-					templateKey = templateKey.Substring(1);
-				}
-
-				absolutePath = Path.Combine(Root, templateKey);
-			}
-
-			absolutePath = absolutePath.Replace('\\', '/');
-
-			return absolutePath;
+			return FileSystemRazorProjectHelper.ResolveContainedPath(
+				_normalizedRoot,
+				templateKey,
+				"template path");
 		}
 
 		public override Task<IEnumerable<RazorLightProjectItem>> GetImportsAsync(string templateKey)
@@ -143,11 +129,8 @@ namespace RazorLight.Razor
 		public override Task<IEnumerable<string>> GetKnownKeysAsync(CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
-			var files = Directory.EnumerateFiles(Root, $"*{Extension}", SearchOption.AllDirectories)
-				.Where(x => x.StartsWith(Root))
-				.Select(x => x.Substring(Root.Length, x.Length - Root.Length))
-				.Select(x => x.StartsWith("\\") || x.StartsWith("/") ? x.Substring(1) : x)
-				.Select(x => x.Replace('\\', '/'));
+			var files = Directory.EnumerateFiles(_normalizedRoot, $"*{Extension}", SearchOption.AllDirectories)
+				.Select(path => Path.GetRelativePath(_normalizedRoot, path).Replace('\\', '/'));
 
 			return Task.FromResult(files);
 		}

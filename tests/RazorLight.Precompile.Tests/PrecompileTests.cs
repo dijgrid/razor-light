@@ -43,6 +43,18 @@ namespace RazorLight.Precompile.Tests
 			Assert.That(File.Exists(expectedPrecompiledFilePath), Is.False);
 		}
 
+		[Test]
+		public void Precompile_Rejects_Template_Outside_Explicit_Base_Directory()
+		{
+			var command = new PrecompileCmd();
+
+			Assert.Throws<InvalidOperationException>(() => command.Run(new[]
+			{
+				"--base", "Samples/folder",
+				"--template", "../FullMessage.cshtml",
+			}));
+		}
+
 		public static string GetExpectedPrecompiledFilePath(string templateFilePath, TestScenario scenario)
 		{
 			var cacheDirectory = scenario.GetExpectedCacheDirectory(templateFilePath)

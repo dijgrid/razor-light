@@ -79,6 +79,17 @@ namespace RazorLight.Precompile.Tests
 			Assert.AreEqual(asmFilePath1, asmFilePath2);
 		}
 
+		[TestCase("../outside")]
+		[TestCase("nested/../../outside")]
+		[TestCase("..\\outside")]
+		public void SimpleStrategy_Rejects_Keys_Outside_Cache_Root(string key)
+		{
+			string cacheRoot = Path.Combine(TestContext.CurrentContext.WorkDirectory, "cache-root");
+
+			Assert.Throws<InvalidOperationException>(() =>
+				SimpleFileCachingStrategy.Instance.GetCachedFileInfo(key, "template.cshtml", cacheRoot));
+		}
+
 		private static (string, string) GetAsmFilePaths(IFileSystemCachingStrategy s, string[] sepCombination)
 		{
 			var templateFilePath = "Samples/folder/MessageItem.cshtml";

@@ -44,7 +44,7 @@ namespace RazorLight.Razor
 				throw new ArgumentNullException(nameof(templateKey));
 			}
 
-			if (!templateKey.EndsWith(Extension))
+			if (!templateKey.EndsWith(Extension, StringComparison.Ordinal))
 			{
 				templateKey += Extension;
 			}
@@ -89,7 +89,8 @@ namespace RazorLight.Razor
 			if (!ignoredPrefix.EndsWith(".")) ignoredPrefix += ".";
 
 			var fullResourceNames = this.Assembly.GetManifestResourceNames()
-				.Where(x => x.StartsWith(ignoredPrefix) && x.EndsWith(Extension));
+				.Where(x => x.StartsWith(ignoredPrefix, StringComparison.Ordinal) &&
+					x.EndsWith(Extension, StringComparison.Ordinal));
 
 			var keys = fullResourceNames
 				.Select(x => x.Remove(0, ignoredPrefix.Length)) // Remove prefix

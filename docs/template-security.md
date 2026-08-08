@@ -64,6 +64,12 @@ File-system projects read within their configured project root, but template cod
 the host process's filesystem permissions. Embedded and custom projects similarly control lookup,
 not what executed C# can access.
 
+File-system containment is lexical: RazorLight canonicalizes the root and candidate path and rejects
+keys whose full path escapes that root. A host that places a symbolic link or Windows reparse point
+inside the root can still make content outside the root reachable through that link. Because project
+content is trusted code, hosts that require a strict physical boundary must prevent such links in
+the configured tree or validate them before making the project available.
+
 Generated assemblies and symbols can contain template logic, string constants, type names, and
 template keys. Treat precompile outputs, runtime compilation callbacks, caches, crash dumps, and
 diagnostic artifacts as potentially sensitive.

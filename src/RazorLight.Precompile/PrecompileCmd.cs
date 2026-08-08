@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RazorLight.Caching;
+using RazorLight.Razor;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -60,16 +61,20 @@ namespace RazorLight.Precompile
 					throw new RazorLightException($"The razor template base directory {baseDir} does not exist.");
 				}
 
-				baseDir = Path.GetFullPath(baseDir);
+				baseDir = FileSystemRazorProjectHelper.NormalizeRoot(baseDir);
 				if (Path.IsPathRooted(templateFile))
 				{
-					templateKey = Path.GetRelativePath(baseDir, templateFile);
+					templateKey = Path.GetRelativePath(baseDir, Path.GetFullPath(templateFile));
 				}
 				else
 				{
 					templateKey = templateFile;
-					templateFile = Path.GetFullPath(Path.Combine(baseDir, templateFile));
 				}
+
+				templateFile = FileSystemRazorProjectHelper.ResolveContainedPath(
+					baseDir,
+					templateKey,
+					"template path");
 			}
 
 			if (!File.Exists(templateFile))

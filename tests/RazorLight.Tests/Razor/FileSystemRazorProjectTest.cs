@@ -70,6 +70,53 @@ namespace RazorLight.Tests.Razor
 			Assert.EndsWith(templateKey + project.Extension, item.Key);
 		}
 
+		[Theory]
+		[InlineData("../Embedded/Empty.cshtml")]
+		[InlineData("..\\Embedded\\Empty.cshtml")]
+		[InlineData("Subfolder/../../../Embedded/Empty.cshtml")]
+		public async Task GetItemAsync_Rejects_Keys_Outside_Project_Root(string templateKey)
+		{
+			string root = Path.Combine(DirectoryUtils.RootDirectory, "Assets", "Files");
+			var project = new FileSystemRazorProject(root);
+
+			await Assert.ThrowsAsync<InvalidOperationException>(() => project.GetItemAsync(templateKey));
+		}
+
+		[Fact]
+		public async Task GetItemAsync_Rejects_Absolute_Path_Outside_Project_Root()
+		{
+			string root = Path.Combine(DirectoryUtils.RootDirectory, "Assets", "Files");
+			string outside = Path.Combine(DirectoryUtils.RootDirectory, "Assets", "Embedded", "Empty.cshtml");
+			var project = new FileSystemRazorProject(root);
+
+			await Assert.ThrowsAsync<InvalidOperationException>(() => project.GetItemAsync(outside));
+		}
+
+		[Theory]
+		[InlineData("/Empty.cshtml")]
+		[InlineData("\\Empty.cshtml")]
+		[InlineData("./Empty.cshtml")]
+		public async Task GetItemAsync_Allows_Contained_Virtual_Paths(string templateKey)
+		{
+			string root = Path.Combine(DirectoryUtils.RootDirectory, "Assets", "Files");
+			var project = new FileSystemRazorProject(root);
+
+			RazorLightProjectItem item = await project.GetItemAsync(templateKey);
+
+			Assert.True(item.Exists);
+		}
+
+		[Fact]
+		public async Task GetSourceItemAsync_Rejects_Sibling_Prefix_Path()
+		{
+			string root = Path.Combine(DirectoryUtils.RootDirectory, "Assets", "Files");
+			string sibling = root + "Sibling";
+			var project = new FileSystemRazorProject(root);
+
+			await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				project.GetSourceItemAsync(Path.Combine(sibling, "Shared.cs")));
+		}
+
 		[Fact]
 		public async Task Ensure_GetKnownKeysAsync_Returns_Existing_Keys()
 		{

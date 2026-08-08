@@ -14,20 +14,34 @@ namespace RazorLight.Caching
 		private readonly MemoryCachingProvider m_cache = new MemoryCachingProvider();
 		private readonly string m_baseDir;
 		private readonly string m_cacheDir;
+		private readonly bool m_reportRelativeCachePaths;
 		private readonly IFileSystemCachingStrategy m_fileSystemCachingStrategy;
 
 		public FileSystemCachingProvider(string baseDir, string cacheDir, IFileSystemCachingStrategy fileSystemCachingStrategy)
 		{
-			m_baseDir = baseDir ?? throw new ArgumentNullException(nameof(baseDir));
-			m_cacheDir = cacheDir ?? throw new ArgumentNullException(nameof(cacheDir));
+			m_baseDir = FileSystemRazorProjectHelper.NormalizeRoot(
+				baseDir ?? throw new ArgumentNullException(nameof(baseDir)));
+			m_reportRelativeCachePaths = !Path.IsPathFullyQualified(
+				cacheDir ?? throw new ArgumentNullException(nameof(cacheDir)));
+			m_cacheDir = FileSystemRazorProjectHelper.NormalizeRoot(
+				cacheDir);
 			m_fileSystemCachingStrategy = fileSystemCachingStrategy ?? throw new ArgumentNullException(nameof(fileSystemCachingStrategy));
 		}
 
-		public string GetAssemblyFilePath(string key, string templateFilePath) => m_fileSystemCachingStrategy.GetCachedFileInfo(key, templateFilePath, m_cacheDir).AssemblyFilePath;
+		public string GetAssemblyFilePath(string key, string templateFilePath)
+		{
+			var assemblyFilePath = m_fileSystemCachingStrategy
+				.GetCachedFileInfo(key, templateFilePath, m_cacheDir)
+				.AssemblyFilePath;
+
+			return m_reportRelativeCachePaths
+				? Path.GetRelativePath(Environment.CurrentDirectory, assemblyFilePath)
+				: assemblyFilePath;
+		}
 
 		void IPrecompileCallback.Invoke(IGeneratedRazorTemplate generatedRazorTemplate, byte[] rawAssembly, byte[] rawSymbolStore)
 		{
-			var srcFilePath = Path.Combine(m_baseDir, generatedRazorTemplate.TemplateKey.Substring(1));
+			var srcFilePath = GetSourceFilePath(generatedRazorTemplate.TemplateKey);
 			var (_, asmFilePath, pdbFilePath) = m_fileSystemCachingStrategy.GetCachedFileInfo(generatedRazorTemplate.TemplateKey, srcFilePath, m_cacheDir);
 			Directory.CreateDirectory(Path.GetDirectoryName(asmFilePath)
 				?? throw new InvalidOperationException($"The cache path '{asmFilePath}' has no directory."));
@@ -103,6 +117,6 @@ namespace RazorLight.Caching
 			?? throw new InvalidOperationException("The cached assembly has no RazorLight template attribute.");
 
 		private string GetSourceFilePath(string key) =>
-			Path.Combine(m_baseDir, key.TrimStart('/', '\\').Replace('\\', Path.DirectorySeparatorChar));
+			FileSystemRazorProjectHelper.ResolveContainedPath(m_baseDir, key, "template path");
 	}
 }
