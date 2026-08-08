@@ -1,0 +1,19 @@
+{
+  "suites": [
+    {
+      "name": "RazorLight",
+      "project": "tests/RazorLight.Tests/RazorLight.Tests.csproj",
+      "framework": "net10.0",
+      "package": "RazorLight",
+      "minimumLinePercent": 73.0,
+      "minimumBranchPercent": 59.0
+    },
+    {
+      "name": "RazorLight.Precompile",
+      "project": "tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj",
+      "package": "RazorLight.Precompile",
+      "minimumLinePercent": 80.0,
+      "minimumBranchPercent": 70.0
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <RootNamespace>RazorLight.Benchmarks</RootNamespace>
+    <RazorLightSourceProject Condition="'$(RazorLightSourceProject)' == ''">../../src/RazorLight/RazorLight.csproj</RazorLightSourceProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(RazorLightSourceProject)" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates/Embedded.cshtml" />
+    <Content Include="Templates/*.cshtml" Exclude="Templates/Embedded.cshtml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

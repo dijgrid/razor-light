@@ -53,11 +53,9 @@ jobs:
           dotnet format RazorLight.sln whitespace --no-restore --verify-no-changes
           dotnet format RazorLight.sln style --no-restore --verify-no-changes --diagnostics IDE0005 IDE0065
 
-      - name: Test RazorLight
-        run: dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net10.0 --configuration Release --no-build --collect:"XPlat Code Coverage;Format=cobertura" --results-directory artifacts/TestResults/RazorLight --logger "console;verbosity=normal"
-
-      - name: Test precompile tool
-        run: dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage;Format=cobertura" --results-directory artifacts/TestResults/Precompile --logger "console;verbosity=normal"
+      - name: Test and enforce coverage floors
+        shell: pwsh
+        run: ./scripts/Test-Coverage.ps1 -NoBuild
 
       - name: Test deployment modes
         if: matrix.os != 'macos-latest'
@@ -122,5 +120,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage-${{ matrix.os }}
-          path: artifacts/TestResults/**/coverage.cobertura.xml
+          path: |
+            artifacts/TestResults/**/coverage.cobertura.xml
+            artifacts/TestResults/**/coverage-summary.json
           if-no-files-found: error

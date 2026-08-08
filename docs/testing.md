@@ -10,8 +10,7 @@ Run the same checks locally from the repository root:
 ```powershell
 dotnet restore RazorLight.sln
 dotnet build RazorLight.sln --configuration Release --no-restore
-dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --configuration Release --no-build
-dotnet test tests/RazorLight.Precompile.Tests/RazorLight.Precompile.Tests.csproj --configuration Release --no-build
+pwsh ./scripts/Test-Coverage.ps1 -NoBuild
 dotnet tool restore
 pwsh ./scripts/Test-DeterministicBuild.ps1
 dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages
@@ -19,19 +18,43 @@ dotnet pack src/RazorLight.Precompile/RazorLight.Precompile.csproj --configurati
 pwsh ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version 3.0.0
 ```
 
-## Initial coverage baseline
+## Coverage ratchet
 
-Coverage is collected with `coverlet.collector` in portable Cobertura XML. The local Windows
-baseline recorded on 2026-08-06 is:
+`scripts/Test-Coverage.ps1` runs both xUnit suites, reads their portable Cobertura reports, prints one
+consistent summary, and enforces the versioned floors in `eng/coverage-baseline.json`. CI runs this
+on Windows, Linux, and macOS. Raise a floor when representative cross-platform results support it;
+never lower one merely to make a change pass.
 
-| Suite | Tests | Line coverage | Branch coverage |
-| --- | ---: | ---: | ---: |
-| RazorLight | 183 | 64.37% | 51.19% |
-| RazorLight.Precompile | 118 | 46.32% | 32.17% |
+The accepted 2026-08-08 floors and current Windows observations are:
 
-This is an observation baseline, not a minimum threshold. It makes regressions visible without
-blocking maintenance work until representative cross-platform history exists. A later task can
-introduce an enforced threshold based on that history.
+| Component | Line floor | Branch floor | Observed line | Observed branch |
+| --- | ---: | ---: | ---: | ---: |
+| RazorLight | 73.0% | 59.0% | 73.96% | 60.00% |
+| RazorLight.Precompile | 80.0% | 70.0% | 80.92% | 71.15% |
+
+The floors apply to the named production assembly in each report, rather than averaging dependencies
+or helper libraries into a misleading repository-wide percentage.
+
+## Performance benchmarks
+
+The BenchmarkDotNet project under `benchmarks/RazorLight.Benchmarks` measures cold string, file, and
+embedded compilation; large sources; same-key and unrelated-key concurrency; cached rendering with
+and without dependency injection; layout/include-heavy rendering; deterministic disk-cache loads;
+and repeated engine construction/disposal. Every benchmark includes managed allocation measurements,
+and BenchmarkDotNet records the OS, SDK, runtime, JIT, GC, and processor with each result.
+
+Run the short, reproducible suite on an otherwise idle machine:
+
+```powershell
+dotnet run --project benchmarks/RazorLight.Benchmarks/RazorLight.Benchmarks.csproj `
+  --configuration Release -- --exporters json markdown
+```
+
+Use `--filter "*CachedRender*"` for a focused run. The manual GitHub workflow retains the same JSON
+and Markdown artifacts. The initial measurements are an observation baseline: no timing budget is
+enforced until multiple runs on stable hardware establish normal variance. Treat a change as a
+candidate regression only when repeated measurements exceed both normal noise and a material effect
+size; allocation regressions are generally less noisy and should be investigated immediately.
 
 ## Reliability inventory
 
