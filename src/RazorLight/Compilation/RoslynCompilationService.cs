@@ -85,7 +85,7 @@ namespace RazorLight.Compilation
 		private CSharpParseOptions? _parseOptions;
 		private CSharpCompilationOptions? _compilationOptions;
 
-		private static readonly object locker = new object();
+		private readonly object locker = new object();
 
 		private bool _optionsInitialized;
 		private void EnsureOptions()

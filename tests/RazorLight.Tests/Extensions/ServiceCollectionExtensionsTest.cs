@@ -12,8 +12,10 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Dynamic;
 using System.IO;
+using System.Linq;
 using RazorLight.Razor;
 using RazorLight.Tests.Utils;
+using Microsoft.Extensions.Options;
 
 namespace RazorLight.Tests.Extensions
 {
@@ -32,6 +34,30 @@ namespace RazorLight.Tests.Extensions
 			var services = GetServices();
 
 			Assert.Throws<ArgumentNullException>(() => { services.AddRazorLight(null!); });
+		}
+
+		[Fact]
+		public void Dependency_Builder_Add_Methods_Accumulate_Values()
+		{
+			var firstReference = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+			var secondReference = MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
+			var services = GetServices();
+			services.AddRazorLight()
+				.AddDefaultNamespaces("One")
+				.AddDefaultNamespaces("Two")
+				.AddMetadataReferences(firstReference)
+				.AddMetadataReferences(secondReference)
+				.IncludeAssemblies("First")
+				.IncludeAssemblies("Second")
+				.ExcludeAssemblies("Third")
+				.ExcludeAssemblies("Fourth");
+
+			using var provider = services.BuildServiceProvider();
+			var options = provider.GetRequiredService<IOptions<RazorLightOptions>>().Value;
+			Assert.Equal(new[] { "One", "Two" }, options.Namespaces.OrderBy(value => value));
+			Assert.Equal(2, options.AdditionalMetadataReferences.Count);
+			Assert.Equal(new[] { "First", "Second" }, options.IncludedAssemblies.OrderBy(value => value));
+			Assert.Equal(new[] { "Fourth", "Third" }, options.ExcludedAssemblies.OrderBy(value => value));
 		}
 
 		[Fact]

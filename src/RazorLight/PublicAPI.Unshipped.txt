@@ -190,6 +190,7 @@ RazorLight.Razor.TextSourceRazorProjectItem
 RazorLight.Razor.TextSourceRazorProjectItem.Content.get -> string!
 RazorLight.Razor.TextSourceRazorProjectItem.TextSourceRazorProjectItem(string! key, string! content) -> void
 RazorLight.RazorLightDependencyBuilder
+RazorLight.RazorLightDependencyBuilder.AddDefaultNamespaces(params string![]! namespaces) -> RazorLight.RazorLightDependencyBuilder!
 RazorLight.RazorLightDependencyBuilder.AddPageInitializer(System.Action<RazorLight.ITemplatePage!>! initializer) -> RazorLight.RazorLightDependencyBuilder!
 RazorLight.RazorLightDependencyBuilder.AddMetadataReferences(params Microsoft.CodeAnalysis.MetadataReference![]! metadata) -> RazorLight.RazorLightDependencyBuilder!
 RazorLight.RazorLightDependencyBuilder.ExcludeAssemblies(params string![]! assemblyNames) -> RazorLight.RazorLightDependencyBuilder!

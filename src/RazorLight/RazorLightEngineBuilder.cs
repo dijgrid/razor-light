@@ -1,8 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using RazorLight.Caching;
-using RazorLight.Compatibility;
 using RazorLight.Compilation;
-using RazorLight.Generation;
 using RazorLight.Razor;
 using RazorLight.Text;
 using System;
@@ -132,7 +130,7 @@ namespace RazorLight
 
 		public RazorLightEngineBuilder UseOptions(RazorLightOptions razorLightOptions)
 		{
-			options = razorLightOptions;
+			options = razorLightOptions ?? throw new ArgumentNullException(nameof(razorLightOptions));
 			return this;
 		}
 
@@ -178,12 +176,9 @@ namespace RazorLight
 				throw new ArgumentNullException(nameof(namespaces));
 			}
 
-			this.namespaces = new HashSet<string>();
-
+			this.namespaces ??= new HashSet<string>();
 			foreach (string @namespace in namespaces)
-			{
-				this.namespaces.Add(@namespace);
-			}
+				this.namespaces.Add(@namespace ?? throw new ArgumentException("Namespace values cannot be null.", nameof(namespaces)));
 
 			return this;
 		}
@@ -195,12 +190,9 @@ namespace RazorLight
 				throw new ArgumentNullException(nameof(metadata));
 			}
 
-			metadataReferences = new HashSet<MetadataReference>();
-
+			metadataReferences ??= new HashSet<MetadataReference>();
 			foreach (var reference in metadata)
-			{
-				metadataReferences.Add(reference);
-			}
+				metadataReferences.Add(reference ?? throw new ArgumentException("Metadata references cannot contain null.", nameof(metadata)));
 
 			return this;
 		}
@@ -212,12 +204,9 @@ namespace RazorLight
 				throw new ArgumentNullException(nameof(assemblyNames));
 			}
 
-			excludedAssemblies = new HashSet<string>();
-
+			excludedAssemblies ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 			foreach (var assemblyName in assemblyNames)
-			{
-				excludedAssemblies.Add(assemblyName);
-			}
+				excludedAssemblies.Add(assemblyName ?? throw new ArgumentException("Assembly names cannot contain null.", nameof(assemblyNames)));
 
 			return this;
 		}
@@ -233,7 +222,9 @@ namespace RazorLight
 				throw new ArgumentNullException(nameof(assemblyNames));
 			}
 
-			includedAssemblies = new HashSet<string>(assemblyNames, StringComparer.OrdinalIgnoreCase);
+			includedAssemblies ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+			foreach (string assemblyName in assemblyNames)
+				includedAssemblies.Add(assemblyName ?? throw new ArgumentException("Assembly names cannot contain null.", nameof(assemblyNames)));
 			return this;
 		}
 
@@ -425,37 +416,15 @@ namespace RazorLight
 				buildOptions.EnableDebugMode = buildOptions.EnableDebugMode ?? enableDebugMode ?? false;
 			}
 
-			var metadataReferenceManager = new DefaultMetadataReferenceManager(
-				buildOptions.AdditionalMetadataReferences,
-				buildOptions.IncludedAssemblies,
-				buildOptions.ExcludedAssemblies,
-				buildOptions.MetadataReferenceDiscovery);
 			var assembly = operatingAssembly ?? Assembly.GetEntryAssembly()
 				?? throw new InvalidOperationException("An operating assembly could not be determined. Configure one with SetOperatingAssembly.");
-			var compiler = new RoslynCompilationService(
-				metadataReferenceManager,
-				assembly,
-				buildOptions.EnableDebugMode ?? false,
-				buildOptions.CachingProvider as IPrecompileCallback);
-
-			var sourceGenerator = new RazorSourceGenerator(
-				Razor6CompilerCompatibility.CreateEngine(),
-				project,
-				buildOptions.Namespaces,
-				buildOptions.EnableDebugMode ?? false,
-				buildOptions);
-			var templateCompiler = new RazorTemplateCompiler(sourceGenerator, compiler, project, buildOptions);
-			var templateFactoryProvider = new TemplateFactoryProvider();
-
-			var engineHandler = new EngineHandler(
+			return RazorLightEngineFactory.Create(
 				buildOptions,
-				templateCompiler,
-				templateFactoryProvider,
+				project,
 				buildOptions.CachingProvider,
-				ownsProject ? project as IDisposable : null,
-				ownsCachingProvider ? buildOptions.CachingProvider as IDisposable : null);
-
-			return new RazorLightEngine(engineHandler);
+				assembly,
+				ownedProject: ownsProject ? project as IDisposable : null,
+				ownedCache: ownsCachingProvider ? buildOptions.CachingProvider as IDisposable : null);
 		}
 
 		private void ThrowIfHasBeenSetExplicitly(string option)

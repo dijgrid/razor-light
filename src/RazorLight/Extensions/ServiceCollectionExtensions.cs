@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Reflection;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using RazorLight.Compatibility;
 using RazorLight.Caching;
-using RazorLight.Compilation;
 using RazorLight.DependencyInjection;
-using RazorLight.Generation;
 using RazorLight.Razor;
 
 namespace RazorLight.Extensions
@@ -59,28 +55,12 @@ namespace RazorLight.Extensions
 				provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RazorLightOptions>>().Value).Options;
 			var project = provider.GetRequiredService<RazorLightProject>();
 			var cache = provider.GetService<ICachingProvider>();
-			var sourceGenerator = new RazorSourceGenerator(
-				Razor6CompilerCompatibility.CreateEngine(),
+			return RazorLightEngineFactory.Create(
+				options,
 				project,
-				options.Namespaces,
-				options.EnableDebugMode ?? false,
-				options);
-			var metadataReferences = new DefaultMetadataReferenceManager(
-				options.AdditionalMetadataReferences,
-				options.IncludedAssemblies,
-				options.ExcludedAssemblies,
-				options.MetadataReferenceDiscovery);
-			var compilationService = new RoslynCompilationService(
-				metadataReferences,
+				cache,
 				options.OperatingAssembly ?? throw new InvalidOperationException("RazorLightOptions.OperatingAssembly must be configured."),
-				options.EnableDebugMode ?? false,
-				cache as IPrecompileCallback);
-			var compiler = new RazorTemplateCompiler(sourceGenerator, compilationService, project, options);
-			var handler = new EngineHandler(options, compiler, new TemplateFactoryProvider(), cache);
-			var propertyInjector = new PropertyInjector();
-			handler.ConfigureServices(provider.GetRequiredService<IServiceScopeFactory>(), propertyInjector);
-
-			return new RazorLightEngine(handler);
+				scopeFactory: provider.GetRequiredService<IServiceScopeFactory>());
 		}
 
 		private static void ConfigureEngineServices(

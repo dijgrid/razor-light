@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -33,6 +36,33 @@ namespace RazorLight.Tests.Compilation
 				Assembly.GetEntryAssembly()!);
 
 			Assert.Equal(DebugInformationFormat.PortablePdb, compiler.EmitOptions.DebugInformationFormat);
+		}
+
+		[Fact]
+		public async Task Option_Initialization_Does_Not_Serialize_Unrelated_Compilers()
+		{
+			using var firstEntered = new ManualResetEventSlim();
+			using var releaseFirst = new ManualResetEventSlim();
+			var first = new RoslynCompilationService(
+				new BlockingReferenceManager(firstEntered, releaseFirst),
+				Assembly.GetExecutingAssembly());
+			var second = new RoslynCompilationService(
+				new DefaultMetadataReferenceManager(),
+				Assembly.GetExecutingAssembly());
+
+			Task firstInitialization = Task.Run(() => _ = first.ParseOptions);
+			Assert.True(firstEntered.Wait(TimeSpan.FromSeconds(5)));
+			Task secondInitialization = Task.Run(() => _ = second.ParseOptions);
+			try
+			{
+				Assert.Same(secondInitialization, await Task.WhenAny(secondInitialization, Task.Delay(TimeSpan.FromSeconds(5))));
+			}
+			finally
+			{
+				releaseFirst.Set();
+			}
+
+			await Task.WhenAll(firstInitialization, secondInitialization);
 		}
 
 		[Fact]
@@ -344,6 +374,27 @@ namespace RazorLight.Tests.Compilation
 
 			protected internal override DependencyContextCompilationOptions GetDependencyContextCompilationOptions()
 				=> _options;
+		}
+
+		private sealed class BlockingReferenceManager : IMetadataReferenceManager
+		{
+			private readonly ManualResetEventSlim _entered;
+			private readonly ManualResetEventSlim _release;
+
+			public BlockingReferenceManager(ManualResetEventSlim entered, ManualResetEventSlim release)
+			{
+				_entered = entered;
+				_release = release;
+			}
+
+			public HashSet<MetadataReference> AdditionalMetadataReferences { get; } = new();
+
+			public IReadOnlyList<MetadataReference> Resolve(Assembly assembly)
+			{
+				_entered.Set();
+				_release.Wait(TimeSpan.FromSeconds(10));
+				return Array.Empty<MetadataReference>();
+			}
 		}
 	}
 }

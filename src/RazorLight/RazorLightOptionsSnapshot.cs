@@ -20,6 +20,7 @@ namespace RazorLight
 			{
 				throw new ArgumentNullException(nameof(source));
 			}
+			ValidateCollections(source);
 
 			return new RazorLightOptionsSnapshot(new RazorLightOptions
 			{
@@ -37,6 +38,19 @@ namespace RazorLight
 				OutputEncoder = source.OutputEncoder,
 				EnableDebugMode = source.EnableDebugMode,
 			});
+		}
+
+		private static void ValidateCollections(RazorLightOptions options)
+		{
+			if (options.Namespaces == null) throw new RazorLightException("RazorLightOptions.Namespaces cannot be null.");
+			if (options.DynamicTemplates == null) throw new RazorLightException("RazorLightOptions.DynamicTemplates cannot be null.");
+			if (options.CSharpSourceKeys == null) throw new RazorLightException("RazorLightOptions.CSharpSourceKeys cannot be null.");
+			if (options.DynamicCSharpSources == null) throw new RazorLightException("RazorLightOptions.DynamicCSharpSources cannot be null.");
+			if (options.AdditionalMetadataReferences == null) throw new RazorLightException("RazorLightOptions.AdditionalMetadataReferences cannot be null.");
+			if (options.IncludedAssemblies == null) throw new RazorLightException("RazorLightOptions.IncludedAssemblies cannot be null.");
+			if (options.ExcludedAssemblies == null) throw new RazorLightException("RazorLightOptions.ExcludedAssemblies cannot be null.");
+			if (options.PageInitializers == null) throw new RazorLightException("RazorLightOptions.PageInitializers cannot be null.");
+			if (options.OutputEncoder == null) throw new RazorLightException("RazorLightOptions.OutputEncoder cannot be null.");
 		}
 	}
 }

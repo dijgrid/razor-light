@@ -53,5 +53,17 @@ namespace RazorLight.Tests.DependencyInjection
 			var model = Assert.IsAssignableFrom<TestViewModel>(prop);
 			Assert.Equal(model.Title, expectedValue);
 		}
+
+		[Fact]
+		public void Reuses_One_Injection_Plan_Per_Page_Type()
+		{
+			using var services = new ServiceCollection().BuildServiceProvider();
+			var injector = new PropertyInjector();
+
+			injector.Inject(TemplatePageTest.CreatePage(_ => { }), services);
+			injector.Inject(TemplatePageTest.CreatePage(_ => { }), services);
+
+			Assert.Equal(1, injector.PlanCreationCount);
+		}
 	}
 }

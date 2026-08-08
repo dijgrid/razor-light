@@ -22,6 +22,8 @@ namespace RazorLight
 		private readonly IDisposable? _ownedProject;
 		private readonly IDisposable? _ownedCachingProvider;
 		private static readonly ConditionalWeakTable<ITemplatePage, PageRenderState> PageRenderStates = new();
+		private static readonly ConditionalWeakTable<Type, ModelTypeInfo> ModelTypeInfos = new();
+		private static readonly ConditionalWeakTable<Type, DeclaredModelType> DeclaredModelTypes = new();
 		private int _disposed;
 
 		public EngineHandler(
@@ -473,7 +475,7 @@ namespace RazorLight
 
 			if (model != null)
 			{
-				pageContext.ModelTypeInfo = new ModelTypeInfo(model.GetType());
+				pageContext.ModelTypeInfo = GetModelTypeInfo(model.GetType());
 
 				object? pageModel = pageContext.ModelTypeInfo.CreateTemplateModel(model);
 				templatePage.SetModel(pageModel);
@@ -509,7 +511,7 @@ namespace RazorLight
 					nameof(model));
 			}
 
-			var modelTypeInfo = new ModelTypeInfo(modelType);
+			var modelTypeInfo = GetModelTypeInfo(modelType);
 			object? pageModel = model == null ? null : modelTypeInfo.CreateTemplateModel(model);
 			templatePage.SetModel(pageModel);
 
@@ -574,19 +576,27 @@ namespace RazorLight
 			}
 		}
 
-		private static Type? GetDeclaredModelType(ITemplatePage templatePage)
+		private static ModelTypeInfo GetModelTypeInfo(Type modelType) =>
+			ModelTypeInfos.GetValue(modelType, static type => new ModelTypeInfo(type));
+
+		private static Type? GetDeclaredModelType(ITemplatePage templatePage) =>
+			DeclaredModelTypes.GetValue(templatePage.GetType(), CreateDeclaredModelType).Type;
+
+		private static DeclaredModelType CreateDeclaredModelType(Type pageType)
 		{
-			for (Type? type = templatePage.GetType(); type != null; type = type.BaseType)
+			for (Type? type = pageType; type != null; type = type.BaseType)
 			{
 				if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(TemplatePage<>))
 				{
 					Type declaredType = type.GetGenericArguments()[0];
-					return declaredType == typeof(object) ? null : declaredType;
+					return new DeclaredModelType(declaredType == typeof(object) ? null : declaredType);
 				}
 			}
 
-			return null;
+			return new DeclaredModelType(null);
 		}
+
+		private sealed record DeclaredModelType(Type? Type);
 
 		private PageRenderLease BeginRender(ITemplatePage page)
 		{

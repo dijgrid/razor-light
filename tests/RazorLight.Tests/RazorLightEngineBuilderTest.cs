@@ -242,6 +242,40 @@ namespace RazorLight.Tests
 			Assert.Equal(namespaces, GetOptions(engine).Namespaces);
 		}
 
+		[Fact]
+		public void Repeated_Add_Methods_Accumulate_Values()
+		{
+			var firstReference = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+			var secondReference = MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
+			using var engine = new RazorLightEngineBuilder()
+				.UseNoProject()
+				.AddDefaultNamespaces("One")
+				.AddDefaultNamespaces("Two")
+				.AddMetadataReferences(firstReference)
+				.AddMetadataReferences(secondReference)
+				.IncludeAssemblies("First")
+				.IncludeAssemblies("Second")
+				.ExcludeAssemblies("Third")
+				.ExcludeAssemblies("Fourth")
+				.Build();
+
+			var options = GetOptions(engine);
+			Assert.Equal(new[] { "One", "Two" }, options.Namespaces.OrderBy(value => value));
+			Assert.Equal(2, options.AdditionalMetadataReferences.Count);
+			Assert.Equal(new[] { "First", "Second" }, options.IncludedAssemblies.OrderBy(value => value));
+			Assert.Equal(new[] { "Fourth", "Third" }, options.ExcludedAssemblies.OrderBy(value => value));
+		}
+
+		[Fact]
+		public void Null_Option_Collections_Have_Targeted_Diagnostics()
+		{
+			var options = new RazorLightOptions { Namespaces = null! };
+			var exception = Assert.Throws<RazorLightException>(() =>
+				new RazorLightEngineBuilder().UseOptions(options).Build());
+
+			Assert.Contains("RazorLightOptions.Namespaces", exception.Message);
+		}
+
 		private static RazorLightOptions GetOptions(IRazorLightEngine engine)
 		{
 			return Assert.IsType<RazorLightEngine>(engine).Options;

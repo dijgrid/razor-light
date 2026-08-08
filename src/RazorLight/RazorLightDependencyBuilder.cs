@@ -59,16 +59,19 @@ namespace RazorLight
 			return this;
 		}
 
+		public RazorLightDependencyBuilder AddDefaultNamespaces(params string[] namespaces)
+		{
+			if (namespaces == null) throw new ArgumentNullException(nameof(namespaces));
+			if (Array.Exists(namespaces, value => value == null)) throw new ArgumentException("Namespace values cannot contain null.", nameof(namespaces));
+			_services.Configure<RazorLightOptions>(options => options.Namespaces.UnionWith(namespaces));
+			return this;
+		}
+
 		public RazorLightDependencyBuilder ExcludeAssemblies(params string[] assemblyNames)
 		{
-			var excludedAssemblies = new HashSet<string>();
-
-			foreach (var assemblyName in assemblyNames)
-			{
-				excludedAssemblies.Add(assemblyName);
-			}
-
-			_services.Configure<RazorLightOptions>(x => x.ExcludedAssemblies = excludedAssemblies);
+			if (assemblyNames == null) throw new ArgumentNullException(nameof(assemblyNames));
+			if (Array.Exists(assemblyNames, value => value == null)) throw new ArgumentException("Assembly names cannot contain null.", nameof(assemblyNames));
+			_services.Configure<RazorLightOptions>(x => x.ExcludedAssemblies.UnionWith(assemblyNames));
 			return this;
 		}
 
@@ -79,8 +82,8 @@ namespace RazorLight
 				throw new ArgumentNullException(nameof(assemblyNames));
 			}
 
-			var includedAssemblies = new HashSet<string>(assemblyNames, StringComparer.OrdinalIgnoreCase);
-			_services.Configure<RazorLightOptions>(x => x.IncludedAssemblies = includedAssemblies);
+			if (Array.Exists(assemblyNames, value => value == null)) throw new ArgumentException("Assembly names cannot contain null.", nameof(assemblyNames));
+			_services.Configure<RazorLightOptions>(x => x.IncludedAssemblies.UnionWith(assemblyNames));
 			return this;
 		}
 
@@ -107,13 +110,9 @@ namespace RazorLight
 
 		public RazorLightDependencyBuilder AddMetadataReferences(params MetadataReference[] metadata)
 		{
-			var metadataReferences = new HashSet<MetadataReference>();
-
-			foreach (var reference in metadata)
-			{
-				metadataReferences.Add(reference);
-			}
-			_services.Configure<RazorLightOptions>(x => x.AdditionalMetadataReferences = metadataReferences);
+			if (metadata == null) throw new ArgumentNullException(nameof(metadata));
+			if (Array.Exists(metadata, value => value == null)) throw new ArgumentException("Metadata references cannot contain null.", nameof(metadata));
+			_services.Configure<RazorLightOptions>(x => x.AdditionalMetadataReferences.UnionWith(metadata));
 			return this;
 		}
 

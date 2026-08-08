@@ -2,6 +2,8 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using RazorLight.Internal;
 
@@ -9,12 +11,10 @@ namespace RazorLight.DependencyInjection
 {
 	internal sealed class PropertyInjector
 	{
-		private readonly ConcurrentDictionary<PropertyInfo, FastPropertySetter> _propertyCache;
+		private readonly ConditionalWeakTable<Type, InjectionPlan> _plans = new();
+		private int _planCreationCount;
 
-		public PropertyInjector()
-		{
-			this._propertyCache = new ConcurrentDictionary<PropertyInfo, FastPropertySetter>();
-		}
+		internal int PlanCreationCount => Volatile.Read(ref _planCreationCount);
 
 		public void Inject(ITemplatePage page, IServiceProvider services)
 		{
@@ -27,23 +27,28 @@ namespace RazorLight.DependencyInjection
 				throw new ArgumentNullException(nameof(services));
 			}
 
-			PropertyInfo[] properties = page.GetType().GetRuntimeProperties()
-			   .Where(p =>
-			   {
-				   return
-					   p.IsDefined(typeof(RazorInjectAttribute)) &&
-					   p.GetIndexParameters().Length == 0 &&
-					   p.SetMethod?.IsStatic == false;
-			   }).ToArray();
-
-			foreach (var property in properties)
+			InjectionPlan plan = _plans.GetValue(page.GetType(), CreatePlan);
+			foreach (InjectionProperty property in plan.Properties)
 			{
-				Type memberType = property.PropertyType;
-				object instance = services.GetRequiredService(memberType);
-
-				FastPropertySetter setter = _propertyCache.GetOrAdd(property, new FastPropertySetter(property));
-				setter.SetValue(page, instance);
+				object instance = services.GetRequiredService(property.ServiceType);
+				property.Setter.SetValue(page, instance);
 			}
 		}
+
+		private InjectionPlan CreatePlan(Type pageType)
+		{
+			Interlocked.Increment(ref _planCreationCount);
+			var properties = pageType.GetRuntimeProperties()
+				.Where(property =>
+					property.IsDefined(typeof(RazorInjectAttribute)) &&
+					property.GetIndexParameters().Length == 0 &&
+					property.SetMethod?.IsStatic == false)
+				.Select(property => new InjectionProperty(property.PropertyType, new FastPropertySetter(property)))
+				.ToArray();
+			return new InjectionPlan(properties);
+		}
+
+		private sealed record InjectionPlan(InjectionProperty[] Properties);
+		private sealed record InjectionProperty(Type ServiceType, FastPropertySetter Setter);
 	}
 }
