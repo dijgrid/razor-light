@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Dynamic;
 using RazorLight.Compilation;
+using RazorLight.Html;
 using RazorLight.Razor;
 using RazorLight.Tests.Razor;
 using RazorLight.Tests.Utils;
@@ -12,15 +13,29 @@ namespace RazorLight.Tests
 
 	public class RazorLightEngineTest
 	{
+		[Fact]
+		public async Task Html_Encoding_Is_Opt_In()
+		{
+			var engine = new RazorLightEngineBuilder()
+				.UseNoProject()
+				.UseHtmlEncoding()
+				.Build();
+
+			var result = await engine.CompileRenderStringAsync(
+				"html-encoding",
+				"@Model",
+				"<script>");
+
+			Assert.Equal("&lt;script&gt;", result);
+		}
 
 		[Fact]
-		public async Task Ensure_Option_Disable_Encoding_Renders_Models_Raw()
+		public async Task PlainText_Default_Renders_Models_Without_Escaping()
 		{
 			//Arrange
 			var engine = new RazorLightEngineBuilder()
 				.UseMemoryCachingProvider()
 				.UseFileSystemProject(DirectoryUtils.RootDirectory)
-				.DisableEncoding()
 				.Build();
 
 			string key = "key";

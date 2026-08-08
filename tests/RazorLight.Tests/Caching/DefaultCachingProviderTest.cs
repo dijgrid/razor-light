@@ -71,12 +71,13 @@ namespace RazorLight.Tests.Caching
 		}
 
 		[Fact]
-		public async Task Respects_DisabledEncoding_On_CachedTemplates()
+		public async Task Applies_OutputEncoder_To_CachedTemplates()
 		{
 			string templateKey = "Assets.Embedded.Empty.cshtml";
 		
+			var encoder = new TemplatePageTest.TestOutputEncoder();
 			var engine = new RazorLightEngineBuilder()
-				.DisableEncoding()
+				.UseOutputEncoder(encoder)
 				.UseMemoryCachingProvider()
 				.SetOperatingAssembly(typeof(Root).Assembly)
 				.UseEmbeddedResourcesProject(typeof(Root))
@@ -84,11 +85,11 @@ namespace RazorLight.Tests.Caching
 				.Build();
 			var testCompileToCache = await engine.CompileTemplateAsync(templateKey);
 		
-			Assert.True(testCompileToCache.DisableEncoding);
+			Assert.Same(encoder, testCompileToCache.OutputEncoder);
 		
 			var cachedCompile = await engine.CompileTemplateAsync(templateKey);
 		
-			Assert.True(cachedCompile.DisableEncoding);
+			Assert.Same(encoder, cachedCompile.OutputEncoder);
 		
 		}
 

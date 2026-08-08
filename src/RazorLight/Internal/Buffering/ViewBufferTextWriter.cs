@@ -1,446 +1,195 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Html;
+using RazorLight.Text;
 
 namespace RazorLight.Internal.Buffering
 {
 	/// <summary>
-	/// <para>
-	/// A <see cref="TextWriter"/> that is backed by a unbuffered writer (over the Response stream) and/or a 
-	/// <see cref="ViewBuffer"/>
-	/// </para>
-	/// <para>
-	/// When <c>Flush</c> or <c>FlushAsync</c> is invoked, the writer copies all content from the buffer to
-	/// the writer and switches to writing to the unbuffered writer for all further write operations.
-	/// </para>
+	/// A text writer backed by a pooled template buffer and, optionally, a final writer.
 	/// </summary>
 	public class ViewBufferTextWriter : TextWriter
 	{
 		private readonly TextWriter? _inner;
-		private readonly HtmlEncoder? _htmlEncoder;
 
-		/// <summary>
-		/// Creates a new instance of <see cref="ViewBufferTextWriter"/>.
-		/// </summary>
-		/// <param name="buffer">The <see cref="ViewBuffer"/> for buffered output.</param>
-		/// <param name="encoding">The <see cref="System.Text.Encoding"/>.</param>
 		public ViewBufferTextWriter(ViewBuffer buffer, Encoding encoding)
 		{
-			if (buffer == null)
-			{
-				throw new ArgumentNullException(nameof(buffer));
-			}
-
-			if (encoding == null)
-			{
-				throw new ArgumentNullException(nameof(encoding));
-			}
-
-			Buffer = buffer;
-			Encoding = encoding;
+			Buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
+			Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
 		}
 
-		/// <summary>
-		/// Creates a new instance of <see cref="ViewBufferTextWriter"/>.
-		/// </summary>
-		/// <param name="buffer">The <see cref="ViewBuffer"/> for buffered output.</param>
-		/// <param name="encoding">The <see cref="System.Text.Encoding"/>.</param>
-		/// <param name="htmlEncoder">The HTML encoder.</param>
-		/// <param name="inner">
-		/// The inner <see cref="TextWriter"/> to write output to when this instance is no longer buffering.
-		/// </param>
-		public ViewBufferTextWriter(ViewBuffer buffer, Encoding encoding, HtmlEncoder htmlEncoder, TextWriter inner)
+		public ViewBufferTextWriter(ViewBuffer buffer, Encoding encoding, TextWriter inner)
+			: this(buffer, encoding)
 		{
-			if (buffer == null)
-			{
-				throw new ArgumentNullException(nameof(buffer));
-			}
-
-			if (encoding == null)
-			{
-				throw new ArgumentNullException(nameof(encoding));
-			}
-
-			if (htmlEncoder == null)
-			{
-				throw new ArgumentNullException(nameof(htmlEncoder));
-			}
-
-			if (inner == null)
-			{
-				throw new ArgumentNullException(nameof(inner));
-			}
-
-			Buffer = buffer;
-			Encoding = encoding;
-			_htmlEncoder = htmlEncoder;
-			_inner = inner;
+			_inner = inner ?? throw new ArgumentNullException(nameof(inner));
 		}
 
-		/// <inheritdoc />
 		public override Encoding Encoding { get; }
 
-		/// <inheritdoc />
 		public bool IsBuffering { get; private set; } = true;
 
-		/// <summary>
-		/// Gets the <see cref="ViewBuffer"/>.
-		/// </summary>
 		public ViewBuffer Buffer { get; }
 
-		/// <inheritdoc />
-		public override void Write(char value)
-		{
-			if (IsBuffering)
-			{
-				Buffer.AppendHtml(value.ToString());
-			}
-			else
-			{
-				_inner!.Write(value);
-			}
-		}
+		public override void Write(char value) => Write(value.ToString());
 
-		/// <inheritdoc />
 		public override void Write(char[] buffer, int index, int count)
 		{
-			if (buffer == null)
-			{
-				throw new ArgumentNullException(nameof(buffer));
-			}
+			if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+			if (index < 0 || index > buffer.Length) throw new ArgumentOutOfRangeException(nameof(index));
+			if (count < 0 || buffer.Length - index < count) throw new ArgumentOutOfRangeException(nameof(count));
 
-			if (index < 0 || index >= buffer.Length)
-			{
-				throw new ArgumentOutOfRangeException(nameof(index));
-			}
-
-			if (count < 0 || (buffer.Length - index < count))
-			{
-				throw new ArgumentOutOfRangeException(nameof(count));
-			}
-
-			if (IsBuffering)
-			{
-				Buffer.AppendHtml(new string(buffer, index, count));
-			}
-			else
-			{
-				_inner!.Write(buffer, index, count);
-			}
+			Write(new string(buffer, index, count));
 		}
 
-		/// <inheritdoc />
 		public override void Write(string? value)
 		{
-			if (string.IsNullOrEmpty(value))
-			{
-				return;
-			}
+			if (string.IsNullOrEmpty(value)) return;
 
-			if (IsBuffering)
-			{
-				Buffer.AppendHtml(value);
-			}
-			else
-			{
-				_inner!.Write(value);
-			}
+			if (IsBuffering) Buffer.Append(value);
+			else _inner!.Write(value);
 		}
 
-		/// <inheritdoc />
 		public override void Write(object? value)
 		{
-			if (value == null)
-			{
-				return;
-			}
-
-			IHtmlContentContainer? container;
-			IHtmlContent? content;
-			if ((container = value as IHtmlContentContainer) != null)
-			{
-				Write(container);
-			}
-			else if ((content = value as IHtmlContent) != null)
-			{
-				Write(content);
-			}
-			else
-			{
-				Write(value.ToString());
-			}
+			if (value is ITemplateContent content) Write(content);
+			else Write(value?.ToString());
 		}
 
-		/// <summary>
-		/// Writes an <see cref="IHtmlContent"/> value.
-		/// </summary>
-		/// <param name="value">The <see cref="IHtmlContent"/> value.</param>
-		public void Write(IHtmlContent? value)
+		public void Write(ITemplateContent? value)
 		{
-			if (value == null)
-			{
-				return;
-			}
+			if (value == null) return;
 
 			if (IsBuffering)
 			{
-				Buffer.AppendHtml(value);
+				if (value is ViewBuffer buffer) buffer.MoveTo(Buffer);
+				else Buffer.Append(value);
 			}
 			else
 			{
-				value.WriteTo(_inner!, _htmlEncoder!);
+				value.WriteTo(_inner!);
 			}
 		}
 
-		/// <summary>
-		/// Writes an <see cref="IHtmlContentContainer"/> value.
-		/// </summary>
-		/// <param name="value">The <see cref="IHtmlContentContainer"/> value.</param>
-		public void Write(IHtmlContentContainer? value)
+		public override void WriteLine() => Write(NewLine);
+
+		public override void WriteLine(string? value)
 		{
-			if (value == null)
-			{
-				return;
-			}
-
-			if (IsBuffering)
-			{
-				value.MoveTo(Buffer);
-			}
-			else
-			{
-				value.WriteTo(_inner!, _htmlEncoder!);
-			}
+			Write(value);
+			Write(NewLine);
 		}
 
-		/// <inheritdoc />
 		public override void WriteLine(object? value)
 		{
-			if (value == null)
-			{
-				return;
-			}
-
-			IHtmlContentContainer? container;
-			IHtmlContent? content;
-			if ((container = value as IHtmlContentContainer) != null)
-			{
-				Write(container);
-				Write(NewLine);
-			}
-			else if ((content = value as IHtmlContent) != null)
-			{
-				Write(content);
-				Write(NewLine);
-			}
-			else
-			{
-				Write(value.ToString());
-				Write(NewLine);
-			}
+			Write(value);
+			Write(NewLine);
 		}
 
-		/// <inheritdoc />
 		public override Task WriteAsync(char value)
 		{
 			if (IsBuffering)
 			{
-				Buffer.AppendHtml(value.ToString());
+				Write(value);
 				return Task.CompletedTask;
 			}
-			else
-			{
-				return _inner!.WriteAsync(value);
-			}
+
+			return _inner!.WriteAsync(value);
 		}
 
-		/// <inheritdoc />
 		public override Task WriteAsync(char[] buffer, int index, int count)
 		{
-			if (buffer == null)
-			{
-				throw new ArgumentNullException(nameof(buffer));
-			}
-
-			if (index < 0)
-			{
-				throw new ArgumentOutOfRangeException(nameof(index));
-			}
-			if (count < 0 || (buffer.Length - index < count))
-			{
-				throw new ArgumentOutOfRangeException(nameof(count));
-			}
-
 			if (IsBuffering)
 			{
-				Buffer.AppendHtml(new string(buffer, index, count));
+				Write(buffer, index, count);
 				return Task.CompletedTask;
 			}
-			else
-			{
-				return _inner!.WriteAsync(buffer, index, count);
-			}
+
+			return _inner!.WriteAsync(buffer, index, count);
 		}
 
-		/// <inheritdoc />
 		public override Task WriteAsync(string? value)
 		{
 			if (IsBuffering)
 			{
-				if (value != null)
-				{
-					Buffer.AppendHtml(value);
-				}
+				Write(value);
 				return Task.CompletedTask;
 			}
-			else
-			{
-				return _inner!.WriteAsync(value);
-			}
+
+			return _inner!.WriteAsync(value);
 		}
 
-		/// <inheritdoc />
-		public override void WriteLine()
-		{
-			if (IsBuffering)
-			{
-				Buffer.AppendHtml(NewLine);
-			}
-			else
-			{
-				_inner!.WriteLine();
-			}
-		}
-
-		/// <inheritdoc />
-		public override void WriteLine(string? value)
-		{
-			if (IsBuffering)
-			{
-				if (value != null)
-				{
-					Buffer.AppendHtml(value);
-				}
-				Buffer.AppendHtml(NewLine);
-			}
-			else
-			{
-				_inner!.WriteLine(value);
-			}
-		}
-
-		/// <inheritdoc />
-		public override Task WriteLineAsync(char value)
-		{
-			if (IsBuffering)
-			{
-				Buffer.AppendHtml(value.ToString());
-				Buffer.AppendHtml(NewLine);
-				return Task.CompletedTask;
-			}
-			else
-			{
-				return _inner!.WriteLineAsync(value);
-			}
-		}
-
-		/// <inheritdoc />
-		public override Task WriteLineAsync(char[]? value, int start, int offset)
-		{
-			if (value == null)
-			{
-				return WriteLineAsync();
-			}
-			if (IsBuffering)
-			{
-				Buffer.AppendHtml(new string(value, start, offset));
-				Buffer.AppendHtml(NewLine);
-				return Task.CompletedTask;
-			}
-			else
-			{
-				return _inner!.WriteLineAsync(value, start, offset);
-			}
-		}
-
-		/// <inheritdoc />
-		public override Task WriteLineAsync(string? value)
-		{
-			if (IsBuffering)
-			{
-				if (value != null)
-				{
-					Buffer.AppendHtml(value);
-				}
-				Buffer.AppendHtml(NewLine);
-				return Task.CompletedTask;
-			}
-			else
-			{
-				return _inner!.WriteLineAsync(value);
-			}
-		}
-
-		/// <inheritdoc />
 		public override Task WriteLineAsync()
 		{
 			if (IsBuffering)
 			{
-				Buffer.AppendHtml(NewLine);
+				WriteLine();
 				return Task.CompletedTask;
 			}
-			else
-			{
-				return _inner!.WriteLineAsync();
-			}
+
+			return _inner!.WriteLineAsync();
 		}
 
-		/// <summary>
-		/// Copies the buffered content to the unbuffered writer and invokes flush on it.
-		/// Additionally causes this instance to no longer buffer and direct all write operations
-		/// to the unbuffered writer.
-		/// </summary>
+		public override Task WriteLineAsync(char value)
+		{
+			if (IsBuffering)
+			{
+				WriteLine(value);
+				return Task.CompletedTask;
+			}
+
+			return _inner!.WriteLineAsync(value);
+		}
+
+		public override Task WriteLineAsync(char[]? buffer, int index, int count)
+		{
+			if (buffer == null) return WriteLineAsync();
+			if (IsBuffering)
+			{
+				Write(buffer, index, count);
+				WriteLine();
+				return Task.CompletedTask;
+			}
+
+			return _inner!.WriteLineAsync(buffer, index, count);
+		}
+
+		public override Task WriteLineAsync(string? value)
+		{
+			if (IsBuffering)
+			{
+				WriteLine(value);
+				return Task.CompletedTask;
+			}
+
+			return _inner!.WriteLineAsync(value);
+		}
+
 		public override void Flush()
 		{
-			if (_inner == null || _inner is ViewBufferTextWriter)
-			{
-				return;
-			}
+			if (_inner == null || _inner is ViewBufferTextWriter) return;
 
 			if (IsBuffering)
 			{
 				IsBuffering = false;
-				Buffer.WriteTo(_inner, _htmlEncoder!);
+				Buffer.WriteTo(_inner);
 				Buffer.Clear();
 			}
 
 			_inner.Flush();
 		}
 
-		/// <summary>
-		/// Copies the buffered content to the unbuffered writer and invokes flush on it.
-		/// Additionally causes this instance to no longer buffer and direct all write operations
-		/// to the unbuffered writer.
-		/// </summary>
-		/// <returns>A <see cref="Task"/> that represents the asynchronous copy and flush operations.</returns>
 		public override async Task FlushAsync()
 		{
-			if (_inner == null || _inner is ViewBufferTextWriter)
-			{
-				return;
-			}
+			if (_inner == null || _inner is ViewBufferTextWriter) return;
 
 			if (IsBuffering)
 			{
 				IsBuffering = false;
-				await Buffer.WriteToAsync(_inner, _htmlEncoder!);
+				await Buffer.WriteToAsync(_inner).ConfigureAwait(false);
 				Buffer.Clear();
 			}
 
-			await _inner.FlushAsync();
+			await _inner.FlushAsync().ConfigureAwait(false);
 		}
 	}
 }

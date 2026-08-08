@@ -4,6 +4,7 @@ using RazorLight.Compatibility;
 using RazorLight.Compilation;
 using RazorLight.Generation;
 using RazorLight.Razor;
+using RazorLight.Text;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -33,7 +34,7 @@ namespace RazorLight
 
 		protected ICachingProvider? cachingProvider;
 
-		private bool? disableEncoding;
+		private IOutputEncoder? outputEncoder;
 
 		private bool? enableDebugMode;
 
@@ -124,45 +125,16 @@ namespace RazorLight
 		}
 
 		/// <summary>
-		/// Disables encoding of HTML entities in variables.
+		/// Configures a transformation for expression values. Template literals and
+		/// <see cref="ITemplateContent"/> values bypass this encoder.
 		/// </summary>
-		/// <example>
-		/// The model contains a property with value "&gt;hello&lt;".
-		/// 
-		/// In the rendered template this will be:
-		/// 
-		/// <code>
-		/// &gt;hello&lt;
-		/// </code>
-		/// </example>
-		/// <returns>A <see cref="RazorLightEngineBuilder"/></returns>
-		public RazorLightEngineBuilder DisableEncoding()
+		public RazorLightEngineBuilder UseOutputEncoder(IOutputEncoder encoder)
 		{
-			if (disableEncoding.HasValue)
-				throw new RazorLightException($"{nameof(disableEncoding)} has already been set");
+			if (encoder == null) throw new ArgumentNullException(nameof(encoder));
+			if (outputEncoder != null)
+				throw new RazorLightException($"{nameof(outputEncoder)} has already been set");
 
-			disableEncoding = true;
-			return this;
-		}
-
-		/// <summary>
-		/// Enables encoding of HTML entities in variables.
-		/// </summary>
-		/// <example>
-		/// The model contains a property with value "&gt;hello&lt;".
-		/// 
-		/// In the rendered template this will be:
-		/// 
-		/// <code>
-		/// &amp;gt;hello&amp;lt;
-		/// </code>
-		/// </example>
-		/// <returns>A <see cref="RazorLightEngineBuilder"/></returns>
-		public RazorLightEngineBuilder EnableEncoding()
-		{
-			if (disableEncoding.HasValue)
-				throw new RazorLightException($"{nameof(disableEncoding)} has already been set");
-			disableEncoding = false;
+			outputEncoder = encoder;
 			return this;
 		}
 
@@ -373,17 +345,12 @@ namespace RazorLight
 				options.CachingProvider = cachingProvider;
 			}
 
-			if (disableEncoding.HasValue)
+			if (outputEncoder != null)
 			{
-				if(options.DisableEncoding != null)
-					ThrowIfHasBeenSetExplicitly(nameof(disableEncoding));
+				if (!ReferenceEquals(options.OutputEncoder, PlainTextEncoder.Default))
+					ThrowIfHasBeenSetExplicitly(nameof(outputEncoder));
 
-				options.DisableEncoding = options.DisableEncoding ?? disableEncoding ?? false;
-			}
-			else
-			{
-				if (!options.DisableEncoding.HasValue)
-					options.DisableEncoding = false;
+				options.OutputEncoder = outputEncoder;
 			}
 
 			if (enableDebugMode.HasValue && options.EnableDebugMode.HasValue)

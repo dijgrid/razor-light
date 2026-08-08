@@ -147,6 +147,11 @@ namespace RazorLight.Generation
 			{
 				RazorSourceDocument source = RazorSourceDocument.ReadFrom(stream, projectItem.Key);
 				var imports = (await GetImportsAsync(projectItem)).ToList();
+				RejectTagHelperDirectives(source);
+				foreach (var import in imports)
+				{
+					RejectTagHelperDirectives(import);
+				}
 				if (modelType != null)
 				{
 					imports.Add(GetModelImport(modelType));
@@ -155,6 +160,30 @@ namespace RazorLight.Generation
 				return RazorCodeDocument.Create(source, imports);
 			}
 		}
+
+		private static void RejectTagHelperDirectives(RazorSourceDocument source)
+		{
+			var characters = new char[source.Length];
+			source.CopyTo(0, characters, 0, characters.Length);
+			string content = new string(characters);
+			foreach (string line in content.Split('\n'))
+			{
+				string directive = line.TrimStart();
+				if (IsDirective(directive, "@addTagHelper") ||
+					IsDirective(directive, "@removeTagHelper") ||
+					IsDirective(directive, "@tagHelperPrefix"))
+				{
+					throw new TemplateGenerationException(
+						"Tag helpers are not supported by the generic RazorLight core. Remove the tag-helper directive.",
+						Array.Empty<RazorDiagnostic>());
+				}
+			}
+		}
+
+		private static bool IsDirective(string line, string directive) =>
+			line.Equals(directive, StringComparison.Ordinal) ||
+			line.StartsWith(directive + " ", StringComparison.Ordinal) ||
+			line.StartsWith(directive + "\t", StringComparison.Ordinal);
 
 		private InvalidOperationException CreateMissingProjectItemException(RazorLightProjectItem projectItem)
 		{
@@ -267,15 +296,6 @@ namespace RazorLight.Generation
 			yield return "@using System.Collections.Generic";
 			yield return "@using System.Linq";
 			yield return "@using System.Threading.Tasks";
-
-			//"@inject global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel> Html");
-			//"@inject global::Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json");
-			//"@inject global::Microsoft.AspNetCore.Mvc.IViewComponentHelper Component");
-			//"@inject global::Microsoft.AspNetCore.Mvc.IUrlHelper Url");
-			//"@inject global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider");
-			//"@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor");
-			//"@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor");
-			//"@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor");
 		}
 	}
 }

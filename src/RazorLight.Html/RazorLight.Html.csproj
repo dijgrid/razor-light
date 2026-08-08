@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Dijgrid.RazorLight.Html</PackageId>
+    <Title>Dijgrid RazorLight HTML output integration</Title>
+    <Description>Optional HTML output encoding for the Dijgrid RazorLight generic C# template engine.</Description>
+    <PackageTags>RazorLight;razor;template-engine;html;encoding</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RazorLight\RazorLight.csproj" />
+  </ItemGroup>
+</Project>

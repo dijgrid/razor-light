@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using RazorLight.Caching;
 using RazorLight.Compilation;
+using RazorLight.Text;
 using Xunit;
 
 namespace RazorLight.Tests
@@ -127,12 +128,8 @@ namespace RazorLight.Tests
 				.UseOptions(new RazorLightOptions{CachingProvider = new MemoryCachingProvider()});
 			Assert.Throws<RazorLightException>(() => engine.Build());
 
-			engine = GetEngine().DisableEncoding()
-				.UseOptions(new RazorLightOptions { DisableEncoding = true});
-			Assert.Throws<RazorLightException>(() => engine.Build());
-
-			engine = GetEngine().EnableEncoding()
-				.UseOptions(new RazorLightOptions { DisableEncoding = false });
+			engine = GetEngine().UseOutputEncoder(new TemplatePageTest.TestOutputEncoder())
+				.UseOptions(new RazorLightOptions { OutputEncoder = new TemplatePageTest.TestOutputEncoder() });
 			Assert.Throws<RazorLightException>(() => engine.Build());
 
 			engine = GetEngine().EnableDebugMode()
@@ -145,26 +142,26 @@ namespace RazorLight.Tests
 		}
 
 		[Fact]
-		public void EngineBuilder_Can_Set_EncodingOption_Only_Once()
+		public void EngineBuilder_Can_Set_OutputEncoder_Only_Once()
 		{
-			var engine = new RazorLightEngineBuilder().DisableEncoding();
+			var encoder = new TemplatePageTest.TestOutputEncoder();
+			var engine = new RazorLightEngineBuilder().UseOutputEncoder(encoder);
 			Assert.NotNull(engine);
 
-			Assert.Throws<RazorLightException>(() => new RazorLightEngineBuilder().DisableEncoding().EnableEncoding());
-			Assert.Throws<RazorLightException>(() => new RazorLightEngineBuilder().DisableEncoding().DisableEncoding());
-			Assert.Throws<RazorLightException>(() => new RazorLightEngineBuilder().EnableEncoding().DisableEncoding());
-			Assert.Throws<RazorLightException>(() => new RazorLightEngineBuilder().EnableEncoding().EnableEncoding());
+			Assert.Throws<RazorLightException>(() => new RazorLightEngineBuilder()
+				.UseOutputEncoder(encoder)
+				.UseOutputEncoder(encoder));
 		}
 
 		[Fact]
-		public void DisableEncoding_Defaults_To_False()
+		public void OutputEncoder_Defaults_To_PlainText()
 		{
 			var engine = new RazorLightEngineBuilder()
 				.UseMemoryCachingProvider()
 				.UseEmbeddedResourcesProject(typeof(Root))
 				.Build();
 			
-			Assert.False(engine.Options.DisableEncoding);
+			Assert.Same(PlainTextEncoder.Default, engine.Options.OutputEncoder);
 		}
 
 		[Fact]

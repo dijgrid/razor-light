@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 using RazorLight.Extensions;
 using System;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Builder;
 using RazorLight.Compilation;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Collections.Generic;
@@ -59,10 +57,6 @@ namespace RazorLight.Tests.Extensions
 
 		public class EmbeddedEngineStartup
 		{
-			public void Configure(IApplicationBuilder app)
-			{
-
-			}
 			public void ConfigureServices(IServiceCollection services)
 			{
 				var embeddedEngine = new RazorLightEngineBuilder()
@@ -80,11 +74,7 @@ namespace RazorLight.Tests.Extensions
 			static IHostBuilder CreateHostBuilder(string[]? args)
 			{
 				return Host.CreateDefaultBuilder(args)
-					.ConfigureWebHostDefaults(webBuilder =>
-					{
-
-						webBuilder.UseStartup<EmbeddedEngineStartup>();
-					});
+					.ConfigureServices(services => new EmbeddedEngineStartup().ConfigureServices(services));
 			}
 
 			var hostBuilder = CreateHostBuilder(null);
@@ -101,11 +91,7 @@ namespace RazorLight.Tests.Extensions
 			static IHostBuilder CreateHostBuilder(string[]? args)
 			{
 				return Host.CreateDefaultBuilder(args)
-					.ConfigureWebHostDefaults(webBuilder =>
-					{
-
-						webBuilder.UseStartup<EmbeddedEngineStartup>();
-					});
+					.ConfigureServices(services => new EmbeddedEngineStartup().ConfigureServices(services));
 			}
 
 			var hostBuilder = CreateHostBuilder(null);
@@ -129,11 +115,7 @@ namespace RazorLight.Tests.Extensions
 						options.ValidateScopes = false;
 						options.ValidateOnBuild = false;
 					})
-					.ConfigureWebHostDefaults(webBuilder =>
-					{
-
-						webBuilder.UseStartup<EmbeddedEngineStartup>();
-					});
+					.ConfigureServices(services => new EmbeddedEngineStartup().ConfigureServices(services));
 			}
 
 			var hostBuilder = CreateHostBuilder(null);
@@ -155,11 +137,7 @@ namespace RazorLight.Tests.Extensions
 						options.ValidateScopes = true;
 						options.ValidateOnBuild = true;
 					})
-					.ConfigureWebHostDefaults(webBuilder =>
-					{
-
-						webBuilder.UseStartup<EmbeddedEngineStartup>();
-					});
+					.ConfigureServices(services => new EmbeddedEngineStartup().ConfigureServices(services));
 			}
 
 			var hostBuilder = CreateHostBuilder(null);
@@ -181,11 +159,7 @@ namespace RazorLight.Tests.Extensions
 						options.ValidateScopes = false;
 						options.ValidateOnBuild = true;
 					})
-					.ConfigureWebHostDefaults(webBuilder =>
-					{
-
-						webBuilder.UseStartup<EmbeddedEngineStartup>();
-					});
+					.ConfigureServices(services => new EmbeddedEngineStartup().ConfigureServices(services));
 			}
 
 			var hostBuilder = CreateHostBuilder(null);
@@ -207,11 +181,7 @@ namespace RazorLight.Tests.Extensions
 						options.ValidateScopes = true;
 						options.ValidateOnBuild = false;
 					})
-					.ConfigureWebHostDefaults(webBuilder =>
-					{
-
-						webBuilder.UseStartup<EmbeddedEngineStartup>();
-					});
+					.ConfigureServices(services => new EmbeddedEngineStartup().ConfigureServices(services));
 			}
 
 			var hostBuilder = CreateHostBuilder(null);

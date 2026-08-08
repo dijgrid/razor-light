@@ -107,6 +107,20 @@ namespace RazorLight.Tests.Generation
 		}
 
 		[Fact]
+		public async Task TagHelper_Directives_Are_Rejected_By_Generic_Core()
+		{
+			var generator = NewGenerator();
+			var item = new TextSourceRazorProjectItem(
+				"tag-helper",
+				"@addTagHelper *, Example.TagHelpers\n<example />");
+
+			var exception = await Assert.ThrowsAsync<TemplateGenerationException>(
+				() => generator.GenerateCodeAsync(item));
+
+			Assert.Contains("not supported by the generic RazorLight core", exception.Message);
+		}
+
+		[Fact]
 		public async Task TextSource_ProjectItem_Receives_Configured_Namespaces()
 		{
 			//Assign

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using RazorLight.Internal.Buffering;
 
@@ -10,18 +9,15 @@ namespace RazorLight
 {
 	public class TemplateRenderer
 	{
-		private readonly HtmlEncoder _htmlEncoder;
 		private readonly IEngineHandler _engineHandler;
 		private readonly IViewBufferScope _bufferScope;
 
 		public TemplateRenderer(
 			IEngineHandler engineHandler,
-			HtmlEncoder htmlEncoder,
 			IViewBufferScope bufferScope)
 		{
 			_engineHandler = engineHandler ?? throw new ArgumentNullException(nameof(engineHandler));
 			_bufferScope = bufferScope ?? throw new ArgumentNullException(nameof(bufferScope));
-			_htmlEncoder = htmlEncoder ?? throw new ArgumentNullException(nameof(htmlEncoder));
 		}
 
 		///// <summary>
@@ -50,7 +46,7 @@ namespace RazorLight
 				// If we get here, this is likely the top-level page (not a partial) - this means
 				// that context.Writer is wrapping the output stream. We need to buffer, so create a buffered writer.
 				var buffer = new ViewBuffer(_bufferScope, page.Key, ViewBuffer.ViewPageSize);
-				writer = new ViewBufferTextWriter(buffer, context.Writer.Encoding, _htmlEncoder, context.Writer);
+				writer = new ViewBufferTextWriter(buffer, context.Writer.Encoding, context.Writer);
 			}
 			else
 			{
@@ -206,10 +202,10 @@ namespace RazorLight
 				if (viewBufferTextWriter == null || !viewBufferTextWriter.IsBuffering)
 				{
 					// This means we're writing to a 'real' writer, probably to the actual output stream.
-					// We're using PagedBufferedTextWriter here to 'smooth' synchronous writes of IHtmlContent values.
+					// Smooth synchronous writes of final template-content values.
 					using (var writer = _bufferScope.CreateWriter(context.Writer))
 					{
-						await bodyWriter.Buffer.WriteToAsync(writer, _htmlEncoder).ConfigureAwait(false);
+						await bodyWriter.Buffer.WriteToAsync(writer).ConfigureAwait(false);
 					}
 				}
 				else

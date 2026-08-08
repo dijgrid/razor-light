@@ -44,10 +44,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\RazorLight.Html\RazorLight.Html.csproj" />
     <ProjectReference Include="..\..\src\RazorLight\RazorLight.csproj" />
   </ItemGroup>
 

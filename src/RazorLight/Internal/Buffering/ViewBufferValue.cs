@@ -1,12 +1,11 @@
 ﻿using System.Diagnostics;
 using System.IO;
-using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Html;
+using RazorLight.Text;
 
 namespace RazorLight.Internal.Buffering
 {
 	/// <summary>
-	/// Encapsulates a string or <see cref="IHtmlContent"/> value.
+	/// Encapsulates a string or <see cref="ITemplateContent"/> value.
 	/// </summary>
 	[DebuggerDisplay("{DebuggerToString()}")]
 	public struct ViewBufferValue
@@ -21,10 +20,10 @@ namespace RazorLight.Internal.Buffering
 		}
 
 		/// <summary>
-		/// Initializes a new instance of <see cref="ViewBufferValue"/> with a <see cref="IHtmlContent"/> value.
+		/// Initializes a new instance of <see cref="ViewBufferValue"/> with an <see cref="ITemplateContent"/> value.
 		/// </summary>
-		/// <param name="content">The <see cref="IHtmlContent"/>.</param>
-		public ViewBufferValue(IHtmlContent content)
+		/// <param name="content">The final template content.</param>
+		public ViewBufferValue(ITemplateContent content)
 		{
 			Value = content;
 		}
@@ -45,10 +44,10 @@ namespace RazorLight.Internal.Buffering
 					return writer.ToString();
 				}
 
-				var valueAsContent = Value as IHtmlContent;
+				var valueAsContent = Value as ITemplateContent;
 				if (valueAsContent != null)
 				{
-					valueAsContent.WriteTo(writer, HtmlEncoder.Default);
+					valueAsContent.WriteTo(writer);
 					return writer.ToString();
 				}
 

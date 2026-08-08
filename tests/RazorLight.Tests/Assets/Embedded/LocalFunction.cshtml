@@ -1,7 +1,7 @@
-﻿@using Microsoft.AspNetCore.Html
+﻿@using RazorLight.Text
 
 @{
-	Func<string, IHtmlContent> b = @<strong>@item</strong>;
+	Func<string, ITemplateContent> b = @<strong>@item</strong>;
 }
 
 @b("LocalFunction")

@@ -35,6 +35,14 @@ namespace RazorLight.Tests.Text
 		}
 
 		[Fact]
+		public void ValueProperty_PreservesWhitespace()
+		{
+			var raw = new RawString(" \t\r\n");
+
+			Assert.Equal(" \t\r\n", raw.Value);
+		}
+
+		[Fact]
 		public void WriteTo_Writes_ToSpecifiedWriter()
 		{
 			string value = "value";

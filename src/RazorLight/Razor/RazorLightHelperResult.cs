@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Html;
-using System;
+﻿using System;
 using System.IO;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using RazorLight.Text;
 
 namespace RazorLight.Razor
 {
-	public class RazorLightHelperResult : IHtmlContent
+	public class RazorLightHelperResult : ITemplateContent
 	{
 		private readonly Func<TextWriter, Task> _writeAction;
 
@@ -15,11 +14,9 @@ namespace RazorLight.Razor
 			_writeAction = asyncAction ?? throw new ArgumentNullException(nameof(asyncAction));
 		}
 
-		public virtual void WriteTo(TextWriter writer, HtmlEncoder encoder)
+		public virtual void WriteTo(TextWriter writer)
 		{
 			if (writer == null) throw new ArgumentNullException(nameof(writer));
-
-			if (encoder == null) throw new ArgumentNullException(nameof(encoder));
 
 			_writeAction(writer).GetAwaiter().GetResult();
 		}
