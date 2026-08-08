@@ -72,9 +72,6 @@ namespace RazorLight
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		Task<ITemplatePage> CompileTemplateAsync(string key);
 
-		[Obsolete("Please, use generic version of RenderTemplateAsync", true)]
-		Task<string> RenderTemplateAsync(ITemplatePage templatePage, object? model, Type modelType, ExpandoObject? viewBag = null);
-
 		/// <summary>
 		/// Renders a template with a given model
 		/// </summary>
@@ -83,9 +80,6 @@ namespace RazorLight
 		/// <param name="viewBag">Dynamic viewBag of the template</param>
 		/// <returns>Rendered string</returns>
 		Task<string> RenderTemplateAsync<T>(ITemplatePage templatePage, T model, ExpandoObject? viewBag = null);
-
-		[Obsolete("Please, use generic version of RenderTemplateAsync", true)]
-		Task RenderTemplateAsync(ITemplatePage templatePage, object? model, Type modelType, TextWriter textWriter, ExpandoObject? viewBag = null);
 
 		/// <summary>
 		/// Renders a template to the specified <paramref name="textWriter"/>

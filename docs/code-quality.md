@@ -8,8 +8,7 @@ formatting. This establishes an automated baseline without rewriting unrelated h
 
 - The library, precompile tool, sandbox, samples, and both test projects have no project-wide
   compiler warning suppressions.
-- One main-suite test uses a local `CS0618` pragma because its purpose is to preserve compatibility
-  coverage for an obsolete public constructor. The suppression surrounds only that constructor call.
+- The maintained test suites do not use project-wide or local compiler-warning suppressions.
 
 ## Nullable reference types
 
@@ -24,5 +23,5 @@ recorded API surface, so TASK-024 handles them separately after package/API vali
 Maintained production projects target only .NET 10. Obsolete `Assembly.CodeBase` and
 `AssemblyName.EscapedCodeBase` paths have been replaced by `Assembly.Location` and assembly identity.
 Unreachable .NET Standard and older .NET runtime branches were removed from production and sample
-code. The public `LegacyFixAssemblyPathFormatter` type remains for binary/source compatibility, but
-now uses supported location behavior.
+code. The .NET Framework-only assembly path formatter and registration hook were removed before the
+3.0 beta; the maintained line uses `Assembly.Location` on .NET 10.

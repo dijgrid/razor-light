@@ -1,7 +1,7 @@
 ---
 id: TASK-031
 title: Compose templates with C# source files
-status: review
+status: done
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-language-runtime-compatibility
@@ -13,7 +13,7 @@ tags:
   - compiler
   - templates
 createdAt: 2026-08-08T05:05:52.403Z
-updatedAt: 2026-08-08T05:25:38.979Z
+updatedAt: 2026-08-08T06:09:50.339Z
 refinementState: ready
 ---
 

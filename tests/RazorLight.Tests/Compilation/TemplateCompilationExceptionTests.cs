@@ -31,27 +31,5 @@ namespace RazorLight.Tests.Compilation
 			
 			Assert.Equal(exception.CompilationErrors[0], firstDiagnostic.FormattedMessage);
 		}
-		
-		[Fact]
-		public void Ensure_InitalizedWtihErrors_FormattedMessage_Matches_CompilationErrors()
-		{
-#pragma warning disable CS0618 // Compatibility coverage for the obsolete public constructor.
-			var exception = new TemplateCompilationException("Error message", new string[]
-			{
-				"formattedMessage"
-			});
-#pragma warning restore CS0618
-			
-			Assert.NotEmpty(exception.CompilationDiagnostics);
-			Assert.NotEmpty(exception.CompilationErrors);
-			
-			var firstDiagnostic = Assert.Single(exception.CompilationDiagnostics);
-			Assert.Single(exception.CompilationErrors);
-			Assert.Equal("formattedMessage",firstDiagnostic.ErrorMessage);
-			Assert.Equal("formattedMessage",firstDiagnostic.FormattedMessage);
-			Assert.Null(firstDiagnostic.LineSpan);
-
-			Assert.Equal(exception.CompilationErrors[0], firstDiagnostic.FormattedMessage);
-		}
 	}
 }

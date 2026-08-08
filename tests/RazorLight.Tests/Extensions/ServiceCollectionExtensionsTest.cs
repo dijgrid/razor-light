@@ -193,7 +193,7 @@ namespace RazorLight.Tests.Extensions
 		}
 
 		[Fact]
-		public void Ensure_RazorLightEngineWithFileSystemFactory_Is_Called()
+		public void Ensure_BuilderFactory_Is_Called()
 		{
 			var services = GetServices();
 			var called = false;
@@ -201,7 +201,10 @@ namespace RazorLight.Tests.Extensions
 			services.AddRazorLight(() =>
 			{
 				called = true;
-				return new RazorLightEngineWithFileSystemProjectFactory().Create();
+				return new RazorLightEngineBuilder()
+					.UseFileSystemProject(_rootPath)
+					.UseMemoryCachingProvider()
+					.Build();
 			});
 
 			var provider = services.BuildServiceProvider();
@@ -220,8 +223,7 @@ namespace RazorLight.Tests.Extensions
 
 			services.AddRazorLight()
 				.UseMemoryCachingProvider()
-				.UseFileSystemProject(_rootPath)
-				.UseNetFrameworkLegacyFix();
+				.UseFileSystemProject(_rootPath);
 
 			services.RemoveAll<IMetadataReferenceManager>();
 			services.AddSingleton<IMetadataReferenceManager>(new TestMetadataReferenceManager(() =>
@@ -235,9 +237,6 @@ namespace RazorLight.Tests.Extensions
 			}));
 
 			var provider = services.BuildServiceProvider();
-			var directoryFormatter = provider.GetService<IAssemblyPathFormatter>();
-			Assert.IsType<LegacyFixAssemblyPathFormatter>(directoryFormatter);
-
 			var project = provider.GetService<RazorLightProject>();
 			Assert.IsType<FileSystemRazorProject>(project);
 			var fileSystemProject = (FileSystemRazorProject)project;
@@ -316,17 +315,7 @@ namespace RazorLight.Tests.Extensions
 				throw new NotImplementedException();
 			}
 
-			public Task<string> RenderTemplateAsync(ITemplatePage templatePage, object? model, Type modelType, ExpandoObject? viewBag = null)
-			{
-				throw new NotImplementedException();
-			}
-
 			public Task<string> RenderTemplateAsync<T>(ITemplatePage templatePage, T model, ExpandoObject? viewBag = null)
-			{
-				throw new NotImplementedException();
-			}
-
-			public Task RenderTemplateAsync(ITemplatePage templatePage, object? model, Type modelType, TextWriter textWriter, ExpandoObject? viewBag = null)
 			{
 				throw new NotImplementedException();
 			}

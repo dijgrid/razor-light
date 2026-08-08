@@ -49,6 +49,20 @@ application extension points.
 
 ## Source migration examples
 
+TASK-027 removed the following inherited entry points before the first beta:
+
+| Removed entry point | Supported replacement |
+| --- | --- |
+| `EngineFactory.ForFileSystem(...)`, `IEngineFactory.ForFileSystem(...)` | `new RazorLightEngineBuilder().UseFileSystemProject(root)` |
+| `EngineFactory.ForEmbeddedResources(...)`, `IEngineFactory.ForEmbeddedResources(...)` | `new RazorLightEngineBuilder().UseEmbeddedResourcesProject(rootType)` |
+| `EngineFactory.Create(options)`, `IEngineFactory.Create(options)` | `new RazorLightEngineBuilder().UseNoProject().UseOptions(options).Build()` |
+| `EngineFactory.Create(project, options)`, `IEngineFactory.Create(project, options)` | `new RazorLightEngineBuilder().UseProject(project).UseOptions(options).Build()` |
+| `IRazorLightEngineFactory`, `RazorLightEngineWithFileSystemProjectFactory` | `RazorLightEngineBuilder`, or `services.AddRazorLight()` for DI |
+| `CompileRenderAsync(key, content, model, modelType, viewBag)` | `CompileRenderStringAsync(key, content, model, modelType, viewBag)` |
+| Non-generic `RenderTemplateAsync(..., model, modelType, ...)` overloads | Generic `RenderTemplateAsync(page, typedModel, ...)` overloads |
+| `UseNetFrameworkLegacyFix()` and `LegacyFixAssemblyPathFormatter` | Remove the call; the maintained .NET 10 path needs no workaround |
+| `TemplateCompilationException(message, IEnumerable<string>)` | Construct `TemplateCompilationDiagnostic` values and use the structured constructor |
+
 ### Engine construction
 
 Replace the inherited factory:
@@ -67,6 +81,22 @@ IRazorLightEngine engine = new RazorLightEngineBuilder()
 The exact obsolete factory method varied across inherited versions; the 3.x replacement is always
 an explicit builder or DI registration.
 
+Replace the redundant file-system factory the same way:
+
+```csharp
+// removed
+IRazorLightEngine engine = new RazorLightEngineWithFileSystemProjectFactory().Create(
+    operatingAssembly,
+    root);
+
+// supported
+IRazorLightEngine engine = new RazorLightEngineBuilder()
+    .SetOperatingAssembly(operatingAssembly)
+    .UseFileSystemProject(root)
+    .UseMemoryCachingProvider()
+    .Build();
+```
+
 ### String templates and runtime model types
 
 Replace error-only overloads with the supported string method:
@@ -80,6 +110,32 @@ string output = await engine.CompileRenderStringAsync(
 ```
 
 Use the generic overload when the model type is known at compile time.
+
+The two error-only `RenderTemplateAsync` overloads that accepted a separate `Type` were also removed.
+Use the supported generic overloads for string or writer output:
+
+```csharp
+string output = await engine.RenderTemplateAsync(page, typedModel, viewBag);
+await engine.RenderTemplateAsync(page, typedModel, writer, viewBag);
+```
+
+### Retired .NET Framework workaround
+
+Remove `UseNetFrameworkLegacyFix()` from dependency-injection registration. The 3.x line targets
+.NET 10, and normal metadata discovery already uses supported `Assembly.Location` behavior.
+
+### Compilation diagnostics
+
+Code that constructed `TemplateCompilationException` from strings must preserve structured compiler
+information explicitly:
+
+```csharp
+var diagnostic = new TemplateCompilationDiagnostic(
+    errorMessage,
+    formattedMessage,
+    lineSpan);
+var exception = new TemplateCompilationException(message, new[] { diagnostic });
+```
 
 ### Cache invalidation
 

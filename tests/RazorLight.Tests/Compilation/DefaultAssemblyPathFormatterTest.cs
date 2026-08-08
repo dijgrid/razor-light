@@ -23,15 +23,5 @@ namespace RazorLight.Tests.Compilation
 			Assert.NotNull(directory);
 		}
 
-		[Fact]
-		public void Ensure_GetAssemblyPath_MatchesLegacy()
-		{
-			var assembly = typeof(DefaultAssemblyPathFormatterTest).Assembly;
-			_testOutputHelper.WriteLine(assembly.Location);
-			var directory = new DefaultAssemblyPathFormatter().GetAssemblyPath(assembly);
-			var legacyDir = new LegacyFixAssemblyPathFormatter().GetAssemblyPath(assembly);
-			Assert.NotNull(directory);
-			Assert.Equal(legacyDir, directory);
-		}
 	}
 }
