@@ -7,6 +7,18 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 
 ## Unreleased
 
+## 3.0.0-beta.4 - 2026-08-08
+
+This is the complete publishable beta of the independently maintained RazorLight 3.0 line. It
+supersedes the partially published `beta.3` attempt and contains the same 3.0 API and functionality
+described below.
+
+### Fixed
+
+- The protected release workflow now submits only primary `.nupkg` files. NuGet automatically uploads
+  their adjacent symbol packages, so the job no longer sends duplicate `.snupkg` uploads.
+- NuGet publication tolerates an already-published primary package during a controlled rerun.
+
 ## 3.0.0-beta.3 - 2026-08-08
 
 This publishable beta supersedes the earlier prerelease tag attempts, which did not publish NuGet

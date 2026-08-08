@@ -1,6 +1,6 @@
 ---
 id: TASK-030
-title: Prepare and publish the 3.0.0-beta.3 release
+title: Prepare and publish the 3.0.0-beta.4 release
 status: in-progress
 priority: high
 epic: EPIC-modernization
@@ -25,7 +25,7 @@ tags:
   - beta
   - compatibility
 createdAt: 2026-08-08T04:17:59.721Z
-updatedAt: 2026-08-08T22:39:00.000Z
+updatedAt: 2026-08-08T23:06:00.000Z
 refinementState: ready
 ---
 
@@ -35,7 +35,7 @@ performance, lifecycle, precompiled-runtime, and maintainability findings are co
 
 ## Acceptance criteria
 
-- [ ] Version and tag policy accepts `3.0.0-beta.3`, and GitHub creates a prerelease rather than a
+- [ ] Version and tag policy accepts `3.0.0-beta.4`, and GitHub creates a prerelease rather than a
       stable release.
 - [ ] `Dijgrid.RazorLight`, `Dijgrid.RazorLight.Html`, and
       `Dijgrid.RazorLight.Precompile` are built once, validated, approved through the protected
@@ -54,7 +54,7 @@ performance, lifecycle, precompiled-runtime, and maintainability findings are co
 
 ## Implementation notes
 
-- Configured the package projects to evaluate to `3.0.0-beta.3` and updated release automation to
+- Configured the package projects to evaluate to `3.0.0-beta.4` and updated release automation to
   require an exact SemVer prerelease tag, publish Core, optional HTML, and precompile packages plus
   symbols, verify artifact hashes after the protected deployment approval, and create a GitHub
   prerelease with versioned notes.
@@ -74,4 +74,8 @@ performance, lifecycle, precompiled-runtime, and maintainability findings are co
   Source Link, and SHA-256 checks; a new prerelease tag is required because reruns use the workflow
   definition recorded in the existing tag.
 - `v3.0.0-beta.2` correctly failed before building because its tag did not match the evaluated
-  `3.0.0-beta.1` package version. The next safe immutable version is `3.0.0-beta.3`.
+  `3.0.0-beta.1` package version. `v3.0.0-beta.3` published the Core package and symbol successfully,
+  then failed when the workflow redundantly submitted the automatically uploaded symbol package.
+  `3.0.0-beta.4` submits primary packages only and uses duplicate-tolerant publication.
+- The clean-consumer smoke test now uses a canonical trailing-slash NuGet v3 source URL so the local
+  Windows command path is not interpreted as a file-system source.

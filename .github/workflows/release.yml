@@ -177,12 +177,13 @@ jobs:
         shell: pwsh
         run: |
           Get-ChildItem artifacts/packages -File |
-            Where-Object Extension -In '.nupkg', '.snupkg' |
+            Where-Object Extension -eq '.nupkg' |
             Sort-Object Name |
             ForEach-Object {
               & dotnet nuget push $_.FullName `
                   --api-key '${{ steps.login.outputs.NUGET_API_KEY }}' `
-                  --source https://api.nuget.org/v3/index.json
+                  --source https://api.nuget.org/v3/index.json `
+                  --skip-duplicate
               if ($LASTEXITCODE -ne 0) {
                   throw "NuGet push failed for '$($_.Name)'."
               }
