@@ -78,9 +78,9 @@ namespace RazorLight.Tests
 		}
 
 		[Fact]
-		public void Throws_On_Null_PrerenderCallbacks()
+		public void Throws_On_Null_PageInitializer()
 		{
-			Action action = () => new RazorLightEngineBuilder().AddPrerenderCallbacks(null!);
+			Action action = () => new RazorLightEngineBuilder().AddPageInitializer(null!);
 
 			Assert.Throws<ArgumentNullException>(action);
 		}
@@ -118,10 +118,6 @@ namespace RazorLight.Tests
 
 			engine = GetEngine().ExcludeAssemblies("123")
                 .UseOptions(new RazorLightOptions{ ExcludedAssemblies = new HashSet<string>{ "123"}});
-			Assert.Throws<RazorLightException>(() => engine.Build());
-
-			engine = GetEngine().AddPrerenderCallbacks(x => x.Layout = "123")
-				.UseOptions(new RazorLightOptions {PreRenderCallbacks = new List<Action<ITemplatePage>> {x => x.Layout = "123"}});
 			Assert.Throws<RazorLightException>(() => engine.Build());
 
 			engine = GetEngine().UseMemoryCachingProvider()

@@ -6,21 +6,26 @@ namespace RazorLight
 	public class PageContext : IPageContext
 	{
 		private dynamic _viewBag;
+		private readonly ExpandoObject _viewBagData;
 
 		public PageContext()
 		{
-			_viewBag = new ExpandoObject();
+			_viewBagData = new ExpandoObject();
+			_viewBag = new RazorLightViewBag(_viewBagData);
 			Writer = new StringWriter();
 		}
 
-		public PageContext(ExpandoObject? viewBag) : this()
+		public PageContext(ExpandoObject? viewBag)
 		{
-			_viewBag = viewBag ?? new ExpandoObject();
+			_viewBagData = viewBag ?? new ExpandoObject();
+			_viewBag = new RazorLightViewBag(_viewBagData);
+			Writer = new StringWriter();
 		}
 
 		public TextWriter Writer { get; set; }
 
 		public dynamic ViewBag => _viewBag;
+		internal ExpandoObject ViewBagData => _viewBagData;
 
 		public string? ExecutingPageKey { get; set; }
 

@@ -59,6 +59,10 @@ an argument to a dynamically dispatched operation. This dynamic-binding limitati
 from a missing import. RazorLight appends guidance to that diagnostic directing callers to
 `@model` or an explicit model-type overload.
 
+ViewBag missing-member reads return `null`, matching ordinary Razor fallback and null-conditional
+expectations. Existing members remain dynamic; invalid calls, conversions, and index operations
+continue to report runtime-binding errors.
+
 The tests assert the relevant generated-code fragments and diagnostic messages rather than complete
 generated files, paths, or compiler versions.
 

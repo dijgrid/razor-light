@@ -12,9 +12,10 @@ namespace RazorLight.Tests.DependencyInjection
 	public class PropertyInjectorTest
 	{
 		[Fact]
-		public void Throws_On_Null_ServiceCollection()
+		public void Throws_On_Null_Services()
 		{
-			Assert.Throws<ArgumentNullException>(() => new PropertyInjector(null!));
+			Assert.Throws<ArgumentNullException>(() =>
+				new PropertyInjector().Inject(TemplatePageTest.CreatePage(_ => { }), null!));
 		}
 
 		[Fact]
@@ -24,7 +25,8 @@ namespace RazorLight.Tests.DependencyInjection
 			string expectedValue = "TestValue";
 			string templateKey = "key";
 			collection.AddSingleton(new TestViewModel { Title = expectedValue });
-			var propertyInjector = new PropertyInjector(collection.BuildServiceProvider());
+			var services = collection.BuildServiceProvider();
+			var propertyInjector = new PropertyInjector();
 
 			var builder = new StringBuilder();
 			builder.AppendLine("@model object");
@@ -40,7 +42,7 @@ namespace RazorLight.Tests.DependencyInjection
 			ITemplatePage templatePage = await engine.CompileTemplateAsync(templateKey);
 
 			//Act
-			propertyInjector.Inject(templatePage);
+			propertyInjector.Inject(templatePage, services);
 
 			//Assert
 			var property = templatePage.GetType().GetProperty("test");

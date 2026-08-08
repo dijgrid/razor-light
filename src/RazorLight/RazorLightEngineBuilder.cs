@@ -32,7 +32,7 @@ namespace RazorLight
 
 		private MetadataReferenceDiscoveryMode? metadataReferenceDiscovery;
 
-		protected List<Action<ITemplatePage>>? prerenderCallbacks;
+		private readonly List<Action<ITemplatePage>> pageInitializers = new List<Action<ITemplatePage>>();
 
 		protected RazorLightProject? project;
 
@@ -237,15 +237,17 @@ namespace RazorLight
 			return this;
 		}
 
-		public virtual RazorLightEngineBuilder AddPrerenderCallbacks(params Action<ITemplatePage>[] callbacks)
+		/// <summary>
+		/// Adds an initializer that runs once for every rendered page, including layouts and includes.
+		/// </summary>
+		public virtual RazorLightEngineBuilder AddPageInitializer(Action<ITemplatePage> initializer)
 		{
-			if (callbacks == null)
+			if (initializer == null)
 			{
-				throw new ArgumentNullException(nameof(callbacks));
+				throw new ArgumentNullException(nameof(initializer));
 			}
 
-			prerenderCallbacks = new List<Action<ITemplatePage>>();
-			prerenderCallbacks.AddRange(callbacks);
+			pageInitializers.Add(initializer);
 
 			return this;
 		}
@@ -316,7 +318,7 @@ namespace RazorLight
 
 		public virtual IRazorLightEngine Build()
 		{
-			var buildOptions = CloneOptions(options ?? new RazorLightOptions());
+			var buildOptions = RazorLightOptionsSnapshot.Create(options ?? new RazorLightOptions()).Options;
 			project = project ?? new NoRazorProject();
 
 			if (namespaces != null)
@@ -383,12 +385,9 @@ namespace RazorLight
 				buildOptions.MetadataReferenceDiscovery = metadataReferenceDiscovery.Value;
 			}
 
-			if (prerenderCallbacks != null)
+			if (pageInitializers.Count > 0)
 			{
-				if(prerenderCallbacks.Count > 0 && buildOptions.PreRenderCallbacks.Count > 0)
-					ThrowIfHasBeenSetExplicitly(nameof(prerenderCallbacks));
-
-				buildOptions.PreRenderCallbacks = new List<Action<ITemplatePage>>(prerenderCallbacks);
+				buildOptions.PageInitializers = new List<Action<ITemplatePage>>(pageInitializers);
 			}
 
 			if (cachingProvider != null)
@@ -441,26 +440,6 @@ namespace RazorLight
 			var engineHandler = new EngineHandler(buildOptions, templateCompiler, templateFactoryProvider, buildOptions.CachingProvider);
 
 			return new RazorLightEngine(engineHandler);
-		}
-
-		private static RazorLightOptions CloneOptions(RazorLightOptions source)
-		{
-			return new RazorLightOptions
-			{
-				Namespaces = new HashSet<string>(source.Namespaces),
-				DynamicTemplates = new ConcurrentDictionary<string, string>(source.DynamicTemplates),
-				CSharpSourceKeys = new HashSet<string>(source.CSharpSourceKeys, StringComparer.Ordinal),
-				DynamicCSharpSources = new ConcurrentDictionary<string, string>(source.DynamicCSharpSources, StringComparer.Ordinal),
-				AdditionalMetadataReferences = new HashSet<MetadataReference>(source.AdditionalMetadataReferences),
-				IncludedAssemblies = new HashSet<string>(source.IncludedAssemblies, StringComparer.OrdinalIgnoreCase),
-				ExcludedAssemblies = new HashSet<string>(source.ExcludedAssemblies),
-				MetadataReferenceDiscovery = source.MetadataReferenceDiscovery,
-				PreRenderCallbacks = new List<Action<ITemplatePage>>(source.PreRenderCallbacks),
-				CachingProvider = source.CachingProvider,
-				OperatingAssembly = source.OperatingAssembly,
-				OutputEncoder = source.OutputEncoder,
-				EnableDebugMode = source.EnableDebugMode,
-			};
 		}
 
 		private void ThrowIfHasBeenSetExplicitly(string option)

@@ -305,6 +305,56 @@ must support concurrent retrieval, insertion, replacement, and removal. See the 
 [caching contract](caching.md) for cache identities, precompiled providers, and process-local
 limitations.
 
+## Dependency injection and page initialization
+
+Engines resolved from Microsoft.Extensions.DependencyInjection support Razor's `@inject` directive:
+
+```csharp
+services.AddScoped<ReportClock>();
+services.AddRazorLight()
+    .UseFileSystemProject("C:/Templates")
+    .SetOperatingAssembly(typeof(Program).Assembly);
+
+IRazorLightEngine engine = services.BuildServiceProvider()
+    .GetRequiredService<IRazorLightEngine>();
+```
+
+```razor
+@inject MyApp.ReportClock Clock
+Generated at @Clock.UtcNow
+```
+
+Each top-level render creates and disposes one service scope. The entry page, layouts, sections, and
+includes share that scope, so scoped services retain one identity throughout a composed render.
+Builder-created engines do not imply a service provider and leave `@inject` properties unset.
+
+Code that needs to initialize every page without a service provider can register an initializer at
+construction time. It runs exactly once for each page instance, including layouts and includes:
+
+```csharp
+var engine = new RazorLightEngineBuilder()
+    .UseFileSystemProject("C:/Templates")
+    .AddPageInitializer(page => InitializeTemplatePage(page))
+    .Build();
+```
+
+RazorLight's dependency injection is standalone runtime service resolution. It does not provide MVC
+request services, controllers, `ViewContext`, URL helpers, tag helpers, or other MVC activation.
+
+## ViewBag behavior
+
+Pass an `ExpandoObject` to a render overload when a template needs supplemental dynamic values.
+Missing top-level members return `null`, so normal fallback and null-conditional expressions work:
+
+```razor
+@(ViewBag.OptionalTitle ?? "Untitled")
+@(ViewBag.Missing?.Nested ?? "Fallback")
+```
+
+Existing nested objects retain their own dynamic behavior. Invalid method calls, conversions, and
+index operations still throw a `RuntimeBinderException`; RazorLight does not hide programming
+errors merely because missing member reads are null-tolerant.
+
 ## Output encoding
 
 The core engine writes expression values as plain text. This is the correct default for generic

@@ -11,13 +11,23 @@ namespace RazorLight
 	{
 		private readonly IEngineHandler _engineHandler;
 		private readonly IViewBufferScope _bufferScope;
+		private readonly Action<ITemplatePage>? _pageInitializer;
+		private readonly HashSet<ITemplatePage> _initializedPages = new HashSet<ITemplatePage>(ReferenceEqualityComparer.Instance);
 
 		public TemplateRenderer(
 			IEngineHandler engineHandler,
-			IViewBufferScope bufferScope)
+			IViewBufferScope bufferScope) : this(engineHandler, bufferScope, pageInitializer: null)
+		{
+		}
+
+		internal TemplateRenderer(
+			IEngineHandler engineHandler,
+			IViewBufferScope bufferScope,
+			Action<ITemplatePage>? pageInitializer)
 		{
 			_engineHandler = engineHandler ?? throw new ArgumentNullException(nameof(engineHandler));
 			_bufferScope = bufferScope ?? throw new ArgumentNullException(nameof(bufferScope));
+			_pageInitializer = pageInitializer;
 		}
 
 		///// <summary>
@@ -66,8 +76,10 @@ namespace RazorLight
 
 			try
 			{
-				//Apply engine-global callbacks
-				ExecutePageCallbacks(page, _engineHandler.Options.PreRenderCallbacks.ToList());
+				if (_initializedPages.Add(page))
+				{
+					_pageInitializer?.Invoke(page);
+				}
 
 				if (invokeViewStarts)
 				{
@@ -92,7 +104,7 @@ namespace RazorLight
 			{
 				ITemplatePage template = await _engineHandler.CompileTemplateAsync(key);
 
-				await _engineHandler.RenderIncludedTemplateAsync(template, model, context.Writer, context.ViewBag, this);
+				await _engineHandler.RenderIncludedTemplateAsync(template, model, context.Writer, context.ViewBagData, this);
 			};
 
 			//_pageActivator.Activate(page, context);
@@ -216,22 +228,5 @@ namespace RazorLight
 			}
 		}
 
-		private void ExecutePageCallbacks(ITemplatePage page, IList<Action<ITemplatePage>> callbacks)
-		{
-			if (callbacks?.Count > 0)
-			{
-				foreach (var callback in callbacks)
-				{
-					try
-					{
-						callback(page);
-					}
-					catch (Exception)
-					{
-						//Ignore
-					}
-				}
-			}
-		}
 	}
 }
