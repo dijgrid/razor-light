@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using RazorLight.Text;
 
@@ -77,8 +78,12 @@ namespace RazorLight.Internal.Buffering
 		}
 
 		public async Task WriteToAsync(TextWriter writer)
+			=> await WriteToAsync(writer, CancellationToken.None).ConfigureAwait(false);
+
+		public async Task WriteToAsync(TextWriter writer, CancellationToken cancellationToken)
 		{
 			if (writer == null) throw new ArgumentNullException(nameof(writer));
+			cancellationToken.ThrowIfCancellationRequested();
 
 			for (var i = 0; i < Count; i++)
 			{
@@ -87,11 +92,11 @@ namespace RazorLight.Internal.Buffering
 				{
 					if (page.Buffer[j].Value is string value)
 					{
-						await writer.WriteAsync(value).ConfigureAwait(false);
+						await writer.WriteAsync(value.AsMemory(), cancellationToken).ConfigureAwait(false);
 					}
 					else if (page.Buffer[j].Value is ViewBuffer nested)
 					{
-						await nested.WriteToAsync(writer).ConfigureAwait(false);
+						await nested.WriteToAsync(writer, cancellationToken).ConfigureAwait(false);
 					}
 					else if (page.Buffer[j].Value is ITemplateContent content)
 					{

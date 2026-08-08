@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RazorLight.Internal.Buffering
@@ -25,8 +26,11 @@ namespace RazorLight.Internal.Buffering
 			// Don't do anything. We'll call FlushAsync.
 		}
 
-		public override async Task FlushAsync()
+		public override Task FlushAsync() => FlushAsync(CancellationToken.None);
+
+		public override async Task FlushAsync(CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			var length = _charBuffer.Length;
 			if (length == 0)
 			{
@@ -40,7 +44,9 @@ namespace RazorLight.Internal.Buffering
 				var pageLength = Math.Min(length, page.Length);
 				if (pageLength != 0)
 				{
-					await _inner.WriteAsync(page, index: 0, count: pageLength);
+					await _inner.WriteAsync(
+						page.AsMemory(0, pageLength),
+						cancellationToken).ConfigureAwait(false);
 				}
 
 				length -= pageLength;
@@ -101,6 +107,14 @@ namespace RazorLight.Internal.Buffering
 		{
 			await FlushAsync();
 			await _inner.WriteAsync(value);
+		}
+
+		public override async Task WriteAsync(
+			ReadOnlyMemory<char> buffer,
+			CancellationToken cancellationToken = default)
+		{
+			await FlushAsync(cancellationToken).ConfigureAwait(false);
+			await _inner.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
 		}
 
 		protected override void Dispose(bool disposing)

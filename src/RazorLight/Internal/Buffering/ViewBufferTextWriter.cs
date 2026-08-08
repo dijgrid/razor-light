@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using RazorLight.Text;
 
@@ -118,6 +119,20 @@ namespace RazorLight.Internal.Buffering
 			return _inner!.WriteAsync(value);
 		}
 
+		public override Task WriteAsync(
+			ReadOnlyMemory<char> buffer,
+			CancellationToken cancellationToken = default)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			if (IsBuffering)
+			{
+				Write(buffer.ToString());
+				return Task.CompletedTask;
+			}
+
+			return _inner!.WriteAsync(buffer, cancellationToken);
+		}
+
 		public override Task WriteLineAsync()
 		{
 			if (IsBuffering)
@@ -178,18 +193,21 @@ namespace RazorLight.Internal.Buffering
 			_inner.Flush();
 		}
 
-		public override async Task FlushAsync()
+		public override Task FlushAsync() => FlushAsync(CancellationToken.None);
+
+		public override async Task FlushAsync(CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (_inner == null || _inner is ViewBufferTextWriter) return;
 
 			if (IsBuffering)
 			{
 				IsBuffering = false;
-				await Buffer.WriteToAsync(_inner).ConfigureAwait(false);
+				await Buffer.WriteToAsync(_inner, cancellationToken).ConfigureAwait(false);
 				Buffer.Clear();
 			}
 
-			await _inner.FlushAsync().ConfigureAwait(false);
+			await _inner.FlushAsync(cancellationToken).ConfigureAwait(false);
 		}
 	}
 }

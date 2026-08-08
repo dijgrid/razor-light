@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Extensions.DependencyInjection;
@@ -161,6 +162,27 @@ namespace RazorLight.Tests
 		}
 
 		[Fact]
+		public async Task Cancellation_Does_Not_Dispose_Render_Scope_While_Page_Is_Still_Running()
+		{
+			var probes = new ConcurrentBag<ScopedProbe>();
+			using var provider = CreateServices(probes).BuildServiceProvider(validateScopes: true);
+			var page = new ScopedCancellationPage();
+			using var cancellationSource = new CancellationTokenSource();
+
+			Task render = provider.GetRequiredService<IRazorLightEngine>()
+				.RenderTemplateAsync(page, new object(), cancellationSource.Token);
+			await page.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			cancellationSource.Cancel();
+
+			Assert.False(render.IsCompleted);
+			page.Release.TrySetResult();
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => render);
+			Assert.False(page.ProbeWasDisposedDuringExecution);
+			Assert.Single(probes);
+			Assert.True(probes.Single().IsDisposed);
+		}
+
+		[Fact]
 		public async Task Dependency_Injection_Options_Are_Snapshotted_Before_Runtime_Services()
 		{
 			var probes = new ConcurrentBag<ScopedProbe>();
@@ -236,6 +258,30 @@ namespace RazorLight.Tests
 			public string Id { get; } = Guid.NewGuid().ToString("N");
 			public bool IsDisposed { get; private set; }
 			public void Dispose() => IsDisposed = true;
+		}
+
+		private sealed class ScopedCancellationPage : TemplatePage
+		{
+			public TaskCompletionSource Started { get; } =
+				new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			public TaskCompletionSource Release { get; } =
+				new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			[RazorInject]
+			public ScopedProbe Probe { get; set; } = null!;
+
+			public bool ProbeWasDisposedDuringExecution { get; private set; }
+
+			public override async Task ExecuteAsync()
+			{
+				Started.TrySetResult();
+				await Release.Task;
+				ProbeWasDisposedDuringExecution = Probe.IsDisposed;
+			}
+
+			public override void SetModel(object? model) { }
+			public override void BeginContext(int position, int length, bool isLiteral) { }
+			public override void EndContext() { }
 		}
 
 		private sealed class DictionaryProject : RazorLightProject

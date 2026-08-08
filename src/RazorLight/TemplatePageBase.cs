@@ -47,7 +47,7 @@ namespace RazorLight
 			}
 		}
 
-		public Func<string, object?, Task>? IncludeFunc { get; set; }
+		public Func<string, object?, CancellationToken, Task>? IncludeFunc { get; set; }
 
 		/// <inheritdoc />
 		public IDictionary<string, RenderAsyncDelegate>? PreviousSectionWriters { get; set; }
@@ -91,7 +91,7 @@ namespace RazorLight
 		/// <returns>A task that represents the asynchronous flush operation and returns an empty content token.</returns>
 		/// <remarks>The value returned is a token that allows <see cref="FlushAsync()"/> to be used directly
 		/// in a template section. It does not represent rendered content.</remarks>
-		public virtual Task<TemplateContent> FlushAsync() => FlushAsync(CancellationToken.None);
+		public virtual Task<TemplateContent> FlushAsync() => FlushAsync(CancellationToken);
 
 		/// <summary>Flushes buffered output while observing cancellation.</summary>
 		public virtual async Task<TemplateContent> FlushAsync(CancellationToken cancellationToken)

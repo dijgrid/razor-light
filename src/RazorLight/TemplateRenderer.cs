@@ -92,7 +92,8 @@ namespace RazorLight
 				if (invokeViewStarts)
 				{
 					// Execute view starts using the same context + writer as the page to render.
-					await RenderViewStartsAsync(context).WaitAsync(cancellationToken).ConfigureAwait(false);
+					await RenderViewStartsAsync(context).ConfigureAwait(false);
+					cancellationToken.ThrowIfCancellationRequested();
 				}
 
 				await RenderPageCoreAsync(page, context, cancellationToken).ConfigureAwait(false);
@@ -108,9 +109,11 @@ namespace RazorLight
 		private async Task RenderPageCoreAsync(ITemplatePage page, PageContext context, CancellationToken cancellationToken)
 		{
 			page.PageContext = context;
-			page.IncludeFunc = async (key, model) =>
+			page.IncludeFunc = async (key, model, includeCancellationToken) =>
 			{
-				ITemplatePage template = await _engineHandler.CompileTemplateAsync(key, cancellationToken).ConfigureAwait(false);
+				ITemplatePage template = await _engineHandler
+					.CompileTemplateAsync(key, includeCancellationToken)
+					.ConfigureAwait(false);
 
 				await _engineHandler.RenderIncludedTemplateAsync(
 					template,
@@ -118,12 +121,13 @@ namespace RazorLight
 					context.Writer,
 					context.ViewBagData,
 					this,
-					cancellationToken).ConfigureAwait(false);
+					includeCancellationToken).ConfigureAwait(false);
 			};
 
 			//_pageActivator.Activate(page, context);
 
-			await page.ExecuteAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
+			await page.ExecuteAsync().ConfigureAwait(false);
+			cancellationToken.ThrowIfCancellationRequested();
 		}
 
 		private Task RenderViewStartsAsync(PageContext context)
@@ -234,7 +238,7 @@ namespace RazorLight
 					// Smooth synchronous writes of final template-content values.
 					using (var writer = _bufferScope.CreateWriter(context.Writer))
 					{
-						await bodyWriter.Buffer.WriteToAsync(writer).WaitAsync(cancellationToken).ConfigureAwait(false);
+						await bodyWriter.Buffer.WriteToAsync(writer, cancellationToken).ConfigureAwait(false);
 					}
 				}
 				else

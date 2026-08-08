@@ -100,6 +100,119 @@ namespace RazorLight.Tests
 		}
 
 		[Fact]
+		public async Task Render_Waits_For_Token_Ignoring_Page_Before_Returning_Cancellation()
+		{
+			var started = NewCompletionSource();
+			var release = NewCompletionSource();
+			var page = new TestPage(async page =>
+			{
+				started.TrySetResult();
+				await release.Task;
+				page.WriteLiteral("completed");
+			});
+			var engine = new RazorLightEngineBuilder().UseNoProject().Build();
+			using var cancellationSource = new CancellationTokenSource();
+
+			Task<string> render = engine.RenderTemplateAsync(page, new object(), cancellationSource.Token);
+			await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			cancellationSource.Cancel();
+
+			Assert.False(render.IsCompleted);
+			release.TrySetResult();
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => render);
+		}
+
+		[Fact]
+		public async Task Explicit_Include_Token_Reaches_Include_Operation()
+		{
+			CancellationToken observedToken = default;
+			var page = new TestPage(_ => Task.CompletedTask)
+			{
+				PageContext = new PageContext { CancellationToken = new CancellationTokenSource().Token },
+				IncludeFunc = (_, _, cancellationToken) =>
+				{
+					observedToken = cancellationToken;
+					return Task.CompletedTask;
+				},
+			};
+			using var explicitSource = new CancellationTokenSource();
+
+			await page.IncludeAsync("child", null, explicitSource.Token);
+
+			Assert.Equal(explicitSource.Token, observedToken);
+		}
+
+		[Fact]
+		public async Task Section_Cancellation_Waits_For_Token_Ignoring_Delegate()
+		{
+			var started = NewCompletionSource();
+			var release = NewCompletionSource();
+			var page = new TestPage(_ => Task.CompletedTask)
+			{
+				PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
+				{
+					["delayed"] = async () =>
+					{
+						started.TrySetResult();
+						await release.Task;
+					},
+				},
+			};
+			using var cancellationSource = new CancellationTokenSource();
+
+			Task section = page.RenderSectionAsync("delayed", cancellationSource.Token);
+			await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			cancellationSource.Cancel();
+
+			Assert.False(section.IsCompleted);
+			release.TrySetResult();
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => section);
+		}
+
+		[Fact]
+		public async Task Final_Writer_Receives_Render_Cancellation_Token()
+		{
+			var page = new TestPage(page =>
+			{
+				page.WriteLiteral("content");
+				return Task.CompletedTask;
+			});
+			var writer = new CancellableWriter();
+			var engine = new RazorLightEngineBuilder().UseNoProject().Build();
+			using var cancellationSource = new CancellationTokenSource();
+
+			Task render = engine.RenderTemplateAsync(
+				page,
+				new object(),
+				writer,
+				cancellationSource.Token);
+			await writer.WriteStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			cancellationSource.Cancel();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => render);
+			Assert.Equal(cancellationSource.Token, writer.ObservedToken);
+		}
+
+		[Fact]
+		public async Task Parameterless_Flush_Uses_Active_Page_Token()
+		{
+			using var cancellationSource = new CancellationTokenSource();
+			var writer = new FlushObservingWriter();
+			var page = new TestPage(_ => Task.CompletedTask)
+			{
+				PageContext = new PageContext
+				{
+					CancellationToken = cancellationSource.Token,
+					Writer = writer,
+				},
+			};
+
+			await page.FlushAsync();
+
+			Assert.Equal(cancellationSource.Token, writer.ObservedToken);
+		}
+
+		[Fact]
 		public async Task Cancellation_After_Cache_Population_Preserves_The_Cached_Template()
 		{
 			var engine = new RazorLightEngineBuilder()
@@ -189,6 +302,51 @@ namespace RazorLight.Tests
 			public override bool Exists => true;
 
 			public override Stream Read() => new MemoryStream(_content, writable: false);
+		}
+
+		private static TaskCompletionSource NewCompletionSource() =>
+			new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		private sealed class TestPage : TemplatePage
+		{
+			private readonly Func<TestPage, Task> _execute;
+
+			public TestPage(Func<TestPage, Task> execute)
+			{
+				_execute = execute;
+				Key = "test";
+			}
+
+			public override Task ExecuteAsync() => _execute(this);
+			public override void SetModel(object? model) { }
+			public override void BeginContext(int position, int length, bool isLiteral) { }
+			public override void EndContext() { }
+		}
+
+		private sealed class CancellableWriter : StringWriter
+		{
+			public TaskCompletionSource WriteStarted { get; } = NewCompletionSource();
+			public CancellationToken ObservedToken { get; private set; }
+
+			public override async Task WriteAsync(
+				ReadOnlyMemory<char> buffer,
+				CancellationToken cancellationToken = default)
+			{
+				ObservedToken = cancellationToken;
+				WriteStarted.TrySetResult();
+				await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+			}
+		}
+
+		private sealed class FlushObservingWriter : StringWriter
+		{
+			public CancellationToken ObservedToken { get; private set; }
+
+			public override Task FlushAsync(CancellationToken cancellationToken)
+			{
+				ObservedToken = cancellationToken;
+				return Task.CompletedTask;
+			}
 		}
 	}
 }

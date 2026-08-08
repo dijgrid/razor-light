@@ -25,6 +25,12 @@ output boundaries. Synchronous template code and synchronous `TextWriter` method
 preempted; template code performing asynchronous work should pass the inherited
 `CancellationToken` property to that work.
 
+Rendering owns the page context, pooled output buffers, and any dependency-injection scope used by
+the page. RazorLight therefore does not abandon an in-flight page, include, section, or output write
+merely to return cancellation promptly. Token-aware operations receive the render token and can stop
+cooperatively. If template code or a writer ignores that token, RazorLight awaits the owned operation
+before releasing its resources and then observes cancellation at the next safe boundary.
+
 ## Shared compilation
 
 Compilation tasks are cached and may have multiple waiters. Cancelling one caller cancels that
@@ -36,6 +42,10 @@ a poisoned cache entry, so a later call can retry the same key.
 Roslyn emission is synchronous once it starts and cannot be interrupted safely. Cancellation is
 checked immediately before and after source generation and at the surrounding asynchronous
 boundaries.
+
+This shared-compilation behavior is intentionally different from rendering: a compilation waiter
+does not exclusively own the shared task, while a renderer exclusively owns its page, buffers, and
+scope until rendering completes.
 
 ## Project implementations
 
@@ -62,7 +72,9 @@ The same rule applies to `GetImportsAsync`, `GetSourceItemAsync`, and `GetKnownK
 
 `PageContext.CancellationToken` is shared by the top-level page, layouts, and includes.
 `TemplatePageBase.CancellationToken` exposes it naturally to generated template code. Explicit token
-overloads are also available for `IncludeAsync`, `RenderSectionAsync`, and `FlushAsync`.
+overloads are also available for `IncludeAsync`, `RenderSectionAsync`, and `FlushAsync`. An explicit
+include token is passed to both child-template lookup and child rendering. Parameterless include,
+section, and flush helpers use the active page token.
 
 ## Command-line tool
 

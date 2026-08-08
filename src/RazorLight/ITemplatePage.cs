@@ -66,7 +66,7 @@ namespace RazorLight
 		/// <returns>A task representing the result of executing the page.</returns>
 		Task ExecuteAsync();
 
-		Func<string, object?, Task>? IncludeFunc { get; set; }
+		Func<string, object?, CancellationToken, Task>? IncludeFunc { get; set; }
 
 		void EnsureRenderedBodyOrSections();
 	}

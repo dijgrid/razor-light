@@ -33,7 +33,8 @@ namespace RazorLight
 				throw new InvalidOperationException(nameof(IncludeFunc) + " is not set");
 			}
 
-			await IncludeFunc(key, model).WaitAsync(cancellationToken).ConfigureAwait(false);
+			await IncludeFunc(key, model, cancellationToken).ConfigureAwait(false);
+			cancellationToken.ThrowIfCancellationRequested();
 		}
 
 		/// <summary>
@@ -211,7 +212,8 @@ namespace RazorLight
 			{
 				_renderedSections.Add(sectionName);
 
-				await renderDelegate().WaitAsync(cancellationToken).ConfigureAwait(false);
+				await renderDelegate().ConfigureAwait(false);
+				cancellationToken.ThrowIfCancellationRequested();
 
 				// Return a token value that allows the Write call that wraps the RenderSection \ RenderSectionAsync
 				// to succeed.

@@ -110,7 +110,7 @@ RazorLight.ITemplatePage.BodyContent.get -> RazorLight.Text.ITemplateContent?
 RazorLight.ITemplatePage.BodyContent.set -> void
 RazorLight.ITemplatePage.EnsureRenderedBodyOrSections() -> void
 RazorLight.ITemplatePage.ExecuteAsync() -> System.Threading.Tasks.Task!
-RazorLight.ITemplatePage.IncludeFunc.get -> System.Func<string!, object?, System.Threading.Tasks.Task!>?
+RazorLight.ITemplatePage.IncludeFunc.get -> System.Func<string!, object?, System.Threading.CancellationToken, System.Threading.Tasks.Task!>?
 RazorLight.ITemplatePage.IncludeFunc.set -> void
 RazorLight.ITemplatePage.IsLayoutBeingRendered.get -> bool
 RazorLight.ITemplatePage.IsLayoutBeingRendered.set -> void
@@ -263,7 +263,7 @@ RazorLight.TemplatePageBase
 RazorLight.TemplatePageBase.BodyContent.get -> RazorLight.Text.ITemplateContent?
 RazorLight.TemplatePageBase.BodyContent.set -> void
 RazorLight.TemplatePageBase.DefineSection(string! name, System.Func<object?, System.Threading.Tasks.Task!>! section) -> void
-RazorLight.TemplatePageBase.IncludeFunc.get -> System.Func<string!, object?, System.Threading.Tasks.Task!>?
+RazorLight.TemplatePageBase.IncludeFunc.get -> System.Func<string!, object?, System.Threading.CancellationToken, System.Threading.Tasks.Task!>?
 RazorLight.TemplatePageBase.IncludeFunc.set -> void
 RazorLight.TemplatePageBase.IsLayoutBeingRendered.get -> bool
 RazorLight.TemplatePageBase.IsLayoutBeingRendered.set -> void
