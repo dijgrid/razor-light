@@ -15,7 +15,7 @@ Replace the historical package and target .NET 10:
 </PropertyGroup>
 
 <ItemGroup>
-  <PackageReference Include="Dijgrid.RazorLight" Version="3.0.0-beta.1" />
+  <PackageReference Include="Dijgrid.RazorLight" Version="3.0.0-beta.3" />
 </ItemGroup>
 ```
 
@@ -30,7 +30,7 @@ which is appropriate for source code, configuration, messages, prompts, and othe
 HTML-producing applications must add the optional package and opt in explicitly:
 
 ```xml
-<PackageReference Include="Dijgrid.RazorLight.Html" Version="3.0.0-beta.1" />
+<PackageReference Include="Dijgrid.RazorLight.Html" Version="3.0.0-beta.3" />
 ```
 
 ```csharp
@@ -118,7 +118,7 @@ messages, and missing-key inventories unless debug mode is explicitly enabled. S
 ## Recommended upgrade sequence
 
 1. Move the application to .NET 10 while still inventorying its existing RazorLight usage.
-2. Replace the package ID and compile against 3.0.0-beta.1.
+2. Replace the package ID and compile against 3.0.0-beta.3.
 3. Choose plain text or add the HTML package and `UseHtmlEncoding()` explicitly.
 4. Replace removed construction, cache, callback, and rendering APIs using the mappings above.
 5. Validate model typing, layouts, includes, imported sources, DI lifetimes, and cache invalidation.

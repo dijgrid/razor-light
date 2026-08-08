@@ -7,6 +7,18 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 
 ## Unreleased
 
+## 3.0.0-beta.3 - 2026-08-08
+
+This publishable beta supersedes the earlier prerelease tag attempts, which did not publish NuGet
+packages. It contains the same 3.0 API and functionality described below, plus release-workflow
+validation corrections.
+
+### Fixed
+
+- The protected publish job now revalidates the reviewed package artifacts without assuming local
+  build output is present, while retaining package, symbol, Source Link, and SHA-256 checks.
+- Release documentation and package examples now use the publishable `3.0.0-beta.3` version.
+
 ## 3.0.0-beta.1 - 2026-08-08
 
 This first independent beta requires .NET 10, changes the package ID to `Dijgrid.RazorLight`, uses

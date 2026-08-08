@@ -1,6 +1,6 @@
 ---
 id: TASK-030
-title: Prepare and publish the 3.0.0-beta.1 release
+title: Prepare and publish the 3.0.0-beta.3 release
 status: in-progress
 priority: high
 epic: EPIC-modernization
@@ -25,7 +25,7 @@ tags:
   - beta
   - compatibility
 createdAt: 2026-08-08T04:17:59.721Z
-updatedAt: 2026-08-08T22:25:55.848Z
+updatedAt: 2026-08-08T22:39:00.000Z
 refinementState: ready
 ---
 
@@ -35,7 +35,7 @@ performance, lifecycle, precompiled-runtime, and maintainability findings are co
 
 ## Acceptance criteria
 
-- [ ] Version and tag policy accepts `3.0.0-beta.1`, and GitHub creates a prerelease rather than a
+- [ ] Version and tag policy accepts `3.0.0-beta.3`, and GitHub creates a prerelease rather than a
       stable release.
 - [ ] `Dijgrid.RazorLight`, `Dijgrid.RazorLight.Html`, and
       `Dijgrid.RazorLight.Precompile` are built once, validated, approved through the protected
@@ -54,7 +54,7 @@ performance, lifecycle, precompiled-runtime, and maintainability findings are co
 
 ## Implementation notes
 
-- Configured the package projects to evaluate to `3.0.0-beta.1` and updated release automation to
+- Configured the package projects to evaluate to `3.0.0-beta.3` and updated release automation to
   require an exact SemVer prerelease tag, publish Core, optional HTML, and precompile packages plus
   symbols, verify artifact hashes after the protected deployment approval, and create a GitHub
   prerelease with versioned notes.
@@ -73,3 +73,5 @@ performance, lifecycle, precompiled-runtime, and maintainability findings are co
   The release workflow now uses artifact-only validation for that job while retaining archive, symbol,
   Source Link, and SHA-256 checks; a new prerelease tag is required because reruns use the workflow
   definition recorded in the existing tag.
+- `v3.0.0-beta.2` correctly failed before building because its tag did not match the evaluated
+  `3.0.0-beta.1` package version. The next safe immutable version is `3.0.0-beta.3`.

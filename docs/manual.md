@@ -25,7 +25,7 @@ package. For a short project overview, start with the [README](../README.md).
 Install the .NET 10 SDK selected by [`global.json`](../global.json), then add the core package:
 
 ```shell
-dotnet add package Dijgrid.RazorLight --version 3.0.0-beta.1
+dotnet add package Dijgrid.RazorLight --version 3.0.0-beta.3
 ```
 
 The `RazorLight 2.3.1` package is the historical upstream build. The independently maintained 3.x
@@ -429,7 +429,7 @@ string result = await engine.CompileRenderStringAsync(
 Install the optional package:
 
 ```shell
-dotnet add package Dijgrid.RazorLight.Html --version 3.0.0-beta.1
+dotnet add package Dijgrid.RazorLight.Html --version 3.0.0-beta.3
 ```
 
 Then opt in explicitly:
@@ -483,7 +483,7 @@ isolation; it is not a security sandbox.
 Install the tool package using the version aligned with the core library:
 
 ```shell
-dotnet tool install --global Dijgrid.RazorLight.Precompile --version 3.0.0-beta.1
+dotnet tool install --global Dijgrid.RazorLight.Precompile --version 3.0.0-beta.3
 ```
 
 Precompile a template:
