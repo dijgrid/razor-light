@@ -73,7 +73,7 @@ unsupported:
 | Diagnostics | Components | Reason |
 | --- | --- | --- |
 | `IL2026` | metadata discovery, file-system compiled cache, template compiler and renderer | Loads assemblies and uses the dynamic runtime binder. |
-| `IL2055`, `IL2060`, `IL2067`, `IL2070`, `IL2072`, `IL2075` | property activation, dependency injection, tag helpers, compiled-template factories, debug-symbol detection | Template and model types are discovered at runtime and cannot carry static linker guarantees. |
+| `IL2055`, `IL2060`, `IL2067`, `IL2070`, `IL2072`, `IL2075` | property activation, dependency injection, compiled-template factories, debug-symbol detection | Template and model types are discovered at runtime and cannot carry static linker guarantees. |
 
 CI reruns the analysis and fails if a new diagnostic category appears. The public runtime-compilation
 annotations move the actionable warning to the consumer call site without globally suppressing the

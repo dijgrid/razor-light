@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Html;
 using RazorLight.Internal;
+using RazorLight.Text;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,12 +18,12 @@ namespace RazorLight
 		/// <summary>
 		/// Gets or sets the body content.
 		/// </summary>
-		IHtmlContent? BodyContent { get; set; }
+		ITemplateContent? BodyContent { get; set; }
 
 		/// <summary>
-		/// Gets or sets a value indicating whether encoding is disabled for the entire template
+		/// Gets or sets the output encoder used for expression values.
 		/// </summary>
-		bool DisableEncoding { get; set; }
+		IOutputEncoder OutputEncoder { get; set; }
 
 		/// <summary>
 		/// Gets or sets the unique key of the current template

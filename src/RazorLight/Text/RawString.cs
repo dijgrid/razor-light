@@ -6,9 +6,8 @@ namespace RazorLight.Text
 	/// <summary>
 	/// Defines the required contract for implementing an unencoded string.
 	/// </summary>
-	public interface IRawString
+	public interface IRawString : ITemplateContent
 	{
-		void WriteTo(TextWriter writer);
 	}
 
 	/// <summary>
@@ -24,12 +23,7 @@ namespace RazorLight.Text
 		/// <param name="value">The value</param>
 		public RawString(string value)
 		{
-			if (string.IsNullOrWhiteSpace(value))
-			{
-				value = string.Empty;
-			}
-
-			_value = value;
+			_value = value ?? string.Empty;
 		}
 
 		public string Value => _value;

@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -322,13 +321,10 @@ namespace RazorLight.Compilation
 			Assembly assembly = _compiler.CompileAndEmit(generatedTemplate);
 
 			// Anything we compile from source will use Razor 2.1 and so should have the new metadata.
-			var loader = new RazorCompiledItemLoader();
-			var item = loader.LoadItems(assembly).SingleOrDefault();
 			var attribute = assembly.GetCustomAttribute<RazorLightTemplateAttribute>();
 
 			return new CompiledTemplateDescriptor
 			{
-				Item = item,
 				TemplateKey = projectItem.Key,
 				TemplateAttribute = attribute
 			};

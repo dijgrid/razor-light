@@ -11,8 +11,9 @@
 > with version `3.0.0`. The `RazorLight 2.3.1` package is the historical upstream build rather than
 > this continuation.
 
-Use Razor to build templates from files, embedded resources, strings, databases, or a custom source
-outside ASP.NET MVC. The maintained source and samples support **.NET 10**. See
+Use Razor as a generic C# text-template engine with templates from files, embedded resources,
+strings, databases, or a custom source. HTML output support is optional rather than built into the
+core package. The maintained source and samples support **.NET 10**. See
 [framework support](docs/framework-support.md), the [dependency policy](docs/dependency-policy.md),
 and [testing guidance](docs/testing.md) for the current maintenance baseline.
 
@@ -200,24 +201,53 @@ change tokens, precompiled-provider behavior, and process-local limitations.
 
 # Encoding
 
-RazorLight HTML-encodes model values by default. Use `Raw` when a specific value is already safe to
-render without encoding.
+The core package writes model expressions as plain text. No escaping policy is universally correct
+for HTML, XML, JSON, source code, shell scripts, or other generated formats, so format-specific
+escaping is explicit.
 
 ```csharp
-/* With encoding (default) */
+string template = "Render @Model.Value";
+string result = await engine.CompileRenderStringAsync(
+    "plain-text",
+    template,
+    new { Value = "<text>&" });
 
-string encodedTemplate = "Render @Model.Tag";
-string encodedResult = await engine.CompileRenderStringAsync(
-    "encoded",
-    encodedTemplate,
+Console.WriteLine(result); // Output: Render <text>&
+```
+
+Install the optional HTML package and opt in when the destination is HTML:
+
+```shell
+dotnet add package Dijgrid.RazorLight.Html --version 3.0.0
+```
+
+```csharp
+using RazorLight.Html;
+
+var htmlEngine = new RazorLightEngineBuilder()
+    .UseNoProject()
+    .UseHtmlEncoding()
+    .Build();
+
+string encodedResult = await htmlEngine.CompileRenderStringAsync(
+    "html",
+    "Render @Model.Tag",
     new { Tag = "<html>&" });
 
 Console.WriteLine(encodedResult); // Output: &lt;html&gt;&amp;
+```
 
-/* Without encoding */
+The optional package supplies output encoding only. The next-major generic core does not expose MVC
+`IHtmlContent` contracts or tag-helper execution; templates using those APIs must migrate to ordinary
+Razor expressions, includes, helpers, or another ASP.NET-integrated rendering engine.
 
+Custom formats can implement `IOutputEncoder` and register it with `UseOutputEncoder`. Template
+literals are never transformed. `Raw` produces final `ITemplateContent` and bypasses the configured
+encoder for a specific expression:
+
+```csharp
 string rawTemplate = "Render @Raw(Model.Tag)";
-string rawResult = await engine.CompileRenderStringAsync(
+string rawResult = await htmlEngine.CompileRenderStringAsync(
     "raw",
     rawTemplate,
     new { Tag = "<html>&" });
@@ -225,25 +255,12 @@ string rawResult = await engine.CompileRenderStringAsync(
 Console.WriteLine(rawResult); // Output: <html>&
 ```
 
-To disable encoding for an entire template, set `DisableEncoding` to `true`:
-
-```html
-@model TestViewModel
-@{
-    DisableEncoding = true;
-}
-
-<html>
-    Hello @Model.Tag
-</html>
-```
-
 # Template security
 
 Razor templates compile to .NET assemblies and execute with the host process's permissions. Treat
-every in-process template as trusted code. HTML encoding protects output markup; it does not prevent
-a template from executing C#, accessing files or the network, using reflection, or resolving host
-services through `@inject`.
+every in-process template as trusted code. Output encoding can protect a selected destination format;
+it does not prevent a template from executing C#, accessing files or the network, using reflection,
+or resolving host services through `@inject`.
 
 User-authored or otherwise untrusted templates require a separately secured renderer process or
 service. Metadata reference filtering and limited dependency injection are useful least-privilege

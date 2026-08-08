@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.IO;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -137,7 +136,7 @@ namespace RazorLight
 				templatePage = templateFactory();
 			}
 
-			templatePage.DisableEncoding = Options.DisableEncoding ?? false;
+			templatePage.OutputEncoder = Options.OutputEncoder;
 			return templatePage;
 		}
 
@@ -175,7 +174,7 @@ namespace RazorLight
 
 			using (var scope = new MemoryPoolViewBufferScope())
 			{
-				var renderer = new TemplateRenderer(this, HtmlEncoder.Default, scope);
+				var renderer = new TemplateRenderer(this, scope);
 				await renderer.RenderAsync(templatePage).ConfigureAwait(false);
 			}
 		}
@@ -318,7 +317,7 @@ namespace RazorLight
 
 				using (var scope = new MemoryPoolViewBufferScope())
 				{
-					var renderer = new TemplateRenderer(this, HtmlEncoder.Default, scope);
+					var renderer = new TemplateRenderer(this, scope);
 					await renderer.RenderAsync(templatePage).ConfigureAwait(false);
 				}
 

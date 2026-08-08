@@ -1,15 +1,14 @@
 ﻿using System;
 using System.IO;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Html;
+using RazorLight.Text;
 
 namespace RazorLight.Tests.Utils
 {
 	/// <summary>
 	/// Represents a deferred write operation in a <see cref="TemplatePage"/>.
 	/// </summary>
-	public class HelperResult : IHtmlContent
+	public class HelperResult : ITemplateContent
 	{
 		private readonly Func<TextWriter, Task> _asyncAction;
 
@@ -17,8 +16,8 @@ namespace RazorLight.Tests.Utils
 		/// Creates a new instance of <see cref="HelperResult"/>.
 		/// </summary>
 		/// <param name="asyncAction">The asynchronous delegate to invoke when
-		/// <see cref="WriteTo(TextWriter, HtmlEncoder)"/> is called.</param>
-		/// <remarks>Calls to <see cref="WriteTo(TextWriter, HtmlEncoder)"/> result in a blocking invocation of
+		/// <see cref="WriteTo(TextWriter)"/> is called.</param>
+		/// <remarks>Calls to <see cref="WriteTo(TextWriter)"/> result in a blocking invocation of
 		/// <paramref name="asyncAction"/>.</remarks>
 		public HelperResult(Func<TextWriter, Task> asyncAction)
 		{
@@ -31,7 +30,7 @@ namespace RazorLight.Tests.Utils
 		}
 
 		/// <summary>
-		/// Gets the asynchronous delegate to invoke when <see cref="WriteTo(TextWriter, HtmlEncoder)"/> is called.
+		/// Gets the asynchronous delegate to invoke when <see cref="WriteTo(TextWriter)"/> is called.
 		/// </summary>
 		public Func<TextWriter, Task> WriteAction => _asyncAction;
 
@@ -39,17 +38,11 @@ namespace RazorLight.Tests.Utils
 		/// Method invoked to produce content from the <see cref="HelperResult"/>.
 		/// </summary>
 		/// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
-		/// <param name="encoder">The <see cref="HtmlEncoder"/> to encode the content.</param>
-		public virtual void WriteTo(TextWriter writer, HtmlEncoder encoder)
+		public virtual void WriteTo(TextWriter writer)
 		{
 			if (writer == null)
 			{
 				throw new ArgumentNullException(nameof(writer));
-			}
-
-			if (encoder == null)
-			{
-				throw new ArgumentNullException(nameof(encoder));
 			}
 
 			_asyncAction(writer).GetAwaiter().GetResult();

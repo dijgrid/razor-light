@@ -7,6 +7,8 @@ $ErrorActionPreference = "Stop"
 $outputs = @(
     "src/RazorLight/bin/$Configuration/net10.0/RazorLight.dll",
     "src/RazorLight/bin/$Configuration/net10.0/RazorLight.pdb",
+    "src/RazorLight.Html/bin/$Configuration/net10.0/RazorLight.Html.dll",
+    "src/RazorLight.Html/bin/$Configuration/net10.0/RazorLight.Html.pdb",
     "src/RazorLight.Precompile/bin/$Configuration/net10.0/RazorLight.Precompile.dll",
     "src/RazorLight.Precompile/bin/$Configuration/net10.0/RazorLight.Precompile.pdb"
 )

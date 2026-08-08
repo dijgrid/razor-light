@@ -77,6 +77,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages --warnaserror
+          dotnet pack src/RazorLight.Html/RazorLight.Html.csproj --configuration Release --no-build --output artifacts/packages --warnaserror
           dotnet pack src/RazorLight.Precompile/RazorLight.Precompile.csproj --configuration Release --no-build --output artifacts/packages --warnaserror
 
       - name: Validate package layout and Source Link metadata
@@ -90,6 +91,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           dotnet sourcelink test src/RazorLight/bin/Release/net10.0/RazorLight.pdb
+          dotnet sourcelink test src/RazorLight.Html/bin/Release/net10.0/RazorLight.Html.pdb
           dotnet sourcelink test src/RazorLight.Precompile/bin/Release/net10.0/RazorLight.Precompile.pdb
 
       - name: Upload release-candidate packages

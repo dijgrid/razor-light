@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>Dijgrid.RazorLight</PackageId>
     <Title>Dijgrid RazorLight</Title>
-    <Description>Use Razor to build templates from strings, files, embedded resources, and custom sources outside ASP.NET MVC on .NET 10.</Description>
+    <Description>A generic C# text-template engine using Razor syntax for strings, files, embedded resources, and custom sources on .NET 10.</Description>
     <PackageTags>RazorLight;razor;render;dotnet;template-engine;email</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnablePackageValidation>true</EnablePackageValidation>
@@ -13,13 +13,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Razor" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
 
   <ItemGroup>

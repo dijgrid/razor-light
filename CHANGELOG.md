@@ -9,6 +9,11 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 
 ### Changed
 
+- RazorLight is now a generic C# text-template engine: core expression output is plain text, HTML
+  encoding is opt-in through `Dijgrid.RazorLight.Html`, and the core package no longer requires the
+  ASP.NET Core shared framework.
+- ASP.NET-owned content, tag-helper, and compiled-item contracts have been replaced by RazorLight
+  content and output-encoder abstractions. This is an intentional next-major API and behavior break.
 - The `RazorLight` public API now publishes nullable reference annotations. Runtime behavior is
   unchanged, but nullable-enabled consumers may receive new diagnostics; see
   [`docs/nullability.md`](docs/nullability.md).

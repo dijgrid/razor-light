@@ -25,6 +25,18 @@ $expectedPackages = @(
         SymbolEntries = @("lib/net10.0/RazorLight.pdb")
     },
     @{
+        Id = "Dijgrid.RazorLight.Html"
+        AssetDirectories = @("lib/net10.0")
+        PrimaryEntries = @(
+            "LICENSE",
+            "README.md",
+            "lib/net10.0/RazorLight.Html.dll",
+            "lib/net10.0/RazorLight.Html.pdb",
+            "lib/net10.0/RazorLight.Html.xml"
+        )
+        SymbolEntries = @("lib/net10.0/RazorLight.Html.pdb")
+    },
+    @{
         Id = "Dijgrid.RazorLight.Precompile"
         AssetDirectories = @("tools/net10.0/any")
         PrimaryEntries = @(

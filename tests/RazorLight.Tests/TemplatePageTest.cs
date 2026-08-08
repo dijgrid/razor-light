@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Html;
+﻿using RazorLight.Text;
 using Moq;
 using RazorLight.Internal;
 using System;
@@ -138,7 +138,7 @@ namespace RazorLight.Tests
 			{
 				{ "baz", _nullRenderAsyncDelegate }
 			};
-			page.BodyContent = new HtmlString("body-content");
+			page.BodyContent = new TemplateContent("body-content");
 
 			// Act
 			await page.ExecuteAsync();
@@ -162,7 +162,7 @@ namespace RazorLight.Tests
 			{
 				{ "baz", _nullRenderAsyncDelegate }
 			};
-			page.BodyContent = new HtmlString("body-content");
+			page.BodyContent = new TemplateContent("body-content");
 
 			// Act
 			await page.ExecuteAsync();
@@ -235,7 +235,7 @@ namespace RazorLight.Tests
 			{
 			});
 			page.Key = path;
-			page.BodyContent = new HtmlString("some content");
+			page.BodyContent = new TemplateContent("some content");
 			await page.ExecuteAsync();
 
 			// Act & Assert
@@ -251,7 +251,7 @@ namespace RazorLight.Tests
 			{
 			});
 			page.Key = path;
-			page.BodyContent = new HtmlString("some content");
+			page.BodyContent = new TemplateContent("some content");
 			page.IgnoreBody();
 
 			// Act & Assert (does not throw)
@@ -269,7 +269,7 @@ namespace RazorLight.Tests
 			{
 			});
 			page.Key = path;
-			page.BodyContent = new HtmlString("some content");
+			page.BodyContent = new TemplateContent("some content");
 			page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
 			{
 				{ sectionName, _nullRenderAsyncDelegate }
@@ -290,7 +290,7 @@ namespace RazorLight.Tests
 			{
 			});
 			page.Key = path;
-			page.BodyContent = new HtmlString("some content");
+			page.BodyContent = new TemplateContent("some content");
 			page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
 			{
 				{ sectionName, _nullRenderAsyncDelegate }
@@ -313,7 +313,7 @@ namespace RazorLight.Tests
 				p.Write(await p.RenderSectionAsync("not-ignored-section"));
 			});
 			page.Key = path;
-			page.BodyContent = new HtmlString("some content");
+			page.BodyContent = new TemplateContent("some content");
 			page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
 			{
 				{ "ignored", _nullRenderAsyncDelegate },
@@ -338,7 +338,7 @@ namespace RazorLight.Tests
 				v.RenderSection(sectionA);
 				v.RenderSection(sectionB);
 			});
-			page.BodyContent = new HtmlString("some content");
+			page.BodyContent = new TemplateContent("some content");
 			page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
 			{
 				{ sectionA, _nullRenderAsyncDelegate },
@@ -372,7 +372,7 @@ namespace RazorLight.Tests
 				v.Write(v.RenderSection("footer"));
 				v.WriteLiteral("Layout end");
 			});
-			page.BodyContent = new HtmlString("body content" + Environment.NewLine);
+			page.BodyContent = new TemplateContent("body content" + Environment.NewLine);
 			page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
 			{
 				{
@@ -417,10 +417,10 @@ namespace RazorLight.Tests
 		}
 
 		[Fact]
-		public async Task FlushAsync_ReturnsEmptyHtmlString()
+		public async Task FlushAsync_ReturnsEmptyTemplateContent()
 		{
 			// Arrange
-			HtmlString? actual = null;
+			TemplateContent? actual = null;
 			var writer = new Mock<TextWriter>();
 			var context = CreateViewContext(writer.Object);
 			var page = CreatePage(async p =>
@@ -432,7 +432,7 @@ namespace RazorLight.Tests
 			await page.ExecuteAsync();
 
 			// Assert
-			Assert.Same(HtmlString.Empty, actual);
+			Assert.Same(TemplateContent.Empty, actual);
 		}
 
 		[Fact]
@@ -474,7 +474,7 @@ namespace RazorLight.Tests
 		}
 
 		[Fact]
-		public void Write_StringValue_UsesSpecifiedWriter_EncodesValue()
+		public void Write_StringValue_UsesConfiguredOutputEncoder()
 		{
 			// Arrange
 			var page = CreatePage(p => { });
@@ -486,11 +486,11 @@ namespace RazorLight.Tests
 			page.PopWriter();
 
 			// Assert
-			Assert.Equal("HtmlEncode[[This should be encoded]]", bufferWriter.ToString());
+			Assert.Equal("Encoded[[This should be encoded]]", bufferWriter.ToString());
 		}
 
 		[Fact]
-		public async Task Write_WithHtmlString_WritesValueWithoutEncoding()
+		public async Task Write_WithTemplateContent_WritesValueWithoutEncoding()
 		{
 			// Arrange
 			var buffer = new ViewBuffer(new TestViewBufferScope(), string.Empty, pageSize: 32);
@@ -498,7 +498,7 @@ namespace RazorLight.Tests
 
 			var page = CreatePage(p =>
 			{
-				p.Write(new HtmlString("Hello world"));
+				p.Write(new TemplateContent("Hello world"));
 			});
 			page.PageContext!.Writer = writer;
 
@@ -506,7 +506,7 @@ namespace RazorLight.Tests
 			await page.ExecuteAsync();
 
 			// Assert
-			Assert.Equal("Hello world", HtmlContentUtilities.HtmlContentToString(buffer));
+			Assert.Equal("Hello world", TemplateContentUtilities.ContentToString(buffer));
 		}
 
 		[Fact]
@@ -533,7 +533,7 @@ namespace RazorLight.Tests
 		}
 
 		[Fact]
-		public async Task DisableEncoding_True_GloballyDisablesEncoding()
+		public async Task PlainTextEncoder_WritesExpressionWithoutEscaping()
 		{
 			string expected = "<tag>I am not encoded $& </tag>";
 
@@ -542,7 +542,7 @@ namespace RazorLight.Tests
 				var context = new PageContext { Writer = writer };
 				var page = CreatePage(v =>
 				{
-					v.DisableEncoding = true;
+					v.OutputEncoder = PlainTextEncoder.Default;
 					v.Write(expected);
 				}, context);
 
@@ -624,95 +624,14 @@ namespace RazorLight.Tests
 			}
 		}
 
-		public sealed class HtmlTestEncoder : HtmlEncoder
+		public sealed class TestOutputEncoder : IOutputEncoder
 		{
-			public override int MaxOutputCharactersPerInputCharacter
+			public void Encode(TextWriter output, string value)
 			{
-				get { return 1; }
-			}
+				if (output == null) throw new ArgumentNullException(nameof(output));
+				if (value == null) throw new ArgumentNullException(nameof(value));
 
-			public override string Encode(string value)
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException(nameof(value));
-				}
-
-				if (value.Length == 0)
-				{
-					return string.Empty;
-				}
-
-				return $"HtmlEncode[[{value}]]";
-			}
-
-			public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
-			{
-				if (output == null)
-				{
-					throw new ArgumentNullException(nameof(output));
-				}
-
-				if (value == null)
-				{
-					throw new ArgumentNullException(nameof(value));
-				}
-
-				if (characterCount == 0)
-				{
-					return;
-				}
-
-				output.Write("HtmlEncode[[");
-				output.Write(value, startIndex, characterCount);
-				output.Write("]]");
-			}
-
-			public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
-			{
-				if (output == null)
-				{
-					throw new ArgumentNullException(nameof(output));
-				}
-
-				if (value == null)
-				{
-					throw new ArgumentNullException(nameof(value));
-				}
-
-				if (characterCount == 0)
-				{
-					return;
-				}
-
-				output.Write("HtmlEncode[[");
-				output.Write(value.Substring(startIndex, characterCount));
-				output.Write("]]");
-			}
-
-			public override bool WillEncode(int unicodeScalar)
-			{
-				return false;
-			}
-
-			public override unsafe int FindFirstCharacterToEncode(char* text, int textLength)
-			{
-				return -1;
-			}
-
-			public override unsafe bool TryEncodeUnicodeScalar(
-				int unicodeScalar,
-				char* buffer,
-				int bufferLength,
-				out int numberOfCharactersWritten)
-			{
-				if (buffer == null)
-				{
-					throw new ArgumentNullException(nameof(buffer));
-				}
-
-				numberOfCharactersWritten = 0;
-				return false;
+				output.Write($"Encoded[[{value}]]");
 			}
 		}
 
@@ -720,7 +639,7 @@ namespace RazorLight.Tests
 		{
 			public TestableRazorPage()
 			{
-				HtmlEncoder = new HtmlTestEncoder();
+				OutputEncoder = new TestOutputEncoder();
 			}
 
 			public string RenderedContent
@@ -730,30 +649,25 @@ namespace RazorLight.Tests
 					var bufferedWriter = Assert.IsType<ViewBufferTextWriter>(Output);
 					using (var stringWriter = new StringWriter())
 					{
-						bufferedWriter.Buffer.WriteTo(stringWriter, HtmlEncoder);
+						bufferedWriter.Buffer.WriteTo(stringWriter);
 						return stringWriter.ToString();
 					}
 				}
 			}
 
-			public IHtmlContent RenderBodyPublic()
+			public ITemplateContent RenderBodyPublic()
 			{
 				return base.RenderBody();
 			}
 		}
 
-		public class HtmlContentUtilities
+		public class TemplateContentUtilities
 		{
-			public static string HtmlContentToString(IHtmlContent content, HtmlEncoder? encoder = null)
+			public static string ContentToString(ITemplateContent content)
 			{
-				if (encoder == null)
-				{
-					encoder = new HtmlTestEncoder();
-				}
-
 				using (var writer = new StringWriter())
 				{
-					content.WriteTo(writer, encoder);
+					content.WriteTo(writer);
 					return writer.ToString();
 				}
 			}

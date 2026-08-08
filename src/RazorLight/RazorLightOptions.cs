@@ -5,6 +5,7 @@ using System;
 using RazorLight.Caching;
 using RazorLight.Compilation;
 using System.Reflection;
+using RazorLight.Text;
 
 namespace RazorLight
 {
@@ -46,11 +47,9 @@ namespace RazorLight
 		public Assembly? OperatingAssembly { get; set; }
 
 		/// <summary>
-		/// Settings this to <c>true</c> will disable HTML encoding in all templates.
-		/// It can be re-enabled by setting <c>DisableEncoding = false</c> in the
-		/// template.
+		/// Transforms expression values before they are written. Defaults to plain text.
 		/// </summary>
-		public bool? DisableEncoding { get; set; }
+		public IOutputEncoder OutputEncoder { get; set; } = PlainTextEncoder.Default;
 
 		/// <summary>
 		/// Setting this to <c>true</c> provides more information in exceptions.
