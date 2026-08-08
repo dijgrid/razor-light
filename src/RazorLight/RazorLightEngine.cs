@@ -26,31 +26,6 @@ namespace RazorLight
 			return _handler.CompileRenderAsync(key, model, modelType, viewBag);
 		}
 
-		[Obsolete("Please, use CompileRenderStringAsync", true)]
-		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
-		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
-		public Task<string> CompileRenderAsync(
-			string key,
-			string content,
-			object? model,
-			Type modelType,
-			ExpandoObject? viewBag = null)
-		{
-			throw new NotImplementedException();
-		}
-
-		[Obsolete("Please, use generic version of RenderTemplateAsync", true)]
-		public Task<string> RenderTemplateAsync(ITemplatePage templatePage, object? model, Type modelType, ExpandoObject? viewBag = null)
-		{
-			throw new NotImplementedException();
-		}
-
-		[Obsolete("Please, use generic version of RenderTemplateAsync", true)]
-		public Task RenderTemplateAsync(ITemplatePage templatePage, object? model, Type modelType, TextWriter textWriter, ExpandoObject? viewBag = null)
-		{
-			throw new NotImplementedException();
-		}
-
 		/// <inheritdoc cref="IRazorLightEngine"/>
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]

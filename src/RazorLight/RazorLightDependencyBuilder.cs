@@ -53,15 +53,6 @@ namespace RazorLight
 			return this;
 		}
 
-		public RazorLightDependencyBuilder UseNetFrameworkLegacyFix()
-		{
-			_services.RemoveAll<IAssemblyPathFormatter>();
-			IAssemblyPathFormatter formatter = new LegacyFixAssemblyPathFormatter();
-			// ReSharper disable once RedundantTypeArgumentsOfMethod
-			_services.AddSingleton<IAssemblyPathFormatter>(formatter);
-			return this;
-		}
-
 		public RazorLightDependencyBuilder SetOperatingAssembly(Assembly assembly)
 		{
 			_services.Configure<RazorLightOptions>(x => x.OperatingAssembly = assembly);

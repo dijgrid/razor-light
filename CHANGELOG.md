@@ -15,6 +15,10 @@ versioning follow the independent release policy in [`docs/releasing.md`](docs/r
 
 ### Changed
 
+- Removed inherited obsolete/error-only factories and render overloads, the retired .NET Framework
+  assembly-path workaround, and the redundant file-system engine factory before the 3.0 beta API
+  becomes a compatibility commitment. Supported replacements use `RazorLightEngineBuilder`, generic
+  rendering methods, and structured compilation diagnostics.
 - RazorLight is now a generic C# text-template engine: core expression output is plain text, HTML
   encoding is opt-in through `Dijgrid.RazorLight.Html`, and the core package no longer requires the
   ASP.NET Core shared framework.

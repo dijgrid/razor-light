@@ -1,7 +1,7 @@
 ---
 id: TASK-018
 title: Design the next-major public API cleanup
-status: review
+status: done
 priority: high
 epic: EPIC-modernization
 milestone: MILESTONE-library-quality
@@ -14,7 +14,7 @@ tags:
   - compatibility
   - documentation
 createdAt: 2026-08-07T00:29:26Z
-updatedAt: 2026-08-08T04:24:07.754Z
+updatedAt: 2026-08-08T06:09:50.055Z
 refinementState: ready
 ---
 

@@ -23,8 +23,8 @@ Order order = FindOrder() ?? throw new InvalidOperationException("The order was 
 string result = await engine.CompileRenderAsync("orders/detail", order);
 ```
 
-The obsolete, error-only `EngineFactory` API is now accurately annotated as returning a nullable
-engine. New code should continue to use `RazorLightEngineBuilder`.
+The inherited, error-only `EngineFactory` API was removed before the 3.0 beta. Construct engines with
+`RazorLightEngineBuilder` or dependency-injection registration.
 
 ## Template page lifecycle
 
