@@ -20,6 +20,7 @@ namespace RazorLight.Caching
 		private readonly ConcurrentDictionary<string, string> _paths;
 		private readonly ConcurrentDictionary<string, Type> _templateTypes;
 
+		/// <summary>Loads the template factories found in the supplied assembly paths.</summary>
 		[RequiresDynamicCode("Loading separately deployed precompiled assemblies requires dynamic assembly loading.")]
 		[RequiresUnreferencedCode("Precompiled template page types and constructors must be preserved by the build pipeline.")]
 		public PrecompiledCachingProvider(IEnumerable<string> assemblyPaths, TextWriter? log = null)
@@ -27,6 +28,7 @@ namespace RazorLight.Caching
 		{
 		}
 
+		/// <summary>Asynchronously reads and loads the supplied precompiled template assemblies.</summary>
 		[RequiresDynamicCode("Loading separately deployed precompiled assemblies requires dynamic assembly loading.")]
 		[RequiresUnreferencedCode("Precompiled template page types and constructors must be preserved by the build pipeline.")]
 		public static async Task<PrecompiledCachingProvider> CreateAsync(
@@ -85,18 +87,23 @@ namespace RazorLight.Caching
 			Diagnostics = diagnostics.AsReadOnly();
 		}
 
+		/// <inheritdoc />
 		public IReadOnlyDictionary<string, string> Map { get; }
+		/// <inheritdoc />
 		public IReadOnlyList<string> Diagnostics { get; }
 
+		/// <inheritdoc />
 		public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken? expirationToken) =>
 			_runtimeCache.CacheTemplate(NormalizeKey(key), pageFactory, expirationToken);
 
+		/// <inheritdoc />
 		public bool Contains(string key)
 		{
 			key = NormalizeKey(key);
 			return _runtimeCache.Contains(key) || _paths.ContainsKey(key);
 		}
 
+		/// <inheritdoc />
 		public void Remove(string key)
 		{
 			key = NormalizeKey(key);
@@ -105,6 +112,7 @@ namespace RazorLight.Caching
 			_templateTypes.TryRemove(key, out _);
 		}
 
+		/// <inheritdoc />
 		public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
 		{
 			key = NormalizeKey(key);
@@ -120,6 +128,7 @@ namespace RazorLight.Caching
 			return true;
 		}
 
+		/// <inheritdoc />
 		public void Dispose() => _runtimeCache.Dispose();
 
 		[RequiresDynamicCode("Loading separately deployed precompiled assemblies requires dynamic assembly loading.")]

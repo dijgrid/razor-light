@@ -26,8 +26,10 @@ namespace RazorLight.Text
 			_value = value ?? string.Empty;
 		}
 
+		/// <inheritdoc />
 		public string Value => _value;
 
+		/// <inheritdoc />
 		public void WriteTo(TextWriter writer)
 		{
 			if (writer == null)

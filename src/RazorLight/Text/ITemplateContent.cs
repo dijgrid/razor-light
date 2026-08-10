@@ -7,6 +7,7 @@ namespace RazorLight.Text
 	/// </summary>
 	public interface ITemplateContent
 	{
+		/// <summary>Writes final template content without applying expression encoding again.</summary>
 		void WriteTo(TextWriter writer);
 	}
 }

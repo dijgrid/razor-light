@@ -10,7 +10,11 @@ using RazorLight.Text;
 
 namespace RazorLight
 {
-	public class RazorLightEngineBuilder
+	/// <summary>
+	/// Builds an immutable RazorLight engine configuration. Use <see cref="RazorLightProject"/>,
+	/// <see cref="ICachingProvider"/>, or <see cref="IOutputEncoder"/> for supported customization.
+	/// </summary>
+	public sealed class RazorLightEngineBuilder
 	{
 		/// <summary>
 		/// Creates an engine that can render only page factories already present in
@@ -30,29 +34,29 @@ namespace RazorLight
 			return RazorLightEngineFactory.CreatePrecompiled(snapshot, provider);
 		}
 
-		protected Assembly? operatingAssembly;
+		private Assembly? operatingAssembly;
 
-		protected HashSet<string>? namespaces;
+		private HashSet<string>? namespaces;
 
-		protected ConcurrentDictionary<string, string>? dynamicTemplates;
+		private ConcurrentDictionary<string, string>? dynamicTemplates;
 
 		private HashSet<string>? csharpSourceKeys;
 
 		private ConcurrentDictionary<string, string>? dynamicCSharpSources;
 
-		protected HashSet<MetadataReference>? metadataReferences;
+		private HashSet<MetadataReference>? metadataReferences;
 
 		private HashSet<string>? includedAssemblies;
 
-		protected HashSet<string>? excludedAssemblies;
+		private HashSet<string>? excludedAssemblies;
 
 		private MetadataReferenceDiscoveryMode? metadataReferenceDiscovery;
 
 		private readonly List<Action<ITemplatePage>> pageInitializers = new List<Action<ITemplatePage>>();
 
-		protected RazorLightProject? project;
+		private RazorLightProject? project;
 
-		protected ICachingProvider? cachingProvider;
+		private ICachingProvider? cachingProvider;
 		private bool ownsProject;
 		private bool ownsCachingProvider;
 		private bool precompiledOnly;
@@ -72,7 +76,7 @@ namespace RazorLight
 		/// </remarks>
 		/// <param name="razorLightProject"></param>
 		/// <returns></returns>
-		public virtual RazorLightEngineBuilder UseProject(RazorLightProject razorLightProject)
+		public RazorLightEngineBuilder UseProject(RazorLightProject razorLightProject)
 		{
 			project = razorLightProject ?? throw new ArgumentNullException(nameof(razorLightProject), $"Use {nameof(NoRazorProject)} instead of null.  See also {nameof(UseNoProject)}.");
 			ownsProject = false;
@@ -147,6 +151,7 @@ namespace RazorLight
 			return this;
 		}
 
+		/// <summary>Uses a complete options object as the starting configuration snapshot.</summary>
 		public RazorLightEngineBuilder UseOptions(RazorLightOptions razorLightOptions)
 		{
 			options = razorLightOptions ?? throw new ArgumentNullException(nameof(razorLightOptions));
@@ -167,7 +172,8 @@ namespace RazorLight
 			return this;
 		}
 
-		public virtual RazorLightEngineBuilder UseMemoryCachingProvider()
+		/// <summary>Enables the built-in process-local compiled page cache, owned by the engine.</summary>
+		public RazorLightEngineBuilder UseMemoryCachingProvider()
 		{
 			cachingProvider = new MemoryCachingProvider();
 			ownsCachingProvider = true;
@@ -175,7 +181,8 @@ namespace RazorLight
 			return this;
 		}
 
-		public virtual RazorLightEngineBuilder UseCachingProvider(ICachingProvider provider)
+		/// <summary>Uses a caller-owned custom compiled page cache.</summary>
+		public RazorLightEngineBuilder UseCachingProvider(ICachingProvider provider)
 		{
 			if (provider == null)
 			{
@@ -199,7 +206,8 @@ namespace RazorLight
 			return this;
 		}
 
-		public virtual RazorLightEngineBuilder AddDefaultNamespaces(params string[] namespaces)
+		/// <summary>Adds namespace imports to every generated template.</summary>
+		public RazorLightEngineBuilder AddDefaultNamespaces(params string[] namespaces)
 		{
 			if (namespaces == null)
 			{
@@ -213,7 +221,8 @@ namespace RazorLight
 			return this;
 		}
 
-		public virtual RazorLightEngineBuilder AddMetadataReferences(params MetadataReference[] metadata)
+		/// <summary>Adds explicit Roslyn metadata references for template compilation.</summary>
+		public RazorLightEngineBuilder AddMetadataReferences(params MetadataReference[] metadata)
 		{
 			if (metadata == null)
 			{
@@ -227,7 +236,8 @@ namespace RazorLight
 			return this;
 		}
 
-		public virtual RazorLightEngineBuilder ExcludeAssemblies(params string[] assemblyNames)
+		/// <summary>Excludes exact assembly names from automatic metadata-reference discovery.</summary>
+		public RazorLightEngineBuilder ExcludeAssemblies(params string[] assemblyNames)
 		{
 			if (assemblyNames == null)
 			{
@@ -245,7 +255,7 @@ namespace RazorLight
 		/// Adds named assemblies from the operating assembly's dependency context to minimal metadata
 		/// reference discovery. Assembly names are matched exactly and without regard to case.
 		/// </summary>
-		public virtual RazorLightEngineBuilder IncludeAssemblies(params string[] assemblyNames)
+		public RazorLightEngineBuilder IncludeAssemblies(params string[] assemblyNames)
 		{
 			if (assemblyNames == null)
 			{
@@ -262,7 +272,7 @@ namespace RazorLight
 		/// Enables compatibility discovery of every compile-time library in the operating assembly's
 		/// dependency context. Templates can compile against all host dependencies in this mode.
 		/// </summary>
-		public virtual RazorLightEngineBuilder UseAllDependencyContextMetadataReferences()
+		public RazorLightEngineBuilder UseAllDependencyContextMetadataReferences()
 		{
 			metadataReferenceDiscovery = MetadataReferenceDiscoveryMode.All;
 			return this;
@@ -271,7 +281,7 @@ namespace RazorLight
 		/// <summary>
 		/// Adds an initializer that runs once for every rendered page, including layouts and includes.
 		/// </summary>
-		public virtual RazorLightEngineBuilder AddPageInitializer(Action<ITemplatePage> initializer)
+		public RazorLightEngineBuilder AddPageInitializer(Action<ITemplatePage> initializer)
 		{
 			if (initializer == null)
 			{
@@ -283,7 +293,8 @@ namespace RazorLight
 			return this;
 		}
 
-		public virtual RazorLightEngineBuilder AddDynamicTemplates(IDictionary<string, string> dynamicTemplates)
+		/// <summary>Seeds keyed in-memory templates that can be rendered through project-style APIs.</summary>
+		public RazorLightEngineBuilder AddDynamicTemplates(IDictionary<string, string> dynamicTemplates)
 		{
 			if (dynamicTemplates == null)
 			{
@@ -329,7 +340,8 @@ namespace RazorLight
 			return AddCSharpSource(sourceKey);
 		}
 
-		public virtual RazorLightEngineBuilder SetOperatingAssembly(Assembly assembly)
+		/// <summary>Sets the assembly whose dependency context supplies compilation references.</summary>
+		public RazorLightEngineBuilder SetOperatingAssembly(Assembly assembly)
 		{
 			if (assembly == null)
 			{
@@ -341,13 +353,15 @@ namespace RazorLight
 			return this;
 		}
 
-		public virtual RazorLightEngineBuilder EnableDebugMode(bool enableDebugMode = true)
+		/// <summary>Controls detailed template lookup and source diagnostics.</summary>
+		public RazorLightEngineBuilder EnableDebugMode(bool enableDebugMode = true)
 		{
 			this.enableDebugMode = enableDebugMode;
 			return this;
 		}
 
-		public virtual IRazorLightEngine Build()
+		/// <summary>Snapshots the configuration and creates an engine that owns builder-created resources.</summary>
+		public IRazorLightEngine Build()
 		{
 			var buildOptions = RazorLightOptionsSnapshot.Create(options ?? new RazorLightOptions()).Options;
 			project = project ?? new NoRazorProject();

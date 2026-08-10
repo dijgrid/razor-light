@@ -11,6 +11,7 @@ namespace RazorLight
 		/// </summary>
 		public TModel? Model { get; set; }
 
+		/// <inheritdoc />
 		public override void SetModel(object? model)
 		{
 			Model = (TModel?)model;

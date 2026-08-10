@@ -3,8 +3,10 @@ using Microsoft.Extensions.Primitives;
 
 namespace RazorLight.Razor
 {
+	/// <summary>Represents one logical Razor, import, or C# source item returned by a project.</summary>
 	public abstract class RazorLightProjectItem
 	{
+		/// <summary>Gets or sets a token that invalidates compiled dependents when this item changes.</summary>
 		public IChangeToken? ExpirationToken { get; set; }
 
 		/// <summary>

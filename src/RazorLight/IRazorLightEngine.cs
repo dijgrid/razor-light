@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace RazorLight
 {
+	/// <summary>
+	/// Compiles, renders, caches, and invalidates Razor templates. Engine instances are safe for
+	/// concurrent operations; compiled page instances returned by <see cref="CompileTemplateAsync(string)"/>
+	/// are mutable and single-use.
+	/// </summary>
 	public interface IRazorLightEngine : IDisposable, IAsyncDisposable
 	{
 		void IDisposable.Dispose() { }

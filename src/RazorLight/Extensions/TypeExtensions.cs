@@ -8,8 +8,10 @@ using System.Runtime.CompilerServices;
 
 namespace RazorLight.Extensions
 {
+	/// <summary>Provides conversion helpers used by dynamic Razor models.</summary>
 	public static class TypeExtensions
 	{
+		/// <summary>Copies the public properties of an object into an <see cref="ExpandoObject"/>.</summary>
 		[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Anonymous-object conversion is an opt-in reflection feature; callers must preserve model properties.")]
 		public static ExpandoObject ToExpando(this object anonymousObject)
 		{
@@ -32,6 +34,7 @@ namespace RazorLight.Extensions
 			return (ExpandoObject)expando;
 		}
 
+		/// <summary>Returns whether a runtime type has the compiler shape of an anonymous type.</summary>
 		public static bool IsAnonymousType(this Type type)
 		{
 			bool hasCompilerGeneratedAttribute = type.GetTypeInfo()

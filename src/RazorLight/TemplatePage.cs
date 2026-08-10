@@ -8,6 +8,7 @@ using RazorLight.Text;
 
 namespace RazorLight
 {
+	/// <inheritdoc />
 	public abstract class TemplatePage : TemplatePageBase
 	{
 		private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -15,6 +16,7 @@ namespace RazorLight
 		private bool _ignoreBody;
 		private HashSet<string>? _ignoredSections;
 
+		/// <inheritdoc />
 		public Task IncludeAsync(string key, object? model = null) =>
 			IncludeAsync(key, model, CancellationToken);
 
@@ -288,10 +290,12 @@ namespace RazorLight
 			}
 		}
 
+		/// <inheritdoc />
 		public override void BeginContext(int position, int length, bool isLiteral)
 		{
 		}
 
+		/// <inheritdoc />
 		public override void EndContext()
 		{
 		}

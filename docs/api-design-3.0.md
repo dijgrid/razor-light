@@ -61,6 +61,26 @@ Every exported RazorLight type belongs to one of these tiers:
 The optional `Dijgrid.RazorLight.Html` package is an application integration layered on
 `IOutputEncoder`; its encoder is not part of the generic core's generated ABI.
 
+## Stable-tag review (TASK-039)
+
+The final stable-tag review rechecked every exported type against the tiers above and made two
+surface-hardening changes while all entries are still unshipped:
+
+- `RazorLightEngineBuilder` is sealed, its inherited protected mutable fields are private, and its
+  fluent methods are non-virtual. Builder inheritance was never a documented extension mechanism;
+  custom projects, project items, caches, output encoders, and page initializers retain their
+  supported composition contracts.
+- CS1591 is enabled for package projects. The warning-as-error release build now rejects new public
+  types or members that lack XML documentation, and concrete implementations inherit the relevant
+  interface or base-contract documentation rather than duplicating it.
+
+The review found no remaining public compiler pass, Roslyn orchestration service, engine handler,
+buffer implementation, or instrumentation namespace. Nullable annotations and cancellation
+overloads remain represented in `PublicAPI.Unshipped.txt`; stable package validation continues to
+compare the intentional compatibility reset against upstream 2.3.1 until the first independent
+stable baseline ships. `PublicApiTierTest` now also locks the non-inheritable built-in construction
+types while retaining the documented project/cache/encoder extension contracts.
+
 `ICachingProvider.TryGetTemplate` exchanges a nullable page factory directly. The inherited
 `TemplateCacheItem` and `TemplateCacheLookupResult` records were removed because they added mutable
 implementation state without enabling a useful extension scenario. Providers must remain safe for

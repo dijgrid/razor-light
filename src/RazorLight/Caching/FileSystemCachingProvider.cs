@@ -9,6 +9,7 @@ using RazorLight.Razor;
 
 namespace RazorLight.Caching
 {
+	/// <summary>Persists precompiled template assemblies to disk and caches loaded page factories.</summary>
 	public sealed class FileSystemCachingProvider : ICachingProvider, IPrecompileCallback, IDisposable
 	{
 		private const string CacheKeyManifestSuffix = ".razorlight-cache-key";
@@ -18,6 +19,7 @@ namespace RazorLight.Caching
 		private readonly bool m_reportRelativeCachePaths;
 		private readonly IFileSystemCachingStrategy m_fileSystemCachingStrategy;
 
+		/// <summary>Creates a provider rooted at a template directory and contained cache directory.</summary>
 		public FileSystemCachingProvider(string baseDir, string cacheDir, IFileSystemCachingStrategy fileSystemCachingStrategy)
 		{
 			m_baseDir = FileSystemRazorProjectHelper.NormalizeRoot(
@@ -29,6 +31,7 @@ namespace RazorLight.Caching
 			m_fileSystemCachingStrategy = fileSystemCachingStrategy ?? throw new ArgumentNullException(nameof(fileSystemCachingStrategy));
 		}
 
+		/// <summary>Returns the assembly path selected for a logical template and source file.</summary>
 		public string GetAssemblyFilePath(string key, string templateFilePath)
 		{
 			var assemblyFilePath = m_fileSystemCachingStrategy
@@ -54,11 +57,13 @@ namespace RazorLight.Caching
 			}
 		}
 
+		/// <inheritdoc />
 		public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken? expirationToken)
 		{
 			m_cache.CacheTemplate(key, pageFactory, expirationToken);
 		}
 
+		/// <inheritdoc />
 		public bool Contains(string key)
 		{
 			if (m_cache.Contains(key)) return true;
@@ -67,6 +72,7 @@ namespace RazorLight.Caching
 				m_fileSystemCachingStrategy.GetCachedFileInfo(key, sourcePath, m_cacheDir).UpToDate;
 		}
 
+		/// <inheritdoc />
 		public void Remove(string key)
 		{
 			m_cache.Remove(key);
@@ -78,6 +84,7 @@ namespace RazorLight.Caching
 			RemoveManifestedArtifacts(key);
 		}
 
+		/// <inheritdoc />
 		public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
 		{
 			if (m_cache.TryGetTemplate(key, out pageFactory))
@@ -113,6 +120,7 @@ namespace RazorLight.Caching
 			return false;
 		}
 
+		/// <inheritdoc />
 		public static Type GetTemplatePageType(string asmFilePath)
 		{
 			var rawAssembly = File.ReadAllBytes(asmFilePath);
@@ -121,11 +129,13 @@ namespace RazorLight.Caching
 			return GetTemplatePageType(rawAssembly, rawSymbolStore);
 		}
 
+		/// <summary>Creates a generated template page using its public parameterless constructor.</summary>
 		[UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "Runtime-loaded template types carry a public parameterless constructor by generated-code contract.")]
 		public static ITemplatePage NewTemplatePage(Type templatePageType) =>
 			(ITemplatePage)(Activator.CreateInstance(templatePageType)
 				?? throw new InvalidOperationException($"Could not create template page type '{templatePageType}'."));
 
+		/// <summary>Loads a generated template type from assembly and optional symbol bytes.</summary>
 		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This API is the explicitly dynamic assembly-loading path and is not used by statically registered precompiled pages.")]
 		public static Type GetTemplatePageType(byte[] rawAssembly, byte[]? rawSymbolStore) => Assembly
 			.Load(rawAssembly, rawSymbolStore)
@@ -159,6 +169,7 @@ namespace RazorLight.Caching
 			}
 		}
 
+		/// <inheritdoc />
 		public void Dispose() => m_cache.Dispose();
 	}
 }

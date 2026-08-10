@@ -3,12 +3,16 @@ using RazorLight.Razor;
 
 namespace RazorLight.Caching
 {
+	/// <summary>Selects human-readable disk-cache paths and compares template and artifact timestamps.</summary>
 	public sealed class SimpleFileCachingStrategy : IFileSystemCachingStrategy
 	{
+		/// <summary>Gets the shared stateless strategy instance.</summary>
 		public static readonly IFileSystemCachingStrategy Instance = new SimpleFileCachingStrategy();
 
+		/// <inheritdoc />
 		public string Name => "Simple";
 
+		/// <inheritdoc />
 		public CachedFileInfo GetCachedFileInfo(string key, string templateFilePath, string cacheDir)
 		{
 			var asmFilePath = ResolveCachePath(key + ".dll", "cached assembly path");

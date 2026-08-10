@@ -8,12 +8,14 @@ namespace RazorLight.Text
 	/// </summary>
 	public sealed class PlainTextEncoder : IOutputEncoder
 	{
+		/// <inheritdoc />
 		public static PlainTextEncoder Default { get; } = new PlainTextEncoder();
 
 		private PlainTextEncoder()
 		{
 		}
 
+		/// <inheritdoc />
 		public void Encode(TextWriter writer, string value)
 		{
 			if (writer == null) throw new ArgumentNullException(nameof(writer));

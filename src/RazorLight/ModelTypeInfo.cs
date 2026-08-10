@@ -42,6 +42,7 @@ namespace RazorLight
 			return this.IsStrongType ? model : model.ToExpando();
 		}
 
+		/// <summary>Creates model metadata for the supplied runtime or explicitly declared type.</summary>
 		public ModelTypeInfo(Type type)
 		{
 			if (type == null)
@@ -55,6 +56,7 @@ namespace RazorLight
 			this.TemplateTypeName = IsStrongType ? GetFriendlyName(Type) : "dynamic";
 		}
 
+		/// <summary>Returns a fully qualified C# type spelling, including nested generic arguments and arrays.</summary>
 		public static string GetFriendlyName(Type type)
 		{
 			if (type.IsArray)

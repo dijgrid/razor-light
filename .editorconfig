@@ -14,7 +14,7 @@ indent_size = 4
 tab_width = 4
 
 [*.cs]
-dotnet_diagnostic.CS1591.severity = none
+dotnet_diagnostic.CS1591.severity = warning
 csharp_using_directive_placement = outside_namespace:error
 dotnet_sort_system_directives_first = true
 

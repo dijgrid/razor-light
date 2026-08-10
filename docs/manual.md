@@ -6,6 +6,7 @@ package. For a short project overview, start with the [README](../README.md).
 ## Contents
 
 - [Installation](#installation)
+- [Executable examples](#executable-examples)
 - [Rendering a string template](#rendering-a-string-template)
 - [Models, imports, and LINQ](#models-imports-and-linq)
 - [Template projects and sources](#template-projects-and-sources)
@@ -13,6 +14,8 @@ package. For a short project overview, start with the [README](../README.md).
 - [Composing templates with C# source](#composing-templates-with-c-source)
 - [Caching and invalidation](#caching-and-invalidation)
 - [Cancellation](#cancellation)
+- [Dependency injection and page initialization](#dependency-injection-and-page-initialization)
+- [ViewBag behavior](#viewbag-behavior)
 - [Output encoding](#output-encoding)
 - [Compilation references](#compilation-references)
 - [Precompilation](#precompilation)
@@ -25,7 +28,7 @@ package. For a short project overview, start with the [README](../README.md).
 Install the .NET 10 SDK selected by [`global.json`](../global.json), then add the core package:
 
 ```shell
-dotnet add package Dijgrid.RazorLight --version 3.0.0-beta.4
+dotnet add package Dijgrid.RazorLight --version 3.0.0
 ```
 
 The `RazorLight 2.3.1` package is the historical upstream build. The independently maintained 3.x
@@ -40,6 +43,26 @@ entry-point project when its SDK does not already preserve compilation metadata:
   <PreserveCompilationContext>true</PreserveCompilationContext>
 </PropertyGroup>
 ```
+
+## Executable examples
+
+The manual's central examples are also tests in
+[`ManualFeatureExamplesTest.cs`](../tests/RazorLight.Tests/Documentation/ManualFeatureExamplesTest.cs).
+They are deliberately written as short, self-contained programs and cover string and file sources,
+typed and dynamic data, layouts/sections/includes, reusable templates, cache administration,
+writer output, plain-text and HTML policies, C# source composition, page initialization,
+cancellation, and missing-template diagnostics. Run just these live developer docs with:
+
+```shell
+dotnet test tests/RazorLight.Tests/RazorLight.Tests.csproj --framework net10.0 \
+  --configuration Release --filter FullyQualifiedName~ManualFeatureExamplesTest
+```
+
+More specialized executable contracts live beside the feature they protect: compatibility tests
+cover the Razor language matrix and public API tiers; `PrecompiledOnlyEngineTest` and the
+precompile test project cover compiler-free execution; cancellation, caching, compilation, and
+deployment each have dedicated suites. The focused documentation tests are the readable starting
+point, not a substitute for those deeper edge-case suites.
 
 ## Rendering a string template
 
@@ -129,6 +152,20 @@ var engine = new RazorLightEngineBuilder()
 String, file, embedded-resource, and custom-project templates all receive RazorLight's built-in
 imports and configured default namespaces.
 
+Pass an `ExpandoObject` as the optional `viewBag` argument for supplemental values that do not
+belong in the primary model:
+
+```csharp
+dynamic viewBag = new ExpandoObject();
+viewBag.ReportTitle = "Weekly status";
+
+string result = await engine.CompileRenderStringAsync(
+    "report-title",
+    "@ViewBag.ReportTitle: @Model.Name",
+    new { Name = "Migration" },
+    (ExpandoObject)viewBag);
+```
+
 ## Template projects and sources
 
 A `RazorLightProject` resolves logical template keys. RazorLight includes file-system and embedded-
@@ -211,6 +248,33 @@ string result = await engine.CompileRenderAsync(
 
 Override `GetKnownKeysAsync` to improve detailed missing-template diagnostics. Override
 `GetSourceItemAsync` when the project also supplies exact `.cs` files for source composition.
+
+### Builder configuration and dynamic templates
+
+Prefer the fluent builder for normal construction. `UseOptions` is available for hosts that bind or
+assemble configuration separately, but do not configure the same setting through both paths; the
+builder rejects conflicting values instead of silently choosing one. Configuration is copied when
+the engine is built, so later collection mutations do not reconfigure a running engine.
+
+`AddDynamicTemplates` seeds an engine with a keyed set of in-memory templates:
+
+```csharp
+var engine = new RazorLightEngineBuilder()
+    .UseNoProject()
+    .AddDynamicTemplates(new Dictionary<string, string>
+    {
+        ["welcome"] = "Hello @Model.Name",
+        ["farewell"] = "Goodbye @Model.Name",
+    })
+    .UseMemoryCachingProvider()
+    .Build();
+
+string result = await engine.CompileRenderAsync("welcome", new { Name = "Ada" });
+```
+
+Use `CompileRenderStringAsync` when supplying or replacing one template's content at call time;
+use `AddDynamicTemplates` when a known in-memory collection should be addressable by project-style
+compile and render methods.
 
 ## Layouts, sections, and includes
 
@@ -324,6 +388,17 @@ must support concurrent retrieval, insertion, replacement, and removal. See the 
 [caching contract](caching.md) for cache identities, precompiled providers, and process-local
 limitations.
 
+To write into a caller-owned stream or buffer, compile a page and use the `TextWriter` render
+overload. RazorLight does not dispose the supplied writer. This path also avoids allocating a final
+result string, which is preferable for very large output even though internal Razor composition may
+still require buffering:
+
+```csharp
+await engine.CompileRenderStringAsync("line", "Value: @Model", 0);
+ITemplatePage page = await engine.CompileTemplateAsync("line");
+await engine.RenderTemplateAsync(page, 42, responseWriter, cancellationToken);
+```
+
 ## Cancellation
 
 All engine operations have `CancellationToken` overloads. Overloads without a token remain
@@ -429,7 +504,7 @@ string result = await engine.CompileRenderStringAsync(
 Install the optional package:
 
 ```shell
-dotnet add package Dijgrid.RazorLight.Html --version 3.0.0-beta.4
+dotnet add package Dijgrid.RazorLight.Html --version 3.0.0
 ```
 
 Then opt in explicitly:
@@ -478,12 +553,21 @@ var engine = new RazorLightEngineBuilder()
 needed for migration. Reference filtering controls compile-time convenience and dependency
 isolation; it is not a security sandbox.
 
+Set the operating assembly explicitly when the entry assembly is unavailable or when a library
+host needs RazorLight to discover another application's dependency context:
+
+```csharp
+var engine = new RazorLightEngineBuilder()
+    .SetOperatingAssembly(typeof(TemplateHost).Assembly)
+    .Build();
+```
+
 ## Precompilation
 
 Install the tool package using the version aligned with the core library:
 
 ```shell
-dotnet tool install --global Dijgrid.RazorLight.Precompile --version 3.0.0-beta.4
+dotnet tool install --global Dijgrid.RazorLight.Precompile --version 3.0.0
 ```
 
 Precompile a template:
@@ -571,6 +655,12 @@ the appropriate exact lookup method and return `Exists = true` only for real con
 detailed diagnostics to untrusted users because paths, keys, source-derived messages, and known-key
 inventories may be sensitive.
 
+Missing templates throw `TemplateNotFoundException`. Razor parsing failures throw
+`TemplateGenerationException`, and generated C# compilation failures throw
+`TemplateCompilationException` with structured diagnostics. Treat these as authoring or deployment
+errors; rendering exceptions thrown by template code retain their original exception type. Debug
+mode enriches diagnostics but must not be used as a substitute for logging and securing the host.
+
 ### Can RazorLight safely execute user-authored templates?
 
 Not in the application process. Razor templates and imported `.cs` files are executable code. Use a
@@ -587,3 +677,4 @@ access, bounded resources, and a narrow serialized input/output contract. See
 - [Template security](template-security.md)
 - [Dependency policy](dependency-policy.md)
 - [Public API design](api-design-3.0.md)
+- [Stable 3.0 performance and memory scaling](../benchmarks/scaling-2026-08-10.md)
