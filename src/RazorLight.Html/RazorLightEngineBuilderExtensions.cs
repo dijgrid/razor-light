@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 
 namespace RazorLight.Html
 {
+	/// <summary>Adds optional HTML expression encoding to a RazorLight engine builder.</summary>
 	public static class RazorLightEngineBuilderExtensions
 	{
 		/// <summary>

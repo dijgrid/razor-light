@@ -6,8 +6,10 @@ using Microsoft.Extensions.Primitives;
 
 namespace RazorLight.Caching
 {
+	/// <summary>Stores compiled page factories in a thread-safe process-local memory cache.</summary>
 	public sealed class MemoryCachingProvider : ICachingProvider, IDisposable
 	{
+		/// <summary>Creates an empty memory caching provider.</summary>
 		public MemoryCachingProvider()
 		{
 			var cacheOptions = Options.Create(new MemoryCacheOptions());
@@ -17,6 +19,7 @@ namespace RazorLight.Caching
 		private IMemoryCache LookupCache { get; }
 		internal bool IsDisposed { get; private set; }
 
+		/// <inheritdoc />
 		public bool TryGetTemplate(string key, [NotNullWhen(true)] out Func<ITemplatePage>? pageFactory)
 		{
 			if (string.IsNullOrEmpty(key))
@@ -27,6 +30,7 @@ namespace RazorLight.Caching
 			return LookupCache.TryGetValue(key, out pageFactory);
 		}
 
+		/// <inheritdoc />
 		public bool Contains(string key)
 		{
 			if (string.IsNullOrEmpty(key))
@@ -37,6 +41,7 @@ namespace RazorLight.Caching
 			return LookupCache.TryGetValue(key, out _);
 		}
 
+		/// <inheritdoc />
 		public void CacheTemplate(string key, Func<ITemplatePage> pageFactory, IChangeToken? expirationToken = null)
 		{
 			if (string.IsNullOrEmpty(key))
@@ -58,6 +63,7 @@ namespace RazorLight.Caching
 			LookupCache.Set(key, pageFactory, cacheEntryOptions);
 		}
 
+		/// <inheritdoc />
 		public void Remove(string key)
 		{
 			if (string.IsNullOrEmpty(key))
@@ -68,6 +74,7 @@ namespace RazorLight.Caching
 			LookupCache.Remove(key);
 		}
 
+		/// <inheritdoc />
 		public void Dispose()
 		{
 			if (IsDisposed) return;

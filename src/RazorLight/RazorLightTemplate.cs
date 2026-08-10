@@ -19,13 +19,16 @@ namespace RazorLight
 			Key = key ?? throw new ArgumentNullException(nameof(key));
 		}
 
+		/// <summary>Gets the logical key of the cached compiled template.</summary>
 		public string Key { get; }
 
+		/// <summary>Creates a fresh page instance from the cached compiled descriptor.</summary>
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public Task<ITemplatePage> CreatePageAsync(CancellationToken cancellationToken = default) =>
 			_engine.CompileTemplateAsync(Key, cancellationToken);
 
+		/// <summary>Renders the cached template using a new page that is safe for one render.</summary>
 		[RequiresDynamicCode(DeploymentCompatibility.RequiresDynamicCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		[RequiresUnreferencedCode(DeploymentCompatibility.RequiresUnreferencedCodeMessage, Url = DeploymentCompatibility.DocumentationUrl)]
 		public async Task<string> RenderAsync<T>(

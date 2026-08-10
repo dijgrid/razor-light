@@ -14,16 +14,19 @@ namespace RazorLight.Razor
 	/// </summary>
 	public sealed class FileSystemRazorProject : RazorLightProject, IDisposable
 	{
+		/// <inheritdoc />
 		public const string DefaultExtension = ".cshtml";
 		private readonly IFileProvider _fileProvider;
 		private readonly string _normalizedRoot;
 		private bool _disposed;
 
+		/// <inheritdoc />
 		public FileSystemRazorProject(string root)
 			: this(root, DefaultExtension)
 		{
 		}
 
+		/// <inheritdoc />
 		public FileSystemRazorProject(string root, string extension)
 		{
 			Extension = extension ?? throw new ArgumentNullException(nameof(extension));
@@ -38,6 +41,7 @@ namespace RazorLight.Razor
 			_fileProvider = new PhysicalFileProvider(_normalizedRoot);
 		}
 
+		/// <inheritdoc />
 		public string Extension { get; set; }
 
 		/// <summary>
@@ -48,6 +52,7 @@ namespace RazorLight.Razor
 		public override Task<RazorLightProjectItem> GetItemAsync(string templateKey)
 			=> GetItemAsync(templateKey, CancellationToken.None);
 
+		/// <inheritdoc />
 		public override Task<RazorLightProjectItem> GetItemAsync(string templateKey, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -72,9 +77,11 @@ namespace RazorLight.Razor
 			return Task.FromResult((RazorLightProjectItem)item);
 		}
 
+		/// <inheritdoc />
 		public override Task<RazorLightProjectItem> GetSourceItemAsync(string sourceKey)
 			=> GetSourceItemAsync(sourceKey, CancellationToken.None);
 
+		/// <inheritdoc />
 		public override Task<RazorLightProjectItem> GetSourceItemAsync(string sourceKey, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -121,17 +128,21 @@ namespace RazorLight.Razor
 				"template path");
 		}
 
+		/// <inheritdoc />
 		public override Task<IEnumerable<RazorLightProjectItem>> GetImportsAsync(string templateKey)
 			=> GetImportsAsync(templateKey, CancellationToken.None);
 
+		/// <inheritdoc />
 		public override Task<IEnumerable<RazorLightProjectItem>> GetImportsAsync(string templateKey, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			return Task.FromResult(Enumerable.Empty<RazorLightProjectItem>());
 		}
+		/// <inheritdoc />
 		public override Task<IEnumerable<string>> GetKnownKeysAsync()
 			=> GetKnownKeysAsync(CancellationToken.None);
 
+		/// <inheritdoc />
 		public override Task<IEnumerable<string>> GetKnownKeysAsync(CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -140,10 +151,12 @@ namespace RazorLight.Razor
 
 			return Task.FromResult(files);
 		}
+		/// <inheritdoc />
 		public override string NormalizeKey(string templateKey) => FileSystemRazorProjectHelper.NormalizeKey(templateKey);
 
 		internal bool IsDisposed => _disposed;
 
+		/// <inheritdoc />
 		public void Dispose()
 		{
 			if (_disposed) return;

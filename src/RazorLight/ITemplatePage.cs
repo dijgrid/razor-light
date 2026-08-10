@@ -7,8 +7,10 @@ using RazorLight.Text;
 
 namespace RazorLight
 {
+	/// <summary>Defines the mutable page contract consumed by generated and precompiled templates.</summary>
 	public interface ITemplatePage
 	{
+		/// <summary>Assigns the model used by the generated page.</summary>
 		void SetModel(object? model);
 
 		/// <summary>
@@ -60,13 +62,15 @@ namespace RazorLight
 		IDictionary<string, RenderAsyncDelegate> SectionWriters { get; }
 
 		/// <summary>
-		/// Renders the page and writes the output to the <see cref="IPageContext.Writer"/> />.
+		/// Renders the page and writes the output to the <see cref="IPageContext.Writer"/>.
 		/// </summary>
 		/// <returns>A task representing the result of executing the page.</returns>
 		Task ExecuteAsync();
 
+		/// <summary>Gets or sets the callback used to render an included template in the current scope.</summary>
 		Func<string, object?, CancellationToken, Task>? IncludeFunc { get; set; }
 
+		/// <summary>Ensures the body and required sections were consumed by the layout.</summary>
 		void EnsureRenderedBodyOrSections();
 	}
 }

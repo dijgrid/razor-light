@@ -11,15 +11,19 @@ using RazorLight.Razor;
 
 namespace RazorLight.Caching
 {
+	/// <summary>Selects disk-cache artifacts using a streamed SHA-256 fingerprint of compilation inputs.</summary>
 	public sealed class FileHashCachingStrategy : IFileSystemCachingStrategy
 	{
 		private const string CacheFormatVersion = "razorlight-file-cache-v2";
 		private static readonly string[] DependencyExtensions = { ".cshtml", ".razor", ".cs" };
 
+		/// <summary>Gets the shared stateless strategy instance.</summary>
 		public static readonly IFileSystemCachingStrategy Instance = new FileHashCachingStrategy();
 
+		/// <inheritdoc />
 		public string Name => "FileHash";
 
+		/// <inheritdoc />
 		public CachedFileInfo GetCachedFileInfo(string key, string templateFilePath, string cacheDir)
 		{
 			if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));

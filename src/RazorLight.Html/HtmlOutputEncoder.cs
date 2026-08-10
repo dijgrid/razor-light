@@ -12,11 +12,13 @@ namespace RazorLight.Html
 	{
 		private readonly HtmlEncoder _encoder;
 
+		/// <summary>Creates an output encoder using the supplied HTML policy or the platform default.</summary>
 		public HtmlOutputEncoder(HtmlEncoder? encoder = null)
 		{
 			_encoder = encoder ?? HtmlEncoder.Default;
 		}
 
+		/// <inheritdoc />
 		public void Encode(TextWriter writer, string value)
 		{
 			if (writer == null) throw new ArgumentNullException(nameof(writer));

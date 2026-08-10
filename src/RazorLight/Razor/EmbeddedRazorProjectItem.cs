@@ -5,10 +5,12 @@ using System.Reflection;
 
 namespace RazorLight.Razor
 {
+	/// <inheritdoc />
 	public sealed class EmbeddedRazorProjectItem : RazorLightProjectItem
 	{
 		private readonly string fullTemplateKey;
 
+		/// <inheritdoc />
 		public EmbeddedRazorProjectItem(Assembly assembly, string? rootNamespace, string key)
 		{
 			Assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
@@ -25,6 +27,7 @@ namespace RazorLight.Razor
 			this.fullTemplateKey = rootNamespace + key;
 		}
 
+		/// <inheritdoc />
 		public EmbeddedRazorProjectItem(Type rootType, string key)
 		{
 			if (rootType == null)
@@ -43,10 +46,13 @@ namespace RazorLight.Razor
 			this.fullTemplateKey = $"{rootType.Namespace}.{Key}";
 		}
 
+		/// <inheritdoc />
 		public Assembly Assembly { get; set; }
 
+		/// <inheritdoc />
 		public override string Key { get; }
 
+		/// <inheritdoc />
 		public override bool Exists
 		{
 			get
@@ -55,6 +61,7 @@ namespace RazorLight.Razor
 			}
 		}
 
+		/// <inheritdoc />
 		public override Stream Read()
 		{
 			return Assembly.GetManifestResourceStream(this.fullTemplateKey)

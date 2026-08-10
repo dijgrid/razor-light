@@ -11,11 +11,13 @@ using RazorLight.Text;
 
 namespace RazorLight
 {
+	/// <summary>Provides the generated-code ABI for output, attributes, sections, and page context.</summary>
 	public abstract class TemplatePageBase : ITemplatePage
 	{
 		private readonly Stack<TextWriter> _textWriterStack = new Stack<TextWriter>();
 		private AttributeInfo _attributeInfo;
 
+		/// <inheritdoc />
 		public abstract void SetModel(object? model);
 
 		/// <inheritdoc />
@@ -33,6 +35,7 @@ namespace RazorLight
 		/// <inheritdoc />
 		public string? Layout { get; set; }
 
+		/// <inheritdoc />
 		public virtual dynamic ViewBag
 		{
 			get
@@ -46,6 +49,7 @@ namespace RazorLight
 			}
 		}
 
+		/// <inheritdoc />
 		public Func<string, object?, CancellationToken, Task>? IncludeFunc { get; set; }
 
 		/// <inheritdoc />
@@ -107,10 +111,13 @@ namespace RazorLight
 			return TemplateContent.Empty;
 		}
 
+		/// <inheritdoc />
 		public abstract void BeginContext(int position, int length, bool isLiteral);
 
+		/// <inheritdoc />
 		public abstract void EndContext();
 
+		/// <inheritdoc />
 		public abstract void EnsureRenderedBodyOrSections();
 
 		/// <summary>
@@ -123,6 +130,7 @@ namespace RazorLight
 			return new RawString(rawString);
 		}
 
+		/// <inheritdoc />
 		public static ITemplateContent HelperFunction(Func<object?, ITemplateContent> body)
 		{
 			return body(null);
@@ -237,6 +245,7 @@ namespace RazorLight
 		}
 
 		// Internal for unit testing.
+		/// <inheritdoc />
 		protected internal virtual void PushWriter(TextWriter writer)
 		{
 			if (writer == null)
@@ -250,6 +259,7 @@ namespace RazorLight
 		}
 
 		// Internal for unit testing.
+		/// <inheritdoc />
 		protected internal virtual TextWriter PopWriter()
 		{
 			var pageContext = PageContext ?? throw new InvalidOperationException("PageContext is not set.");
@@ -257,6 +267,7 @@ namespace RazorLight
 			return pageContext.Writer;
 		}
 
+		/// <inheritdoc />
 		public virtual void BeginWriteAttribute(
 			string name,
 			string prefix,
@@ -285,6 +296,7 @@ namespace RazorLight
 			}
 		}
 
+		/// <inheritdoc />
 		public void WriteAttributeValue(
 			string prefix,
 			int prefixOffset,
@@ -330,6 +342,7 @@ namespace RazorLight
 			}
 		}
 
+		/// <inheritdoc />
 		public virtual void EndWriteAttribute()
 		{
 			if (!_attributeInfo.Suppressed)

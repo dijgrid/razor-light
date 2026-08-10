@@ -8,8 +8,10 @@ using RazorLight.Razor;
 
 namespace RazorLight.Extensions
 {
+	/// <summary>Registers RazorLight engines with Microsoft.Extensions.DependencyInjection.</summary>
 	public static class ServiceCollectionExtensions
 	{
+		/// <summary>Registers a singleton engine created by the supplied factory.</summary>
 		public static IServiceCollection AddRazorLight(this IServiceCollection services, Func<IRazorLightEngine> engineFactoryProvider)
 		{
 			if (services == null)
@@ -33,6 +35,7 @@ namespace RazorLight.Extensions
 			return services;
 		}
 
+		/// <summary>Begins dependency-injection configuration for a singleton RazorLight engine.</summary>
 		public static RazorLightDependencyBuilder AddRazorLight(this IServiceCollection services)
 		{
 			services = services ?? throw new ArgumentNullException(nameof(services));

@@ -73,5 +73,18 @@ namespace RazorLight.Tests.Compatibility
 
 			Assert.All(extensionContracts, type => Assert.True(type.IsPublic, type.FullName));
 		}
+
+		[Fact]
+		public void Built_In_Construction_Types_Are_Sealed()
+		{
+			// Engine construction is configured by composition. Inheritance is intentionally reserved for
+			// the project and project-item source-store contracts listed in the test above.
+			Assert.True(typeof(RazorLightEngineBuilder).IsSealed);
+			Assert.True(typeof(RazorLightDependencyBuilder).IsSealed);
+			Assert.True(typeof(RazorLightOptions).IsSealed);
+			Assert.True(typeof(MemoryCachingProvider).IsSealed);
+			Assert.True(typeof(FileSystemRazorProject).IsSealed);
+			Assert.True(typeof(EmbeddedRazorProject).IsSealed);
+		}
 	}
 }

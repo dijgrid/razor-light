@@ -193,7 +193,7 @@ namespace RazorLight
 			ExpandoObject? viewBag,
 			CancellationToken cancellationToken)
 		{
-			using (var writer = new StringWriter())
+			using (var writer = new PooledStringWriter())
 			{
 				await RenderTemplateAsync(templatePage, model, writer, viewBag, cancellationToken).ConfigureAwait(false);
 
@@ -439,7 +439,7 @@ namespace RazorLight
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			using PageRenderLease renderLease = BeginRender(templatePage);
-			using (var writer = new StringWriter())
+			using (var writer = new PooledStringWriter())
 			{
 				Type effectiveModelType = GetDeclaredModelType(templatePage) ?? modelType;
 				SetModelContext(templatePage, writer, model, viewBag, effectiveModelType, cancellationToken);

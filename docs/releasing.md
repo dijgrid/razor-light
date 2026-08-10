@@ -7,9 +7,9 @@ document is an operator checklist; ordinary pull requests and CI runs never publ
 
 | Project | NuGet package | First independent version |
 | --- | --- | --- |
-| RazorLight library | `Dijgrid.RazorLight` | `3.0.0-beta.4` |
-| Optional HTML integration | `Dijgrid.RazorLight.Html` | `3.0.0-beta.4` |
-| Precompile tool | `Dijgrid.RazorLight.Precompile` | `3.0.0-beta.4` |
+| RazorLight library | `Dijgrid.RazorLight` | `3.0.0` |
+| Optional HTML integration | `Dijgrid.RazorLight.Html` | `3.0.0` |
+| Precompile tool | `Dijgrid.RazorLight.Precompile` | `3.0.0` |
 
 The package IDs distinguish the independent line from the historical packages. CLR namespaces and
 the `razorlight-precompile` tool command remain unchanged. DECISION-003 records the identity and
@@ -49,8 +49,8 @@ pwsh ./scripts/Test-DeterministicBuild.ps1
 dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages
 dotnet pack src/RazorLight.Html/RazorLight.Html.csproj --configuration Release --no-build --output artifacts/packages
 dotnet pack src/RazorLight.Precompile/RazorLight.Precompile.csproj --configuration Release --no-build --output artifacts/packages
-pwsh ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version 3.0.0-beta.4
-pwsh ./scripts/Test-PackageConsumer.ps1 -PackageDirectory artifacts/packages -Version 3.0.0-beta.4
+pwsh ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version 3.0.0
+pwsh ./scripts/Test-PackageConsumer.ps1 -PackageDirectory artifacts/packages -Version 3.0.0
 ```
 
 Inspect the package files with a NuGet package viewer before approving a release. Confirm the IDs,
@@ -67,8 +67,8 @@ version, .NET 10 target, dependencies, license, README, repository commit, tool 
    only that tag:
 
    ```shell
-   git tag -a v3.0.0-beta.4 -m "RazorLight 3.0.0-beta.4"
-   git push origin v3.0.0-beta.4
+   git tag -a v3.0.0 -m "RazorLight 3.0.0"
+   git push origin v3.0.0
    ```
 
 6. The release workflow rebuilds, tests, validates, and uploads a second artifact set. Download and

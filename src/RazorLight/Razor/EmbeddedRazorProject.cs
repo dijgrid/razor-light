@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 
 namespace RazorLight.Razor
 {
+	/// <inheritdoc />
 	public sealed class EmbeddedRazorProject : RazorLightProject
 	{
+		/// <inheritdoc />
 		public EmbeddedRazorProject(Type rootType)
 		{
 			if (rootType == null)
@@ -20,6 +22,7 @@ namespace RazorLight.Razor
 			RootNamespace = rootType.Namespace ?? string.Empty;
 		}
 
+		/// <inheritdoc />
 		public EmbeddedRazorProject(Assembly assembly, string? rootNamespace = "")
 		{
 			Assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
@@ -27,15 +30,20 @@ namespace RazorLight.Razor
 			RootNamespace = rootNamespace ?? string.Empty;
 		}
 
+		/// <inheritdoc />
 		public Assembly Assembly { get; set; }
 
+		/// <inheritdoc />
 		public string RootNamespace { get; set; }
 
+		/// <inheritdoc />
 		public string Extension { get; set; } = ".cshtml";
 
+		/// <inheritdoc />
 		public override Task<RazorLightProjectItem> GetItemAsync(string templateKey)
 			=> GetItemAsync(templateKey, CancellationToken.None);
 
+		/// <inheritdoc />
 		public override Task<RazorLightProjectItem> GetItemAsync(string templateKey, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -54,9 +62,11 @@ namespace RazorLight.Razor
 			return Task.FromResult((RazorLightProjectItem)item);
 		}
 
+		/// <inheritdoc />
 		public override Task<RazorLightProjectItem> GetSourceItemAsync(string sourceKey)
 			=> GetSourceItemAsync(sourceKey, CancellationToken.None);
 
+		/// <inheritdoc />
 		public override Task<RazorLightProjectItem> GetSourceItemAsync(string sourceKey, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -70,18 +80,22 @@ namespace RazorLight.Razor
 				new EmbeddedRazorProjectItem(Assembly, RootNamespace, resourceKey));
 		}
 
+		/// <inheritdoc />
 		public override Task<IEnumerable<RazorLightProjectItem>> GetImportsAsync(string templateKey)
 			=> GetImportsAsync(templateKey, CancellationToken.None);
 
+		/// <inheritdoc />
 		public override Task<IEnumerable<RazorLightProjectItem>> GetImportsAsync(string templateKey, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			return Task.FromResult(Enumerable.Empty<RazorLightProjectItem>());
 		}
 
+		/// <inheritdoc />
 		public override Task<IEnumerable<string>> GetKnownKeysAsync()
 			=> GetKnownKeysAsync(CancellationToken.None);
 
+		/// <inheritdoc />
 		public override Task<IEnumerable<string>> GetKnownKeysAsync(CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();

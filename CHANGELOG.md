@@ -5,7 +5,20 @@ Notable changes to this independently maintained continuation are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Package identity and
 versioning follow the independent release policy in [`docs/releasing.md`](docs/releasing.md).
 
-## Unreleased
+## 3.0.0 - 2026-08-10
+
+### Changed
+
+- The stable 3.0 public API review seals `RazorLightEngineBuilder`, removes its unsupported protected
+  mutable state and virtual fluent surface, and enforces XML documentation for exported APIs.
+- The manual now has executable feature examples and a reproducible 5-15 MiB/1,000-template scaling
+  evaluation.
+
+### Performance
+
+- String-returning renders use pooled character storage and materialize one immutable result instead
+  of retaining both `StringBuilder` and result-string copies. Cached 5-15 MiB render allocation is
+  reduced by approximately 50%; writer-based rendering remains the lowest-allocation option.
 
 ## 3.0.0-beta.4 - 2026-08-08
 

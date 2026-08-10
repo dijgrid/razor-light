@@ -10,14 +10,17 @@ using RazorLight.Razor;
 
 namespace RazorLight
 {
+	/// <summary>Configures the singleton RazorLight engine registered with dependency injection.</summary>
 	public sealed class RazorLightDependencyBuilder
 	{
 		private readonly IServiceCollection _services;
+		/// <summary>Creates a builder over the supplied service collection.</summary>
 		public RazorLightDependencyBuilder(IServiceCollection services)
 		{
 			_services = services;
 		}
 
+		/// <summary>Uses file-system template lookup rooted at the supplied contained directory.</summary>
 		public RazorLightDependencyBuilder UseFileSystemProject(string root, string? extension = null)
 		{
 			_services.RemoveAll<RazorLightProject>();
@@ -37,6 +40,7 @@ namespace RazorLight
 			return this;
 		}
 
+		/// <summary>Enables the process-local memory cache for compiled pages.</summary>
 		public RazorLightDependencyBuilder UseMemoryCachingProvider()
 		{
 			_services.RemoveAll<ICachingProvider>();
@@ -44,6 +48,7 @@ namespace RazorLight
 			return this;
 		}
 
+		/// <summary>Uses embedded Razor resources rooted at the namespace of <paramref name="rootType"/>.</summary>
 		public RazorLightDependencyBuilder UseEmbeddedResourcesProject(Type rootType)
 		{
 			_services.RemoveAll<RazorLightProject>();
@@ -53,12 +58,14 @@ namespace RazorLight
 			return this;
 		}
 
+		/// <summary>Sets the assembly whose dependency context supplies compilation references.</summary>
 		public RazorLightDependencyBuilder SetOperatingAssembly(Assembly assembly)
 		{
 			_services.Configure<RazorLightOptions>(x => x.OperatingAssembly = assembly);
 			return this;
 		}
 
+		/// <summary>Adds namespace imports to every generated template.</summary>
 		public RazorLightDependencyBuilder AddDefaultNamespaces(params string[] namespaces)
 		{
 			if (namespaces == null) throw new ArgumentNullException(nameof(namespaces));
@@ -67,6 +74,7 @@ namespace RazorLight
 			return this;
 		}
 
+		/// <summary>Excludes exact assembly names from automatic metadata-reference discovery.</summary>
 		public RazorLightDependencyBuilder ExcludeAssemblies(params string[] assemblyNames)
 		{
 			if (assemblyNames == null) throw new ArgumentNullException(nameof(assemblyNames));
@@ -75,6 +83,7 @@ namespace RazorLight
 			return this;
 		}
 
+		/// <summary>Includes exact assembly names in minimal metadata-reference discovery.</summary>
 		public RazorLightDependencyBuilder IncludeAssemblies(params string[] assemblyNames)
 		{
 			if (assemblyNames == null)
@@ -87,6 +96,7 @@ namespace RazorLight
 			return this;
 		}
 
+		/// <summary>Enables broad compatibility discovery of the operating assembly's dependencies.</summary>
 		public RazorLightDependencyBuilder UseAllDependencyContextMetadataReferences()
 		{
 			_services.Configure<RazorLightOptions>(x =>
@@ -108,6 +118,7 @@ namespace RazorLight
 			return this;
 		}
 
+		/// <summary>Adds explicit Roslyn references for template compilation.</summary>
 		public RazorLightDependencyBuilder AddMetadataReferences(params MetadataReference[] metadata)
 		{
 			if (metadata == null) throw new ArgumentNullException(nameof(metadata));
@@ -116,6 +127,7 @@ namespace RazorLight
 			return this;
 		}
 
+		/// <summary>Adds a project C# source key to every template compilation.</summary>
 		public RazorLightDependencyBuilder AddCSharpSource(string sourceKey)
 		{
 			if (string.IsNullOrWhiteSpace(sourceKey))
@@ -127,6 +139,7 @@ namespace RazorLight
 			return this;
 		}
 
+		/// <summary>Adds keyed in-memory C# source to every template compilation.</summary>
 		public RazorLightDependencyBuilder AddCSharpSource(string sourceKey, string sourceContent)
 		{
 			if (string.IsNullOrWhiteSpace(sourceKey)) throw new ArgumentException("A C# source key is required.", nameof(sourceKey));

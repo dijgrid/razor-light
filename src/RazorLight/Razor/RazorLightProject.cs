@@ -5,6 +5,10 @@ using System.Threading.Tasks;
 
 namespace RazorLight.Razor
 {
+	/// <summary>
+	/// Defines logical template, import, source, and diagnostic lookup for a custom source store.
+	/// Keys are application identities rather than unrestricted operating-system paths.
+	/// </summary>
 	public abstract class RazorLightProject
 	{
 		/// <summary>
@@ -70,6 +74,7 @@ namespace RazorLight.Razor
 			return GetKnownKeysAsync().WaitAsync(cancellationToken);
 		}
 
+		/// <summary>Normalizes a logical identity for lookup and caching.</summary>
 		public virtual string NormalizeKey(string templateKey) => templateKey;
 	}
 }
