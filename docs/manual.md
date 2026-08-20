@@ -28,7 +28,7 @@ package. For a short project overview, start with the [README](../README.md).
 Install the .NET 10 SDK selected by [`global.json`](../global.json), then add the core package:
 
 ```shell
-dotnet add package Dijgrid.RazorLight --version 3.0.0
+dotnet add package Dijgrid.RazorLight --version 3.0.1
 ```
 
 The `RazorLight 2.3.1` package is the historical upstream build. The independently maintained 3.x
@@ -504,7 +504,7 @@ string result = await engine.CompileRenderStringAsync(
 Install the optional package:
 
 ```shell
-dotnet add package Dijgrid.RazorLight.Html --version 3.0.0
+dotnet add package Dijgrid.RazorLight.Html --version 3.0.1
 ```
 
 Then opt in explicitly:
@@ -567,7 +567,7 @@ var engine = new RazorLightEngineBuilder()
 Install the tool package using the version aligned with the core library:
 
 ```shell
-dotnet tool install --global Dijgrid.RazorLight.Precompile --version 3.0.0
+dotnet tool install --global Dijgrid.RazorLight.Precompile --version 3.0.1
 ```
 
 Precompile a template:
@@ -652,8 +652,9 @@ an explicit `Type`. Adding a namespace import does not make a dynamic receiver s
 
 Enable detailed development diagnostics with `EnableDebugMode()`. For custom projects, implement
 the appropriate exact lookup method and return `Exists = true` only for real content. Do not expose
-detailed diagnostics to untrusted users because paths, keys, source-derived messages, and known-key
-inventories may be sensitive.
+detailed diagnostics to untrusted users because paths, keys, and known-key inventories may be
+sensitive. Compiler messages are available without debug mode; set
+`RazorLightOptions.RedactCompilerDiagnosticMessages` when template identifiers must also be hidden.
 
 Missing templates throw `TemplateNotFoundException`. Razor parsing failures throw
 `TemplateGenerationException`, and generated C# compilation failures throw

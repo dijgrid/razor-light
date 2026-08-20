@@ -111,9 +111,10 @@ self-contained, single-file deployment; Native AOT is not yet claimed. Review th
 ## Security and diagnostics
 
 Templates and imported C# are executable trusted code, not sandboxed content. Isolate untrusted
-authors in a separate restricted process. Production diagnostics redact template-derived paths,
-messages, and missing-key inventories unless debug mode is explicitly enabled. See the
-[template security guide](template-security.md).
+authors in a separate restricted process. Production diagnostics redact template-derived paths and
+missing-key inventories unless debug mode is explicitly enabled. Roslyn compiler messages remain
+available for authoring; set `RazorLightOptions.RedactCompilerDiagnosticMessages` if those messages
+cross a trust boundary. See the [template security guide](template-security.md).
 
 ## Recommended upgrade sequence
 

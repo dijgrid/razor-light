@@ -72,6 +72,40 @@ namespace RazorLight.Tests
 		}
 
 		[Fact]
+		public async Task Compiler_Message_Is_Actionable_Without_Exposing_Mapped_Path()
+		{
+			var engine = new RazorLightEngineBuilder()
+				.UseNoProject()
+				.AddCSharpSource("Private/Broken.cs", "namespace Composition; internal class Broken { void M() { MissingName(); } }")
+				.Build();
+
+			var exception = await Assert.ThrowsAsync<TemplateCompilationException>(() =>
+				engine.CompileRenderStringAsync<object?>("broken-source", "text", null));
+
+			Assert.Contains(exception.CompilationDiagnostics, diagnostic =>
+				diagnostic.ErrorMessage.Contains("MissingName", StringComparison.Ordinal));
+			Assert.All(exception.CompilationDiagnostics, diagnostic =>
+				Assert.Equal(string.Empty, diagnostic.LineSpan?.Path));
+		}
+
+		[Fact]
+		public async Task Compiler_Message_Redaction_Flows_Through_Engine_Options()
+		{
+			var engine = new RazorLightEngineBuilder()
+				.UseNoProject()
+				.UseOptions(new RazorLightOptions { RedactCompilerDiagnosticMessages = true })
+				.AddCSharpSource("Private/Broken.cs", "namespace Composition; internal class Broken { void M() { MissingName(); } }")
+				.Build();
+
+			var exception = await Assert.ThrowsAsync<TemplateCompilationException>(() =>
+				engine.CompileRenderStringAsync<object?>("broken-source", "text", null));
+
+			Assert.DoesNotContain("MissingName", exception.Message, StringComparison.Ordinal);
+			Assert.Contains(exception.CompilationDiagnostics, diagnostic =>
+				diagnostic.ErrorMessage.Contains("CS0103", StringComparison.Ordinal));
+		}
+
+		[Fact]
 		public async Task Directive_Resolves_Embedded_CSharp_Source()
 		{
 			var engine = new RazorLightEngineBuilder()

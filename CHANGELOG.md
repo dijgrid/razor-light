@@ -5,6 +5,18 @@ Notable changes to this independently maintained continuation are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Package identity and
 versioning follow the independent release policy in [`docs/releasing.md`](docs/releasing.md).
 
+## 3.0.1 - 2026-08-20
+
+### Changed
+
+- Compiler failures now return actionable Roslyn messages without debug mode while continuing to
+  redact mapped template paths. Hosts that forward authoring diagnostics across a trust boundary can
+  set `RazorLightOptions.RedactCompilerDiagnosticMessages` to retain ID-only messages.
+
+### Fixed
+
+- The clean package-consumer smoke test now handles the NuGet.org source URI correctly on Windows.
+
 ## 3.0.0 - 2026-08-10
 
 ### Changed

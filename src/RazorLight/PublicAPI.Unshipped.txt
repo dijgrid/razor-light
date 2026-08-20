@@ -266,6 +266,8 @@ RazorLight.RazorLightOptions.OperatingAssembly.get -> System.Reflection.Assembly
 RazorLight.RazorLightOptions.OperatingAssembly.set -> void
 RazorLight.RazorLightOptions.OutputEncoder.get -> RazorLight.Text.IOutputEncoder!
 RazorLight.RazorLightOptions.OutputEncoder.set -> void
+RazorLight.RazorLightOptions.RedactCompilerDiagnosticMessages.get -> bool
+RazorLight.RazorLightOptions.RedactCompilerDiagnosticMessages.set -> void
 RazorLight.RazorLightOptions.RazorLightOptions() -> void
 RazorLight.TemplateNotFoundException
 RazorLight.TemplateNotFoundException.KnownDynamicTemplateKeys.get -> System.Collections.Generic.IEnumerable<string!>?

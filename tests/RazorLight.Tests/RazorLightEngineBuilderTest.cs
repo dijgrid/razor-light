@@ -170,6 +170,7 @@ namespace RazorLight.Tests
 			var engine = GetEngine()
 				.Build();
 			Assert.False(GetOptions(engine).EnableDebugMode);
+			Assert.False(GetOptions(engine).RedactCompilerDiagnosticMessages);
 
 			// Set with EnableDebugMode
 			engine = GetEngine()
@@ -199,9 +200,10 @@ namespace RazorLight.Tests
 			Assert.False(GetOptions(engine).EnableDebugMode);
 
 			engine = GetEngine()
-				.UseOptions(new RazorLightOptions())
+				.UseOptions(new RazorLightOptions { RedactCompilerDiagnosticMessages = true })
 				.Build();
 			Assert.False(GetOptions(engine).EnableDebugMode);
+			Assert.True(GetOptions(engine).RedactCompilerDiagnosticMessages);
 		}
 
 		[Fact]

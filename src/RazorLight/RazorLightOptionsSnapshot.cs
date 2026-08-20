@@ -37,6 +37,7 @@ namespace RazorLight
 				OperatingAssembly = source.OperatingAssembly,
 				OutputEncoder = source.OutputEncoder,
 				EnableDebugMode = source.EnableDebugMode,
+				RedactCompilerDiagnosticMessages = source.RedactCompilerDiagnosticMessages,
 			});
 		}
 
@@ -60,6 +61,7 @@ namespace RazorLight
 				CachingProvider = source.CachingProvider,
 				OutputEncoder = source.OutputEncoder,
 				EnableDebugMode = source.EnableDebugMode,
+				RedactCompilerDiagnosticMessages = source.RedactCompilerDiagnosticMessages,
 			});
 		}
 

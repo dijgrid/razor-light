@@ -76,5 +76,11 @@ namespace RazorLight
 		/// Setting this to <c>true</c> provides more information in exceptions.
 		/// </summary>
 		public bool? EnableDebugMode { get; set; }
+
+		/// <summary>
+		/// Gets or sets whether compiler diagnostic messages are replaced with diagnostic IDs. Mapped paths and
+		/// generated-source details remain controlled separately by <see cref="EnableDebugMode"/>.
+		/// </summary>
+		public bool RedactCompilerDiagnosticMessages { get; set; }
 	}
 }
