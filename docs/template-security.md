@@ -74,11 +74,12 @@ Generated assemblies and symbols can contain template logic, string constants, t
 template keys. Treat precompile outputs, runtime compilation callbacks, caches, crash dumps, and
 diagnostic artifacts as potentially sensitive.
 
-Detailed template diagnostics are disabled by default. Compiler errors retain diagnostic IDs and
-line positions while suppressing template-derived messages and mapped paths. Razor generation
-errors similarly retain IDs without exposing their detailed messages or paths. Calling
-`EnableDebugMode()` restores detailed messages, mapped paths, missing-template keys, and known-key
-lists; enable it only in trusted development or controlled diagnostic environments.
+Compiler errors include Roslyn's actionable message and line position by default while suppressing
+mapped paths. Because compiler messages can repeat template identifiers, hosts that forward authoring
+failures outside their trusted environment can set `RazorLightOptions.RedactCompilerDiagnosticMessages`
+to return ID-only messages. Razor generation errors retain IDs without exposing their detailed messages
+or paths. Calling `EnableDebugMode()` restores mapped paths, Razor messages, missing-template keys, and
+known-key lists; enable it only in trusted development or controlled diagnostic environments.
 
 ## Cache integrity
 

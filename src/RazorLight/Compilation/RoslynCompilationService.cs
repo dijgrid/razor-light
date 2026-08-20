@@ -24,11 +24,17 @@ namespace RazorLight.Compilation
 		private readonly IMetadataReferenceManager metadataReferenceManager;
 		private readonly bool isDevelopment;
 		private readonly bool includeDetailedDiagnostics;
+		private readonly bool redactCompilerDiagnosticMessages;
 		private readonly List<MetadataReference> metadataReferences = new List<MetadataReference>();
 		private readonly IPrecompileCallback? precompileCallback;
 
 		public RoslynCompilationService(IMetadataReferenceManager referenceManager, Assembly operatingAssembly, IPrecompileCallback? precompileCallback = null)
-			: this(referenceManager, operatingAssembly, includeDetailedDiagnostics: false, precompileCallback)
+			: this(
+				referenceManager,
+				operatingAssembly,
+				includeDetailedDiagnostics: false,
+				redactCompilerDiagnosticMessages: false,
+				precompileCallback)
 		{
 		}
 
@@ -36,11 +42,13 @@ namespace RazorLight.Compilation
 			IMetadataReferenceManager referenceManager,
 			Assembly operatingAssembly,
 			bool includeDetailedDiagnostics,
+			bool redactCompilerDiagnosticMessages = false,
 			IPrecompileCallback? precompileCallback = null)
 		{
 			this.metadataReferenceManager = referenceManager ?? throw new ArgumentNullException(nameof(referenceManager));
 			this.OperatingAssembly = operatingAssembly ?? throw new ArgumentNullException(nameof(operatingAssembly));
 			this.includeDetailedDiagnostics = includeDetailedDiagnostics;
+			this.redactCompilerDiagnosticMessages = redactCompilerDiagnosticMessages;
 			this.precompileCallback = precompileCallback;
 
 			isDevelopment = AssemblyDebugModeUtility.IsAssemblyDebugBuild(OperatingAssembly);
@@ -53,6 +61,7 @@ namespace RazorLight.Compilation
 				(options ?? throw new ArgumentNullException(nameof(options))).Value.OperatingAssembly
 					?? throw new InvalidOperationException("RazorLightOptions.OperatingAssembly must be configured."),
 				options.Value.EnableDebugMode ?? false,
+				options.Value.RedactCompilerDiagnosticMessages,
 				precompileCallback)
 		{
 
@@ -147,9 +156,9 @@ namespace RazorLight.Compilation
 					foreach (Diagnostic diagnostic in errorsDiagnostics)
 					{
 						FileLinePositionSpan lineSpan = diagnostic.Location.GetMappedLineSpan();
-						string errorMessage = includeDetailedDiagnostics
+						string errorMessage = !redactCompilerDiagnosticMessages
 							? diagnostic.GetMessage()
-							: $"Compiler diagnostic {diagnostic.Id}. Enable RazorLightOptions.EnableDebugMode for detailed compiler diagnostics.";
+							: $"Compiler diagnostic {diagnostic.Id}. Set RazorLightOptions.RedactCompilerDiagnosticMessages to false for the compiler message.";
 						string formattedMessage = $"- ({lineSpan.StartLinePosition.Line}:{lineSpan.StartLinePosition.Character}) {errorMessage}";
 						if (!includeDetailedDiagnostics)
 						{

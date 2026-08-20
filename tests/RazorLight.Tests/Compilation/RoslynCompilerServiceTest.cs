@@ -280,7 +280,7 @@ namespace RazorLight.Tests.Compilation
 		}
 
 		[Fact]
-		public void CompilationDiagnostics_RedactTemplateContentAndPathsByDefault()
+		public void CompilationDiagnostics_IncludeCompilerMessageButRedactMappedPathByDefault()
 		{
 			const string secret = "DO_NOT_LOG_TEMPLATE_SECRET";
 			const string privatePath = "C:/private/templates/customer.cshtml";
@@ -293,8 +293,34 @@ namespace RazorLight.Tests.Compilation
 
 			var exception = Assert.Throws<TemplateCompilationException>(() => compiler.CompileAndEmit(template));
 
-			Assert.DoesNotContain(secret, exception.Message, StringComparison.Ordinal);
+			Assert.Contains(secret, exception.Message, StringComparison.Ordinal);
 			Assert.DoesNotContain(privatePath, exception.Message, StringComparison.Ordinal);
+			Assert.Contains(exception.CompilationDiagnostics, diagnostic =>
+				diagnostic.ErrorMessage.Contains(secret, StringComparison.Ordinal));
+			Assert.All(exception.CompilationDiagnostics, diagnostic =>
+			{
+				Assert.Equal(string.Empty, diagnostic.LineSpan?.Path);
+			});
+		}
+
+		[Fact]
+		public void CompilationDiagnostics_CanRedactCompilerMessageIndependentlyOfMappedPath()
+		{
+			const string secret = "DO_NOT_LOG_TEMPLATE_SECRET";
+			const string privatePath = "C:/private/templates/customer.cshtml";
+			var compiler = new RoslynCompilationService(
+				new DefaultMetadataReferenceManager(),
+				Assembly.GetEntryAssembly()!,
+				includeDetailedDiagnostics: false,
+				redactCompilerDiagnosticMessages: true);
+			var template = new TestGeneratedRazorTemplate(
+				"private-template",
+				$"#line 1 \"{privatePath}\"\npublic class Test {{ void M() {{ {secret}; }} }}");
+
+			var exception = Assert.Throws<TemplateCompilationException>(() => compiler.CompileAndEmit(template));
+
+			Assert.Contains(exception.CompilationDiagnostics, diagnostic =>
+				diagnostic.ErrorMessage.Contains("CS0103", StringComparison.Ordinal));
 			Assert.All(exception.CompilationDiagnostics, diagnostic =>
 			{
 				Assert.DoesNotContain(secret, diagnostic.ErrorMessage, StringComparison.Ordinal);
@@ -321,6 +347,29 @@ namespace RazorLight.Tests.Compilation
 				exception.CompilationDiagnostics,
 				item => item.ErrorMessage.Contains(secret, StringComparison.Ordinal));
 			Assert.Contains(secret, diagnostic.ErrorMessage, StringComparison.Ordinal);
+			Assert.Equal(privatePath, diagnostic.LineSpan?.Path);
+		}
+
+		[Fact]
+		public void CompilationDiagnostics_MessageRedaction_RemainsEnabledInDebugMode()
+		{
+			const string secret = "DO_NOT_LOG_TEMPLATE_SECRET";
+			const string privatePath = "C:/private/templates/customer.cshtml";
+			var compiler = new RoslynCompilationService(
+				new DefaultMetadataReferenceManager(),
+				Assembly.GetEntryAssembly()!,
+				includeDetailedDiagnostics: true,
+				redactCompilerDiagnosticMessages: true);
+			var template = new TestGeneratedRazorTemplate(
+				"private-template",
+				$"#line 1 \"{privatePath}\"\npublic class Test {{ void M() {{ {secret}; }} }}");
+
+			var exception = Assert.Throws<TemplateCompilationException>(() => compiler.CompileAndEmit(template));
+
+			var diagnostic = Assert.Single(
+				exception.CompilationDiagnostics,
+				item => item.ErrorMessage.Contains("CS0103", StringComparison.Ordinal));
+			Assert.DoesNotContain(secret, diagnostic.ErrorMessage, StringComparison.Ordinal);
 			Assert.Equal(privatePath, diagnostic.LineSpan?.Path);
 		}
 

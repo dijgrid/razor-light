@@ -23,8 +23,10 @@ available to executable .NET code.
 - Do not advertise or implement an in-process untrusted-template mode.
 - Use minimal metadata-reference discovery by default to reduce accidental host dependency exposure.
 - Preserve exact include and exclude controls plus an explicit broad-discovery compatibility mode.
-- Redact template-derived compiler messages, mapped paths, missing keys, and key inventories by
-  default; expose full details only through the existing debug-mode opt-in.
+- Return compiler diagnostic messages by default because templates already execute as trusted code,
+  while continuing to redact mapped paths, missing keys, key inventories, and generated-source
+  details unless debug mode is enabled. Hosts that forward authoring failures across a trust boundary
+  can explicitly redact compiler message text.
 - Treat generated assemblies, symbols, caches, and diagnostic artifacts as potentially sensitive.
 - Document process isolation as an application architecture requirement rather than a RazorLight
   configuration switch.
@@ -41,6 +43,7 @@ Negative:
 
 - Templates that depended on unrelated NuGet packages through ambient discovery must include those
   assemblies explicitly or select broad compatibility discovery.
-- Production compiler messages contain diagnostic IDs and locations but require debug mode for full
-  Roslyn or Razor text.
+- Production compiler diagnostics are actionable without exposing mapped filesystem paths. Compiler
+  messages can contain template identifiers, so hosts that expose failures outside the trusted
+  authoring environment must enable compiler-message redaction.
 - Safely accepting arbitrary template authors remains an external isolation and operations problem.

@@ -56,7 +56,7 @@ if (plain != "<strong>text</strong>" || encoded != "&lt;strong&gt;text&lt;/stron
 Console.WriteLine("RazorLight package consumer smoke test passed.");
 '@ | Set-Content (Join-Path $consumerRoot "Program.cs")
 
-    & dotnet restore $project --source $resolvedPackageDirectory --source "https://api.nuget.org/v3/index.json/"
+    & dotnet restore $project --source $resolvedPackageDirectory --source "https://api.nuget.org/v3/index.json"
     if ($LASTEXITCODE -ne 0) { throw "Could not restore the clean consumer project." }
     & dotnet run --project $project --configuration Release --no-restore
     if ($LASTEXITCODE -ne 0) { throw "The clean consumer smoke test failed." }

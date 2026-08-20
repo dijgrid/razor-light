@@ -49,8 +49,8 @@ pwsh ./scripts/Test-DeterministicBuild.ps1
 dotnet pack src/RazorLight/RazorLight.csproj --configuration Release --no-build --output artifacts/packages
 dotnet pack src/RazorLight.Html/RazorLight.Html.csproj --configuration Release --no-build --output artifacts/packages
 dotnet pack src/RazorLight.Precompile/RazorLight.Precompile.csproj --configuration Release --no-build --output artifacts/packages
-pwsh ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version 3.0.0
-pwsh ./scripts/Test-PackageConsumer.ps1 -PackageDirectory artifacts/packages -Version 3.0.0
+pwsh ./scripts/Validate-Packages.ps1 -PackageDirectory artifacts/packages -Version 3.0.1
+pwsh ./scripts/Test-PackageConsumer.ps1 -PackageDirectory artifacts/packages -Version 3.0.1
 ```
 
 Inspect the package files with a NuGet package viewer before approving a release. Confirm the IDs,
@@ -67,8 +67,8 @@ version, .NET 10 target, dependencies, license, README, repository commit, tool 
    only that tag:
 
    ```shell
-   git tag -a v3.0.0 -m "RazorLight 3.0.0"
-   git push origin v3.0.0
+   git tag -a v3.0.1 -m "RazorLight 3.0.1"
+   git push origin v3.0.1
    ```
 
 6. The release workflow rebuilds, tests, validates, and uploads a second artifact set. Download and

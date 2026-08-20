@@ -60,6 +60,7 @@ namespace RazorLight
 				references,
 				operatingAssembly,
 				options.EnableDebugMode ?? false,
+				options.RedactCompilerDiagnosticMessages,
 				cache as IPrecompileCallback);
 			var sourceGenerator = new RazorSourceGenerator(
 				Razor6CompilerCompatibility.CreateEngine(),
