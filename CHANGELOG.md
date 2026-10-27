@@ -5,6 +5,14 @@ Notable changes to this independently maintained continuation are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Package identity and
 versioning follow the independent release policy in [`docs/releasing.md`](docs/releasing.md).
 
+## Unreleased
+
+### Changed
+
+- Refresh 18 central NuGet dependencies to their latest stable versions, including Roslyn 5.9.0,
+  Microsoft.Extensions and Entity Framework 10.0.14, and xUnit Visual Studio runner 4.0.1.
+  See the [upgrade validation and remaining tooling work](docs/dependency-upgrade-2026-10-27.md).
+
 ## 3.0.1 - 2026-08-20
 
 ### Changed
